@@ -221,7 +221,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 <!-- Accueil : choix de la matière -->
 <section id="v-home">
   <h1>Révisions</h1>
-  <div class="exam-info">Pour répondre à l'oral : active « Répondre à l'oral » dans les réglages d'une matière et autorise le micro (Chrome recommandé). Les questions à Claude et la correction du CP s'ouvrent dans claude.ai. Ta progression est gardée dans ce navigateur.</div>
+  <div class="exam-info">Pour répondre à l'oral : active « Répondre à l'oral » dans les réglages d'une matière et autorise le micro (marche dans tous les navigateurs, Brave compris). Les questions à Claude et la correction du CP s'ouvrent dans claude.ai. Ta progression est gardée dans ce navigateur.</div>
   <p class="lead">Choisis ta matière. Ta progression est enregistrée séparément pour chacune.</p>
   <div class="subjects" id="subjects"></div>
   <details class="sync"><summary>Synchroniser avec l'autre version</summary>
@@ -2191,6 +2191,7 @@ function setVoiceNote(t){ const n = $("voiceNote"); if (!n) return; n.textConten
 function voiceRead(){} // plus de lecture à voix haute : le mode vocal écoute seulement
 function voiceStart(){
   lastSpoken = "";
+  if (window.VOICE_ENGINE === "vosk") return voskStart();
   if (!opts.voice || fmt === "open") { setVoiceNote(""); return; }
   if (!SR) { setVoiceNote("Ton navigateur ne propose pas la reconnaissance vocale. Sur ordinateur ou Android, utilise Chrome ; sur iPhone, utilise Safari avec la dictée activée (Réglages, Général, Clavier). En attendant, réponds avec V, F, N, A à E, P, Entrée."); return; }
   if (micOff) { setVoiceNote(MIC_MSG); return; }
@@ -2233,7 +2234,7 @@ function voiceListen(){
 const MIC_MSG = "Micro refusé par le navigateur : touche l'icône de cadenas (ou de réglages) à gauche de l'adresse, autorise le micro, puis recharge la page. En attendant, réponds au clavier (V, F, N, A à E, P, Entrée).";
 function recPause(){ if (rec && listening) { try { rec.abort(); } catch(e) {} } }
 function recResume(){}
-function voiceStop(){ listening = false; clearTimeout(voiceRestartT); try { if (rec) rec.abort(); } catch(e) {} }
+function voiceStop(){ if (window.VOICE_ENGINE === "vosk") voskStop(); listening = false; clearTimeout(voiceRestartT); try { if (rec) rec.abort(); } catch(e) {} }
 const LETTER_WORDS = {a:0, ah:0, b:1, be:1, bee:1, c:2, ce:2, se:2, cest:2, d:3, de:3, dee:3, e:4, eu:4, euh:4};
 function handleVoice(raw){
   if (view !== "quiz") return false;
@@ -2451,6 +2452,93 @@ function svgImg(svg){
 }
 
 renderView(); setSave(); initStore(); initSample();
+
+
+window.VOICE_ENGINE = "vosk";
+// ================= Reconnaissance vocale intégrée (Vosk, sur l'appareil) =================
+// Utilisée sur le site : marche dans tous les navigateurs (Brave compris), sans service extérieur.
+const VOSK_MODELS = [
+  "models/vosk-model-small-fr.tar.gz",                                                   // copie hébergée sur le site (si présente)
+  "https://ccoreilly.github.io/vosk-browser/models/vosk-model-small-fr-pguyot-0.3.tar.gz" // modèle public de secours
+];
+let vModel = null, vModelPromise = null, vRec = null, vStream = null, vCtx = null, vNode = null, vSrc = null, vOn = false;
+function voskGrammar(){
+  const L = ["a","b","c","d","e"], words = ["vrai","faux","je ne sais pas","sais pas","ne sais pas","au pif","pif","valider","valide","suivante","suivant","précédente","précédent","pause","reprendre","continue","bé","cé","dé","eu"];
+  const combos = [];
+  for (let m = 1; m < 32; m++) { const s = L.filter((_, i) => m & (1 << i)); combos.push(s.join(" ")); if (s.length > 1) combos.push(s.slice(0, -1).join(" ") + " et " + s[s.length - 1]); }
+  return JSON.stringify([...words, ...combos, "[unk]"]);
+}
+function loadScript(src){ return new Promise((ok, ko) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = () => ko(new Error("script")); document.head.appendChild(s); }); }
+async function voskModel(){
+  if (vModel) return vModel;
+  if (vModelPromise) return vModelPromise;
+  vModelPromise = (async () => {
+    if (!window.Vosk) await loadScript("vosk.js");
+    const t0 = Date.now();
+    const tick = setInterval(() => { if (view === "quiz" && opts.voice) setVoiceNote(`⏳ Chargement de la reconnaissance vocale (environ 40 Mo la première fois, puis gardée par le navigateur)... ${Math.round((Date.now() - t0)/1000)} s`); }, 1000);
+    try {
+      let lastErr = null;
+      for (const url of VOSK_MODELS) {
+        try {
+          if (!/^https?:/.test(url)) { const h = await fetch(url, {method: "HEAD"}); if (!h.ok) continue; }
+          const m = new Vosk.Model(url, -1);
+          vModel = await new Promise((ok, ko) => {
+            const to = setTimeout(() => ko(new Error("timeout")), 180000);
+            m.on("load", msg => { clearTimeout(to); msg.result ? ok(m) : ko(new Error("load")); });
+            m.on("error", msg => { clearTimeout(to); ko(new Error(msg && msg.error || "error")); });
+          });
+          return vModel;
+        } catch(e) { lastErr = e; }
+      }
+      throw lastErr || new Error("model");
+    } finally { clearInterval(tick); }
+  })();
+  try { return await vModelPromise; } catch(e) { vModelPromise = null; throw e; }
+}
+async function voskStart(){
+  if (!opts.voice || fmt === "open") { setVoiceNote(""); return; }
+  vOn = true;
+  try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw {name: "NoMedia"};
+    if (!vStream) vStream = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: true, noiseSuppression: true, channelCount: 1}, video: false});
+    if (!vOn) return;
+    setVoiceNote("⏳ Préparation de la reconnaissance vocale...");
+    const model = await voskModel();
+    if (!vOn) return;
+    vCtx = vCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (vCtx.state === "suspended") { try { await vCtx.resume(); } catch(e) {} }
+    if (vRec) { try { vRec.remove(); } catch(e) {} }
+    vRec = new model.KaldiRecognizer(vCtx.sampleRate, voskGrammar());
+    vRec.on("partialresult", m => { const p = (m.result && m.result.partial || "").trim(); if (p && p !== "[unk]") setVoiceNote(`🎙 « ${p} »...`); });
+    vRec.on("result", m => {
+      const t = (m.result && m.result.text || "").replace(/\[unk\]/g, "").trim();
+      if (!t) return;
+      if (!handleVoice(t)) setVoiceNote(`Entendu « ${t} » mais pas compris. ${VOICE_HELP}`);
+    });
+    if (!vNode) {
+      vSrc = vCtx.createMediaStreamSource(vStream);
+      vNode = vCtx.createScriptProcessor(4096, 1, 1);
+      vNode.onaudioprocess = ev => { if (vOn && vRec && !paused && view === "quiz") { try { vRec.acceptWaveform(ev.inputBuffer); } catch(e) {} } };
+      vSrc.connect(vNode); vNode.connect(vCtx.destination);
+    }
+    setVoiceNote("🎙 J'écoute... " + VOICE_HELP);
+  } catch(e) {
+    vOn = false;
+    const n = e && e.name;
+    setVoiceNote(n === "NotAllowedError" || n === "SecurityError" ? MIC_MSG
+      : n === "NotFoundError" ? "Aucun micro détecté : vérifie qu'un micro est branché et autorisé, puis recharge la page."
+      : n === "NoMedia" ? "Ton navigateur ne donne pas accès au micro sur cette page."
+      : "La reconnaissance vocale n'a pas pu se charger (connexion ?). Recharge la page pour réessayer, ou réponds au clavier.");
+  }
+}
+function voskStop(){
+  vOn = false;
+  try { if (vRec) { vRec.remove(); vRec = null; } } catch(e) {}
+  try { if (vNode) { vNode.disconnect(); vNode = null; } if (vSrc) { vSrc.disconnect(); vSrc = null; } } catch(e) {}
+  try { if (vStream) { vStream.getTracks().forEach(t => t.stop()); vStream = null; } } catch(e) {}
+}
+// Précharge le modèle dès qu'on active « Répondre à l'oral »
+document.addEventListener("click", e => { if (e.target && e.target.id === "swVoice" && window.VOICE_ENGINE === "vosk") setTimeout(() => { if (opts.voice) voskModel().catch(() => {}); }, 0); });
 
 </script>
 </body>
