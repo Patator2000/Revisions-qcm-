@@ -280,13 +280,13 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
     <div class="set" id="setMode"><div class="lbl"><b>Mode</b><span id="modeHelp">Correction après chaque question</span></div>
       <div class="seg" id="segMode"><button data-v="train" class="on">Entraînement</button><button data-v="exam">Examen</button></div></div>
     <div class="set"><div class="lbl"><b>Nombre de questions</b><span>Tirées parmi les thèmes choisis</span></div>
-      <div class="seg" id="segCount"><button data-v="20">20</button><button data-v="40" class="on">40</button><button data-v="80">80</button><button data-v="0">Tout</button></div></div>
+      <div class="seg" id="segCount"><button data-v="20" class="on">20</button><button data-v="40">40</button><button data-v="80">80</button><button data-v="0">Tout</button></div></div>
     <div class="set"><div class="lbl"><b>Priorité à ce que je maîtrise mal</b><span>Erreurs, « ne sais pas » et réponses au pif reviennent en premier</span></div>
       <button class="switch" id="swWeighted" aria-label="Priorité aux questions mal maîtrisées"></button></div>
     <div class="set"><div class="lbl"><b>Répondre à l'oral</b><span>Le micro écoute « vrai », « faux », « je ne sais pas », les lettres A à E... (si le navigateur autorise le micro)</span></div>
       <button class="switch on" id="swVoice" aria-label="Répondre à l'oral"></button></div>
     <div class="set"><div class="lbl"><b>Ordre aléatoire</b><span>Sinon : QCM, puis TD, puis CM</span></div>
-      <button class="switch" id="swShuffle" aria-label="Ordre aléatoire"></button></div>
+      <button class="switch on" id="swShuffle" aria-label="Ordre aléatoire"></button></div>
     <details><summary>Barème et raccourcis</summary>
       <p class="small muted" style="margin:.6em 0 0">Vrai / Faux : bonne réponse +1 (même au pif), mauvaise -1, NE SAIS PAS 0. QCM type CT : chaque bonne proposition cochée vaut 1 / (nombre de bonnes propositions), chaque fausse cochée -0,33, rien coché 0.<br>
       Clavier : <kbd>V</kbd> vrai, <kbd>F</kbd> faux, <kbd>N</kbd> ne sais pas (Vrai / Faux), <kbd>A</kbd> à <kbd>E</kbd> cocher une proposition (QCM), <kbd>P</kbd> je réponds au pif, <kbd>Espace</kbd> pause, <kbd>←</kbd> <kbd>→</kbd> naviguer.</p></details>
@@ -1496,7 +1496,7 @@ const LET = ["A","B","C","D","E"];
 let S = null, fmt = "vf";
 let deck = [], answers = [], luck = [], base = [], cur = 0, sim = null, T = null, paused = false;
 let DB = null;
-let opts = {mode:"train", count:40, weighted:false, shuffle:false, voice:true, auto:true};
+let opts = {mode:"train", count:20, weighted:false, shuffle:true, voice:true, auto:true};
 let view = "home", storeReady = false, storeMode = "loading";
 const fmtList = Sx => Object.keys(Sx.F).filter(f => Sx.F[f].length);
 const items = () => S.F[fmt];
@@ -2202,7 +2202,7 @@ let voiceRestartT = null, voiceFails = 0, voiceLastErr = "";
 function voiceCmds(){
   const nav = !examMode();
   if (fmt === "vf") return {vf: true, nav, letters: false, valider: false};
-  if (fmt === "qcm") return {vf: false, nav, letters: true, valider: true};
+  if (fmt === "qcm") return {vf: false, nav: true, letters: true, valider: true}; // CT : navigation aussi en examen
   return {vf: false, nav: false, letters: false, valider: false};
 }
 function voiceHelpText(){
