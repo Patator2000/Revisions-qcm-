@@ -2196,7 +2196,7 @@ function voiceStart(){
   if (micOff) { setVoiceNote(MIC_MSG); return; }
   listening = true; voiceListen();
 }
-let voiceRestartT = null, voiceFails = 0;
+let voiceRestartT = null, voiceFails = 0, voiceLastErr = "";
 const VOICE_HELP = "Dis « vrai », « faux », « je ne sais pas », « au pif », des lettres (« A et C »), « valider », « suivante », « précédente » ou « pause ».";
 function voiceListen(){
   if (!listening || micOff || view !== "quiz" || paused) return;
@@ -2212,7 +2212,7 @@ function voiceListen(){
       if (!alts.some(t => handleVoice(t))) setVoiceNote(`Entendu « ${alts[0].trim()} » mais pas compris. ${VOICE_HELP}`);
     };
     rec.onerror = ev => {
-      const er = ev.error;
+      const er = ev.error; if (er !== "aborted" && er !== "no-speech") voiceLastErr = er;
       if (er === "not-allowed" || er === "service-not-allowed") { micOff = true; listening = false; setVoiceNote(MIC_MSG); }
       else if (er === "audio-capture") { micOff = true; listening = false; setVoiceNote("Aucun micro détecté : vérifie qu'un micro est branché et autorisé, puis recharge la page."); }
       else if (er === "network") { voiceFails++; setVoiceNote("La reconnaissance vocale a besoin d'Internet (elle passe par les serveurs du navigateur). Vérifie ta connexion."); }
@@ -2223,7 +2223,9 @@ function voiceListen(){
     rec.onend = () => {
       clearTimeout(voiceRestartT);
       if (listening && !micOff && view === "quiz" && !paused && voiceFails < 5) voiceRestartT = setTimeout(voiceListen, 250);
-      else if (voiceFails >= 5) setVoiceNote("La reconnaissance vocale ne répond pas. Recharge la page ou réponds au clavier.");
+      else if (voiceFails >= 5) setVoiceNote(voiceLastErr === "network"
+        ? "La reconnaissance vocale ne répond pas (code : network). Ton navigateur n'arrive pas à joindre son service de reconnaissance vocale. Ça arrive avec Brave, Opera, Vivaldi, Firefox, certains navigateurs Samsung, ou avec un VPN ou un bloqueur de publicité. Essaie avec Google Chrome sans VPN, ou réponds au clavier."
+        : `La reconnaissance vocale ne répond pas (code : ${voiceLastErr || "inconnu"}). Recharge la page ou réponds au clavier, et donne-moi ce code.`);
     };
     rec.start();
   } catch(err) { setVoiceNote("Reconnaissance vocale indisponible (" + (err && err.message || err) + ") : réponds au clavier."); }
