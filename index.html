@@ -206,6 +206,10 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 .voice-note{margin-top:10px;background:var(--surface2);border-radius:10px;padding:8px 12px}
 .sync{margin-top:26px;font-size:.78em;color:var(--muted)}
 .sync summary{font-size:.95em;opacity:.8}
+#profileGate{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:20px}
+.pg-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px;max-width:420px;width:100%;box-shadow:var(--shadow)}
+.pg-card label{display:block;margin-top:12px}
+.pg-card input{display:block;width:100%;margin-top:4px;font:inherit;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
 .simcard{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;border-color:var(--physio)}
 </style>
 </head>
@@ -221,7 +225,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 <!-- Accueil : choix de la matière -->
 <section id="v-home">
   <h1>Révisions</h1>
-  <div class="exam-info">Réponse à l'oral activée : autorise le micro quand le navigateur le demande (désactivable dans les réglages d'une matière). Les questions à Claude et la correction du CP s'ouvrent dans claude.ai. Ta progression est gardée dans ce navigateur.</div>
+  <div class="exam-info">Réponse à l'oral activée : autorise le micro quand le navigateur le demande (désactivable dans les réglages d'une matière). Les questions à Claude et la correction du CP s'ouvrent dans claude.ai. </div>
   <p class="lead">Choisis ta matière. Ta progression est enregistrée séparément pour chacune.</p>
   <div class="subjects" id="subjects"></div>
   <details class="sync"><summary>Synchroniser avec l'autre version</summary>
@@ -333,7 +337,11 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 </section>
 
 </main>
+<script src="supabase.js"></script>
 <script>
+window.SUPA_URL = "https://eempregmkymltwgzrofl.supabase.co";
+window.SUPA_KEY = "sb_publishable_4A1YYev7-Qmgbl_aRV7CIQ_Gxq267_N";
+
 const ANAT_THEMES = {
   Q1: "QCM 1 - Plans, axes et mouvements",
   Q2: "QCM 2 - Ostéologie, arthrologie, myologie (bases)",
@@ -1559,6 +1567,9 @@ function setSave(){
 async function initStore(){
   const live = Object.values(SUBJECTS).filter(x => fmtList(x).length);
   const locals = {}; live.forEach(x => locals[x.id] = lsLoad(x));
+  if (window.SUPA_URL && typeof supaStart === "function") {
+    if (await supaStart(live, locals)) { storeMode = "account"; live.forEach(lsSave); storeReady = true; setSave(); renderView(); return; }
+  }
   let timer; const timeout = new Promise(r => { timer = setTimeout(() => r("timeout"), 10000); });
   try {
     if (!window.claude || !window.claude.use) throw new Error("no runtime");
@@ -2555,6 +2566,111 @@ function voskStop(){
 document.addEventListener("click", e => { if (e.target && e.target.id === "swVoice" && window.VOICE_ENGINE === "vosk") setTimeout(() => { if (opts.voice) voskModel().catch(() => {}); }, 0); });
 // Précharge aussi le modèle à l'ouverture d'une matière (micro activé par défaut)
 document.addEventListener("click", e => { const s = e.target && e.target.closest && e.target.closest(".subj"); if (s && window.VOICE_ENGINE === "vosk") setTimeout(() => { if (opts.voice) voskModel().catch(() => {}); }, 300); });
+
+// ================= Profils en ligne (Supabase) - site uniquement =================
+var SB, SB_USER; // pas d initialisation ici : initStore tourne avant la fin du script
+var PROFILE_DOMAIN = "profils.revisions-qcm.fr"; // adresse fictive : aucun e-mail n'est envoyé
+function profileSlug(n){ return n.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40); }
+function profileEmail(n){ return profileSlug(n) + "@" + PROFILE_DOMAIN; }
+function sbErr(e){
+  const m = (e && (e.message || e.error_description || String(e))) || "";
+  if (/invalid login credentials/i.test(m)) return "Prénom ou code incorrect.";
+  if (/already registered|already been registered|exists/i.test(m)) return "Ce profil existe déjà : utilise « Se connecter » avec son code.";
+  if (/password/i.test(m) && /6|short|least/i.test(m)) return "Le code doit faire au moins 6 caractères.";
+  if (/email not confirmed/i.test(m)) return "Supabase demande une confirmation par e-mail : désactive « Confirm email » dans Authentication, puis Sign In / Providers, puis Email.";
+  if (/fetch|network|failed/i.test(m)) return "Connexion impossible : vérifie Internet et réessaie.";
+  if (/rate limit/i.test(m)) return "Trop d'essais : attends une minute et réessaie.";
+  return "Erreur : " + m;
+}
+function profileGate(){
+  return new Promise(resolve => {
+    const g = document.createElement("div"); g.id = "profileGate";
+    g.innerHTML = `<div class="pg-card">
+      <h1 style="margin-top:0">Révisions</h1>
+      <p class="muted small" style="margin-top:0">Choisis ton profil : ta progression est enregistrée en ligne et te suit sur ton téléphone comme sur ton ordinateur.</p>
+      <label class="small"><b>Prénom</b><input id="pgName" autocomplete="username" placeholder="ex. Thomas"></label>
+      <label class="small"><b>Code</b> <span class="muted">(6 caractères ou plus)</span><input id="pgCode" type="password" inputmode="numeric" autocomplete="current-password" placeholder="••••••"></label>
+      <div class="row" style="margin-top:12px"><button class="btn primary" id="pgLogin">Se connecter</button><button class="btn" id="pgSignup">Créer le profil</button></div>
+      <p class="small" id="pgMsg" style="min-height:1.4em;margin:10px 0 0"></p>
+      <button class="linkbtn" id="pgSkip" style="margin-top:6px">Continuer sans profil (progression gardée sur cet appareil seulement)</button>
+    </div>`;
+    document.body.appendChild(g);
+    const name = g.querySelector("#pgName"), code = g.querySelector("#pgCode"), msg = g.querySelector("#pgMsg");
+    try { const last = localStorage.getItem("qcm-last-profile"); if (last) name.value = last; } catch(e) {}
+    (name.value ? code : name).focus();
+    const busy = b => g.querySelectorAll("button").forEach(x => x.disabled = b);
+    async function go(isNew){
+      const n = name.value.trim(), c = code.value;
+      if (!profileSlug(n)) { msg.textContent = "Écris ton prénom."; return; }
+      if (c.length < 6) { msg.textContent = "Le code doit faire au moins 6 caractères."; return; }
+      busy(true); msg.textContent = isNew ? "Création du profil..." : "Connexion...";
+      try {
+        const r = isNew
+          ? await SB.auth.signUp({email: profileEmail(n), password: c, options: {data: {name: n}}})
+          : await SB.auth.signInWithPassword({email: profileEmail(n), password: c});
+        if (r.error) throw r.error;
+        if (!r.data.session) throw {message: "Email not confirmed"};
+        try { localStorage.setItem("qcm-last-profile", n); } catch(e) {}
+        g.remove(); resolve({user: r.data.user, isNew});
+      } catch(e) { msg.textContent = sbErr(e); busy(false); }
+    }
+    g.querySelector("#pgLogin").onclick = () => go(false);
+    g.querySelector("#pgSignup").onclick = () => go(true);
+    code.addEventListener("keydown", e => { if (e.key === "Enter") go(false); });
+    g.querySelector("#pgSkip").onclick = () => { g.remove(); resolve(null); };
+  });
+}
+async function supaStart(live, anonLocals){
+  try {
+    SB = supabase.createClient(window.SUPA_URL, window.SUPA_KEY, {auth: {persistSession: true, autoRefreshToken: true, storageKey: "qcm-supabase-auth"}});
+    let isNew = false;
+    const s = await SB.auth.getSession();
+    SB_USER = s.data && s.data.session ? s.data.session.user : null;
+    if (!SB_USER) { const r = await profileGate(); if (!r) return false; SB_USER = r.user; isNew = r.isNew; }
+    window.PROFILE_NAME = (SB_USER.user_metadata && SB_USER.user_metadata.name) || SB_USER.email.split("@")[0];
+    const {data, error} = await SB.from("progress").select("subject,mem,sess").eq("user_id", SB_USER.id);
+    if (error) throw error;
+    const rows = {}; (data || []).forEach(r => rows[r.subject] = r);
+    for (const x of live) {
+      const base = x.ls; x.ls = base + "-" + SB_USER.id; // cache local propre au profil
+      const row = rows[x.id];
+      if (row) { x.mem = row.mem || {}; x.sess = row.sess || null; }
+      else {
+        // nouveau profil : on y verse la progression de cet appareil (faite sans profil)
+        const cache = lsLoad(x);
+        x.mem = cache || (isNew && anonLocals[x.id]) || {}; x.sess = null;
+      }
+      const sid = x.id;
+      x.ref = {set: async (o) => {
+        const r = await SB.from("progress").upsert({user_id: SB_USER.id, subject: sid, mem: o.m, sess: o.sess || null, updated_at: new Date().toISOString()});
+        if (r.error) throw {code: /JWT|auth/i.test(r.error.message) ? "revoked" : "unavailable", message: r.error.message};
+      }};
+      if (!row && Object.keys(x.mem).length) scheduleSave(x);
+    }
+    DB = {collection: () => ({add: async (d) => { const r = await SB.from("reports").insert({data: d}); if (r.error) throw r.error; return {id: "ok"}; }})};
+    return true;
+  } catch(e) {
+    console.warn("Profils indisponibles", e);
+    return false;
+  }
+}
+// Affichage du profil dans l'en-tête
+const _setSaveBase = setSave;
+setSave = function(){
+  _setSaveBase();
+  if (window.PROFILE_NAME && storeMode === "account") {
+    const el = $("save");
+    el.querySelector("span").textContent = "Profil " + window.PROFILE_NAME;
+    el.title = "Progression enregistrée en ligne sur ton profil";
+    if (!el.querySelector(".pg-out")) {
+      const b = document.createElement("button"); b.className = "linkbtn pg-out"; b.textContent = "changer";
+      b.style.marginLeft = "6px";
+      b.onclick = async () => { try { await SB.auth.signOut(); } catch(e) {} location.reload(); };
+      el.appendChild(b);
+    }
+    const l = $("saveLong"); if (l) l.textContent = `Profil ${window.PROFILE_NAME} : ta progression est enregistrée en ligne et te suit sur tous tes appareils.`;
+  }
+};
 
 </script>
 </body>
