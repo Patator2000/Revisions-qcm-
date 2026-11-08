@@ -2569,13 +2569,15 @@ document.addEventListener("click", e => { const s = e.target && e.target.closest
 
 // ================= Profils en ligne (Supabase) - site uniquement =================
 var SB, SB_USER; // pas d initialisation ici : initStore tourne avant la fin du script
-var PROFILE_DOMAIN = "profils.revisions-qcm.fr"; // adresse fictive : aucun e-mail n'est envoyé
+// adresse technique derrière le prénom (aucun e-mail n'est envoyé) ; Supabase exige un domaine réel
+var PROFILE_DOMAINS = ["users.noreply.github.com", "proton.me", "outlook.com", "gmail.com"];
 function profileSlug(n){ return n.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40); }
-function profileEmail(n){ return profileSlug(n) + "@" + PROFILE_DOMAIN; }
+function profileEmail(n, i){ return "rqcm." + profileSlug(n) + "@" + PROFILE_DOMAINS[i || 0]; }
 function sbErr(e){
   const m = (e && (e.message || e.error_description || String(e))) || "";
   if (/invalid login credentials/i.test(m)) return "Prénom ou code incorrect.";
   if (/already registered|already been registered|exists/i.test(m)) return "Ce profil existe déjà : utilise « Se connecter » avec son code.";
+  if (/email/i.test(m) && /invalid/i.test(m)) return "Supabase refuse l'adresse technique du profil. Envoie-moi ce message : " + m;
   if (/password/i.test(m) && /6|short|least/i.test(m)) return "Le code doit faire au moins 6 caractères.";
   if (/email not confirmed/i.test(m)) return "Supabase demande une confirmation par e-mail : désactive « Confirm email » dans Authentication, puis Sign In / Providers, puis Email.";
   if (/fetch|network|failed/i.test(m)) return "Connexion impossible : vérifie Internet et réessaie.";
@@ -2605,9 +2607,16 @@ function profileGate(){
       if (c.length < 6) { msg.textContent = "Le code doit faire au moins 6 caractères."; return; }
       busy(true); msg.textContent = isNew ? "Création du profil..." : "Connexion...";
       try {
-        const r = isNew
-          ? await SB.auth.signUp({email: profileEmail(n), password: c, options: {data: {name: n}}})
-          : await SB.auth.signInWithPassword({email: profileEmail(n), password: c});
+        let r;
+        for (let i = 0; i < PROFILE_DOMAINS.length; i++) {
+          r = isNew
+            ? await SB.auth.signUp({email: profileEmail(n, i), password: c, options: {data: {name: n}}})
+            : await SB.auth.signInWithPassword({email: profileEmail(n, i), password: c});
+          const m = r.error ? (r.error.message || "") : "";
+          // domaine refusé par Supabase, ou (connexion) profil créé avec un autre domaine : on essaie le suivant
+          if (r.error && (/invalid/i.test(m) && /email|address/i.test(m) || (!isNew && /invalid login credentials/i.test(m))) && i < PROFILE_DOMAINS.length - 1) continue;
+          break;
+        }
         if (r.error) throw r.error;
         if (!r.data.session) throw {message: "Email not confirmed"};
         try { localStorage.setItem("qcm-last-profile", n); } catch(e) {}
