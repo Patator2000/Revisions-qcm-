@@ -84,6 +84,15 @@ h2{font-size:1rem;margin:0 0 .7em}
 .chip .pct{color:var(--muted);font-size:.86em}
 .chip .star{color:var(--warn);font-weight:700}
 
+.themes-box summary{display:flex;align-items:center;gap:10px;cursor:pointer;list-style:none;font-size:.92em}
+.themes-box summary::-webkit-details-marker{display:none}
+.themes-box summary::before{content:"";width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s;margin-right:2px}
+.themes-box[open] summary::before{transform:rotate(45deg)}
+.th-t{font-weight:700}.th-edit{margin-left:auto;color:var(--accent);font-size:.85em}.themes-box[open] .th-edit{display:none}
+.themes-box .part{padding:10px 0 2px}.themes-box .part-head{margin-bottom:6px}.themes-box .part-head b{font-size:.84em}
+.themes-box .chips{gap:5px}
+.themes-box .chip{padding:3px 9px 3px 6px;font-size:.76em;gap:5px}
+.themes-box .chip .dot{width:11px;height:11px}.themes-box .chip.on .dot::after{width:4px;height:4px}
 /* Réglages */
 .settings{display:grid;gap:14px}
 .set{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
@@ -371,7 +380,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
     <h2 id="statsTitle">Ta progression</h2>
     <div class="stats" id="stats"></div>
     <div class="row" style="margin-top:12px;justify-content:space-between">
-      <span class="small muted" id="saveLong"></span>
+      <span class="small muted hidden" id="saveLong"></span>
       <span class="row"><span class="small muted" id="resetMsg"></span><button class="btn ghost small" id="reset">Remettre à zéro</button></span>
     </div>
     <div class="row hidden" id="reportsRow" style="margin-top:8px;justify-content:space-between">
@@ -380,14 +389,14 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
     </div>
     <textarea id="reportsDump" class="hidden" rows="5" style="width:100%;margin-top:8px"></textarea>
   </div>
-  <div class="card">
-    <div class="row" style="justify-content:space-between;margin-bottom:6px">
-      <h2 style="margin:0">Thèmes</h2>
-      <span class="small"><button class="btn ghost small" id="focusBtn">Seulement les points renforcés</button></span>
+  <details class="card themes-box" id="themesBox">
+    <summary><span class="th-t">Thèmes</span><span class="small muted" id="themesSum"></span><span class="th-edit">modifier</span></summary>
+    <div class="row" style="justify-content:flex-end;margin:10px 0 2px">
+      <button class="btn ghost small" id="focusBtn">Seulement les points renforcés</button>
     </div>
     <div id="parts"></div>
-    <p class="small muted" id="focusNote" style="margin:10px 0 0"><span class="star">*</span> thèmes renforcés (là où tu avais le plus d'erreurs)</p>
-  </div>
+    <p class="small muted" id="focusNote" style="margin:8px 0 0"><span class="star">*</span> thèmes renforcés (là où tu avais le plus d'erreurs)</p>
+  </details>
   <div class="card settings">
     <div class="set" id="setMode"><div class="lbl"><b>Mode</b><span id="modeHelp">Correction après chaque question</span></div>
       <div class="seg" id="segMode"><button data-v="train" class="on">Entraînement</button><button data-v="exam">Examen</button></div></div>
@@ -1824,7 +1833,7 @@ function renderTargets(){
     renderSubject();
   });
   const t = S.TARGETS.find(x => x.id === S.target);
-  if (!t) { $("targetInfo").textContent = "Choisis un examen : les thèmes de son programme seront sélectionnés automatiquement."; return; }
+  if (!t) { $("targetInfo").textContent = ""; return; }
   let when = "";
   if (t.date) { const d = daysTo(t.date); when = d > 1 ? ` · dans ${d} jours` : d === 1 ? " · demain" : d === 0 ? " · cette semaine" : d > -7 ? " · cette semaine" : " · déjà passé"; }
   $("targetInfo").textContent = `${t.label} : ${t.desc}${t.date ? " (semaine du " + new Date(t.date + "T08:00:00").toLocaleDateString("fr-FR", {day:"numeric", month:"long"}) + ")" : ""}${when}. ${targetThemes(t).length} thèmes sélectionnés.`;
@@ -1858,6 +1867,8 @@ function updCount(){
   const n = selected().length, lim = opts.count ? Math.min(n, opts.count) : n;
   $("selCount").textContent = !storeReady ? "Chargement de ta progression..." : `${lim} question${lim>1?"s":""} sur ${n} sélectionnée${n>1?"s":""}`;
   $("start").disabled = !storeReady || lim === 0;
+  const avail = [...new Set(items().map(q => q[1]))], on = avail.filter(t => S.sel.has(t)).length;
+  if ($("themesSum")) $("themesSum").textContent = on === avail.length ? `tous les thèmes (${avail.length})` : `${on} sur ${avail.length} sélectionné${on > 1 ? "s" : ""}`;
 }
 function seg(id, key, cast){
   $(id).querySelectorAll("button").forEach(b => b.onclick = () => {
