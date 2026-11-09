@@ -16,9 +16,10 @@ function histRecord(i, res){
 // ================= Tableau de bord de l'accueil =================
 const DASH_COL = {m: "var(--ok)", p: "var(--accent)", w: "var(--warn)", u: "var(--line)"};
 function dashDays(n){ const out = []; const t = new Date(); t.setHours(12,0,0,0); for (let i = n-1; i >= 0; i--) { const d = new Date(t); d.setDate(t.getDate() - i); out.push(dayKey(d)); } return out; }
-function dashSince(D, n){ // les n derniers jours, sans la période vide d'avant le premier jour de révision
+function dashBefore(k, n){ const [y, m, d] = k.split("-").map(Number); const t = new Date(y, m-1, d, 12); t.setDate(t.getDate() - n); return dayKey(t); }
+function dashSince(D, n){ // les n derniers jours, en partant de 2 jours avant le premier jour de révision
   const first = Object.keys(D.act).filter(d => D.act[d].a > 0).sort()[0] || dayKey();
-  return dashDays(n).filter(d => d >= first);
+  return dashDays(n).filter(d => d >= dashBefore(first, 2));
 }
 function dashFmtDay(k){ const [y,m,d] = k.split("-").map(Number); return new Date(y, m-1, d).toLocaleDateString("fr-FR", {day: "numeric", month: "short"}); }
 function dashData(){
@@ -51,9 +52,9 @@ function dashData(){
   const first = recs.flat().map(r => r[0]).sort()[0];
   const pts = [];
   for (const d of days) {
-    if (!first || d < first) continue;
+    if (!first || d < dashBefore(first, 2)) continue;
     let tot = 0;
-    live.forEach((x, n) => { const r = recs[n]; if (!r.length) { tot += summary(x).m; return; } const b = r.filter(z => z[0] <= d); tot += b.length ? b[b.length-1][1] : r[0][1]; });
+    live.forEach((x, n) => { const r = recs[n]; if (!r.length) { tot += summary(x).m; return; } const b = r.filter(z => z[0] <= d); tot += b.length ? b[b.length-1][1] : 0; /* avant le premier jour suivi : départ à 0 */ });
     pts.push({d, v: total ? tot / total * 100 : 0, n: tot});
   }
   if (!pts.length) pts.push({d: dayKey(), v: total ? m / total * 100 : 0, n: m});
