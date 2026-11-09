@@ -3183,6 +3183,7 @@ function profileErrorBanner(){
   $("pgErrCopy").onclick = () => { try { navigator.clipboard.writeText(window.PROFILE_ERROR); $("pgErrCopy").textContent = "Copié ✓"; } catch(e) {} };
 }
 // ================= En-tête : bouton profil en haut à droite =================
+function escHtml(t){ return String(t == null ? "" : t).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 function profileInitial(n){ return (n || "?").trim().charAt(0).toUpperCase(); }
 function profileStats(){
   return Object.values(SUBJECTS).filter(x => x.mem && fmtList(x).length).map(x => {
@@ -3204,7 +3205,7 @@ function profileMenuOpen(){
   const m = document.createElement("div"); m.id = "pmMenu"; m.className = "pm-menu"; m.setAttribute("role", "menu");
   if (online) {
     const stats = profileStats().map(t => `<div class="pm-stat"><span>${t.name}</span><b>${t.seen} % vues</b><b class="ok">${t.master} % maîtrisées</b></div><div class="pm-bar"><i style="width:${parseFloat(t.seen) || (t.seen[0] === "<" ? 1 : 0)}%"></i><i class="ok" style="width:${parseFloat(t.master) || (t.master[0] === "<" ? 1 : 0)}%"></i></div>`).join("");
-    m.innerHTML = `<div class="pm-head"><div class="pm-av big">${profileInitial(window.PROFILE_NAME)}</div><div><b>${window.PROFILE_NAME}</b><div class="small muted"><i class="pm-dot"></i>Synchronisé en ligne</div></div></div>
+    m.innerHTML = `<div class="pm-head"><div class="pm-av big">${escHtml(profileInitial(window.PROFILE_NAME))}</div><div><b>${escHtml(window.PROFILE_NAME)}</b><div class="small muted"><i class="pm-dot"></i>Synchronisé en ligne</div></div></div>
       <div class="pm-sec"><div class="pm-title">Ma progression</div>${stats || '<div class="small muted">Pas encore de réponses.</div>'}</div>
       <button class="pm-item" data-a="claude">Conversation Claude${claudeChat() ? ' <span class="pm-ok">réglée</span>' : ""}</button>
       <button class="pm-item" data-a="sync">Enregistrer maintenant</button>
@@ -3235,7 +3236,7 @@ function profileClaudeForm(menu){
     <b>Conversation Claude</b>
     <p class="small muted">Toutes tes questions sur les réponses iront dans la même conversation au lieu d'en créer une nouvelle à chaque fois.</p>
     <ol class="small muted"><li>Ouvre (ou crée) dans Claude la conversation à utiliser, par exemple « Kinésis - questions ».</li><li>Copie son adresse (elle commence par claude.ai/chat/).</li><li>Colle-la ici.</li></ol>
-    <input id="pmClaude" placeholder="https://claude.ai/chat/..." value="${cur}">
+    <input id="pmClaude" placeholder="https://claude.ai/chat/..." value="${escHtml(cur)}">
     <p class="small" id="pmClaudeMsg" style="min-height:1.2em;margin:6px 0"></p>
     <div class="row"><button class="btn primary small" id="pmClaudeSave">Enregistrer</button>${cur ? '<button class="btn small" id="pmClaudeDel">Retirer</button>' : ""}<button class="btn ghost small" id="pmClaudeOpen">Ouvrir Claude</button></div>
   </div>`;
@@ -3265,7 +3266,7 @@ setSave = function(){
   const online = storeMode === "account" && window.PROFILE_NAME;
   el.className = "save pm-wrap";
   el.innerHTML = `<button class="pm-btn" id="pmBtn" aria-haspopup="menu" aria-expanded="false" title="${online ? "Mon profil" : "Se connecter"}">
-    <span class="pm-av">${online ? profileInitial(window.PROFILE_NAME) : "?"}</span><span class="pm-name">${online ? window.PROFILE_NAME : "Se connecter"}</span><span class="pm-chev">▾</span></button>`;
+    <span class="pm-av">${online ? profileInitial(window.PROFILE_NAME) : "?"}</span><span class="pm-name">${online ? escHtml(window.PROFILE_NAME) : "Se connecter"}</span><span class="pm-chev">▾</span></button>`;
   $("pmBtn").onclick = e => { e.stopPropagation(); profileMenuOpen(); };
   const l = $("saveLong");
   if (l && online) l.textContent = `Profil ${window.PROFILE_NAME} : ta progression est enregistrée en ligne et te suit sur tous tes appareils.`;
