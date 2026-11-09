@@ -225,6 +225,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 .pm-item{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;font-size:14px;color:var(--ink);padding:9px 10px;border-radius:8px;cursor:pointer}
 .pm-item:hover{background:var(--accent-soft)}.pm-item.danger{color:var(--ko)}
 @media (max-width:560px){.brand-txt,.pm-name{display:none}.pm-btn{padding:3px 8px 3px 3px}.brand{margin-right:8px}}
+.pg-err{background:var(--ko-soft);color:var(--ink);border:1px solid var(--ko);border-radius:12px;padding:12px 14px;margin:0 0 16px;font-size:14px;word-break:break-word}
 #profileGate{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:20px}
 .pg-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px;max-width:420px;width:100%;box-shadow:var(--shadow)}
 .pg-card label{display:block;margin-top:12px}
@@ -2651,6 +2652,7 @@ function profileGate(){
 }
 async function supaStart(live, anonLocals){
   try {
+    if (typeof supabase === "undefined") throw new Error("le fichier supabase.js ne s'est pas chargé (rafraîchis la page)");
     SB = supabase.createClient(window.SUPA_URL, window.SUPA_KEY, {auth: {persistSession: true, autoRefreshToken: true, storageKey: "qcm-supabase-auth"}});
     let isNew = false;
     const s = await SB.auth.getSession();
@@ -2680,8 +2682,26 @@ async function supaStart(live, anonLocals){
     return true;
   } catch(e) {
     console.warn("Profils indisponibles", e);
+    const m = (e && (e.message || e.error_description || e.code)) || String(e);
+    window.PROFILE_ERROR = /does not exist|could not find the table|schema cache|42P01|PGRST20/i.test(m)
+      ? "Connexion réussie, mais les tables Supabase n'existent pas : le script SQL n'a pas été exécuté (SQL Editor, puis Run). Détail : " + m
+      : /permission|policy|42501|row-level/i.test(m)
+      ? "Connexion réussie, mais Supabase refuse l'accès aux données (règles RLS du script SQL). Détail : " + m
+      : /fetch|network|failed to/i.test(m) ? "Supabase injoignable (Internet ou bloqueur). Détail : " + m
+      : "Erreur Supabase : " + m;
+    profileErrorBanner();
     return false;
   }
+}
+function profileErrorBanner(){
+  if (!window.PROFILE_ERROR || $("pgErr")) return;
+  const d = document.createElement("div"); d.id = "pgErr"; d.className = "pg-err";
+  d.innerHTML = `<b>Profil indisponible.</b> <span></span><div class="row" style="margin-top:8px"><button class="btn small" id="pgErrRetry">Réessayer</button><button class="btn small" id="pgErrOut">Se déconnecter</button><button class="btn small" id="pgErrCopy">Copier le message</button></div>`;
+  d.querySelector("span").textContent = window.PROFILE_ERROR + " En attendant, la progression est gardée sur cet appareil.";
+  document.querySelector("main").prepend(d);
+  $("pgErrRetry").onclick = () => location.reload();
+  $("pgErrOut").onclick = async () => { try { await SB.auth.signOut(); } catch(e) {} location.reload(); };
+  $("pgErrCopy").onclick = () => { try { navigator.clipboard.writeText(window.PROFILE_ERROR); $("pgErrCopy").textContent = "Copié ✓"; } catch(e) {} };
 }
 // ================= En-tête : bouton profil en haut à droite =================
 function profileInitial(n){ return (n || "?").trim().charAt(0).toUpperCase(); }
@@ -2713,6 +2733,7 @@ function profileMenuOpen(){
   } else {
     m.innerHTML = `<div class="pm-head"><div class="pm-av big">?</div><div><b>Sans profil</b><div class="small muted">Progression gardée sur cet appareil seulement</div></div></div>
       <button class="pm-item" data-a="home">Accueil</button>
+      ${window.PROFILE_ERROR ? `<div class="pm-sec small" style="color:var(--ko)">${window.PROFILE_ERROR.replace(/</g,"&lt;")}</div>` : ""}
       <button class="pm-item" data-a="login">Se connecter ou créer un profil</button>`;
   }
   document.body.appendChild(m);
@@ -2724,7 +2745,7 @@ function profileMenuOpen(){
     if (a === "home") { profileMenuClose(); if (view === "quiz") { pauseTimer(); saveSession(); voiceStop(); } Object.values(SUBJECTS).filter(s => s.ref).forEach(s => flush(s)); go("home"); }
     if (a === "sync") { x.textContent = "Enregistrement..."; try { await Promise.all(Object.values(SUBJECTS).filter(s => s.ref).map(s => flush(s))); x.textContent = "Enregistré ✓"; } catch(e) { x.textContent = "Échec, réessaie"; } }
     if (a === "switch" || a === "out") { x.textContent = "Déconnexion..."; profileLeave(); }
-    if (a === "login") location.reload();
+    if (a === "login") { try { if (SB) await SB.auth.signOut(); } catch(e) {} location.reload(); }
   });
 }
 document.addEventListener("click", e => { const m = $("pmMenu"); if (m && !m.contains(e.target) && !e.target.closest("#pmBtn")) profileMenuClose(); });
