@@ -245,6 +245,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 .pm-form{padding:8px}.pm-form p{margin:6px 0}.pm-form ol{margin:6px 0 10px;padding-left:18px}.pm-form input{width:100%;font:inherit;font-size:.85em;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
 .pm-item:hover{background:var(--accent-soft)}.pm-item.danger{color:var(--ko)}
 @media (max-width:560px){.brand-txt,.pm-name{display:none}.pm-btn{padding:3px 8px 3px 3px}.brand{margin-right:8px}}
+.pg-off{background:var(--warn-soft);border:1px solid var(--warn);border-radius:12px;padding:10px 14px;margin:0 0 16px;font-size:14px}
 .pg-err{background:var(--ko-soft);color:var(--ink);border:1px solid var(--ko);border-radius:12px;padding:12px 14px;margin:0 0 16px;font-size:14px;word-break:break-word}
 #v-home h1{margin-bottom:20px}
 /* ---- largeur plein écran ---- */
@@ -3065,32 +3066,26 @@ async function supaStart(live, anonLocals){
     if (!SB_USER) { const r = await profileGate(); if (!r) return false; SB_USER = r.user; isNew = r.isNew; }
     window.PROFILE_NAME = (SB_USER.user_metadata && SB_USER.user_metadata.name) || SB_USER.email.split("@")[0];
     window.PROFILE_CLAUDE = (SB_USER.user_metadata && SB_USER.user_metadata.claude_chat) || "";
-    const {data, error} = await SB.from("progress").select("subject,mem,sess,updated_at").eq("user_id", SB_USER.id);
-    if (error) throw error;
-    const rows = {}; (data || []).forEach(r => rows[r.subject] = r);
+    let rows = {}, offline = false;
+    const q = await SB.from("progress").select("subject,mem,sess,updated_at").eq("user_id", SB_USER.id);
+    if (q.error) {
+      if (/fetch|network|failed to|load failed/i.test(q.error.message || "")) offline = true; // pas de réseau : on continue avec ce qui est sur l'appareil
+      else throw q.error;
+    } else (q.data || []).forEach(r => rows[r.subject] = r);
     for (const x of live) {
-      const base = x.ls; x.ls = base + "-" + SB_USER.id; // cache local propre au profil
-      const row = rows[x.id];
-      const cache = lsLoad(x);
+      x.ls = x.ls + "-" + SB_USER.id; // cache local propre au profil
+      const row = rows[x.id], cache = lsLoad(x);
       let localT = 0; try { localT = +localStorage.getItem(x.ls + "-t") || 0; } catch(e) {}
       const rowT = row && row.updated_at ? Date.parse(row.updated_at) : 0;
-      if (row && cache && localT > rowT + 1500) {
-        // cet appareil a des réponses plus récentes que le serveur (page fermée avant l'envoi) : on les garde
-        x.mem = cache; let ls = null; try { ls = JSON.parse(localStorage.getItem(x.ls + "-sess") || "null"); } catch(e) {}
-        x.sess = ls; scheduleSave(x);
-      }
-      else if (row) { x.mem = row.mem || {}; x.sess = row.sess || null; }
-      else {
-        // nouveau profil : on y verse la progression de cet appareil (faite sans profil)
-        x.mem = cache || (isNew && anonLocals[x.id]) || {}; x.sess = null;
-      }
-      const sid = x.id;
-      x.ref = {set: async (o) => {
-        const r = await SB.from("progress").upsert({user_id: SB_USER.id, subject: sid, mem: o.m, sess: o.sess || null, updated_at: new Date().toISOString()});
-        if (r.error) throw {code: /JWT|auth/i.test(r.error.message) ? "revoked" : "unavailable", message: r.error.message};
-      }};
-      if (!row && Object.keys(x.mem).length) scheduleSave(x);
+      let lsSess = null; try { lsSess = JSON.parse(localStorage.getItem(x.ls + "-sess") || "null"); } catch(e) {}
+      // fusion : la réponse la plus récente de chaque question gagne, d'où qu'elle vienne
+      x.mem = mergeMem(row ? row.mem : null, cache || (!row && !offline && isNew ? anonLocals[x.id] : null));
+      x.sess = localT > rowT ? lsSess : (row ? row.sess || null : lsSess);
+      x.syncedAt = rowT;
+      x.ref = {set: o => supaSave(x, o)};
+      if (!row || JSON.stringify(x.mem) !== JSON.stringify(row.mem || {})) { if (Object.keys(x.mem).length) scheduleSave(x); }
     }
+    if (offline) { window.PROFILE_OFFLINE = true; profileOfflineNote(true); }
     DB = {collection: () => ({add: async (d) => { const r = await SB.from("reports").insert({data: d}); if (r.error) throw r.error; return {id: "ok"}; }})};
     return true;
   } catch(e) {
@@ -3105,6 +3100,77 @@ async function supaStart(live, anonLocals){
     profileErrorBanner();
     return false;
   }
+}
+// ---------- Synchronisation entre appareils ----------
+function mergeMem(a, b){
+  a = a || {}; b = b || {};
+  const out = {};
+  for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) {
+    if (k === "_h") continue;
+    const x = a[k], y = b[k];
+    out[k] = !x ? y : !y ? x : ((y.t || 0) > (x.t || 0) ? y : x);
+  }
+  const ha = a._h || {}, hb = b._h || {}, h = {};
+  for (const d of new Set([...Object.keys(ha), ...Object.keys(hb)])) {
+    const x = ha[d] || {}, y = hb[d] || {};
+    h[d] = {a: Math.max(x.a || 0, y.a || 0), c: Math.max(x.c || 0, y.c || 0)};
+    if (x.m !== undefined || y.m !== undefined) h[d].m = Math.max(x.m || 0, y.m || 0);
+  }
+  if (Object.keys(h).length) out._h = h;
+  return out;
+}
+async function supaAuthOk(){
+  try { const r = await SB.auth.getSession(); if (r.data && r.data.session) return true; } catch(e) {}
+  try { const r = await SB.auth.refreshSession(); return !!(r.data && r.data.session); } catch(e) { return false; }
+}
+async function supaSave(x, o){
+  // 1) ce qui est en ligne a-t-il changé depuis notre dernière synchro (autre appareil) ? on fusionne
+  const cur = await SB.from("progress").select("mem,sess,updated_at").eq("user_id", SB_USER.id).eq("subject", x.id).maybeSingle();
+  if (cur.error) return supaFail(cur.error);
+  let mem = o.m;
+  if (cur.data && Date.parse(cur.data.updated_at) > (x.syncedAt || 0) + 1) {
+    mem = mergeMem(cur.data.mem, o.m);
+    x.mem = mem;
+    try { if (S === x && view !== "quiz") renderView(); else if (view === "home") renderView(); } catch(e) {}
+  }
+  // 2) on envoie la version fusionnée
+  const r = await SB.from("progress").upsert({user_id: SB_USER.id, subject: x.id, mem, sess: o.sess || null}).select("updated_at").single();
+  if (r.error) return supaFail(r.error);
+  x.syncedAt = Date.parse(r.data.updated_at);
+  if (window.PROFILE_OFFLINE) { window.PROFILE_OFFLINE = false; profileOfflineNote(false); }
+}
+async function supaFail(err){
+  const m = (err && err.message) || "";
+  if (/JWT|token|auth|401/i.test(m)) {
+    if (await supaAuthOk()) throw {code: "unavailable", message: m}; // session renouvelée : on réessaie
+    window.PROFILE_ERROR = "Ta session a expiré : reconnecte-toi pour continuer à enregistrer en ligne.";
+    profileErrorBanner();
+    throw {code: "unavailable", message: m};
+  }
+  if (/fetch|network|failed to|load failed/i.test(m)) { window.PROFILE_OFFLINE = true; profileOfflineNote(true); }
+  throw {code: "unavailable", message: m};
+}
+// Revenir sur l'onglet : on récupère ce qui a été fait sur l'autre appareil
+async function supaPull(){
+  if (!SB || !SB_USER || storeMode !== "account") return;
+  const q = await SB.from("progress").select("subject,mem,updated_at").eq("user_id", SB_USER.id);
+  if (q.error) return;
+  let changed = false;
+  for (const r of q.data || []) {
+    const x = SUBJECTS[r.subject]; if (!x || !x.ref) continue;
+    if (Date.parse(r.updated_at) > (x.syncedAt || 0) + 1) { x.mem = mergeMem(r.mem, x.mem); x.syncedAt = Date.parse(r.updated_at); lsSave(x); changed = true; }
+  }
+  if (changed && view !== "quiz") renderView();
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") supaPull().catch(() => {}); });
+addEventListener("online", () => { Object.values(SUBJECTS).filter(x => x.ref).forEach(x => flush(x)); });
+function profileOfflineNote(on){
+  let n = $("pgOff");
+  if (!on) { if (n) n.remove(); return; }
+  if (n) return;
+  n = document.createElement("div"); n.id = "pgOff"; n.className = "pg-off";
+  n.textContent = "Hors connexion : tes réponses sont gardées sur cet appareil et seront envoyées dès le retour du réseau.";
+  document.querySelector("main").prepend(n);
 }
 function profileErrorBanner(){
   if (!window.PROFILE_ERROR || $("pgErr")) return;
