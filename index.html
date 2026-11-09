@@ -2907,9 +2907,18 @@ function voskGrammar(){
   if (c.nav) q.push("suivante", "précédente");
   if (c.valider) q.push("valider");
   for (const a of q) for (const b of q) { if (a !== b) w.push(a + " " + b); for (const d of q) if (a !== b && b !== d) w.push(a + " " + b + " " + d); }
+  // mots « leurres » : un « hmm », « euh »... est classé ici au lieu d'être pris pour « vrai »
+  w.push(...voskFillers(c));
   w.push("[unk]");
   return JSON.stringify(w);
 }
+function voskFillers(c){
+  const f = ["hum", "hm", "hmm", "mh", "oh", "hein"];
+  if (!(c || voiceCmds()).letters) f.push("euh", "heu", "ah"); // pas en QCM : confusion avec les lettres A et E
+  return f;
+}
+const VOSK_FILLER = new Set(["hum", "hm", "hmm", "mh", "oh", "hein", "euh", "heu", "ah"]);
+const voskClean = t => t.replace(/\[unk\]/g, " ").split(/\s+/).filter(x => x && !(VOSK_FILLER.has(x) && !(voiceCmds().letters && (x === "ah" || x === "euh" || x === "heu")))).join(" ");
 function loadScript(src){ return new Promise((ok, ko) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = () => ko(new Error("script")); document.head.appendChild(s); }); }
 async function voskModel(){
   if (vModel) return vModel;
@@ -2962,16 +2971,20 @@ async function voskStart(){
       if (vRec) { try { vRec.remove(); } catch(e) {} }
       vRec = new model.KaldiRecognizer(vCtx.sampleRate, g); vRecGrammar = g;
       vRec.on("partialresult", m => {
-        const p = (m.result && m.result.partial || "").replace(/\[unk\]/g, "").trim();
-        if (!p) return;
+        const raw = (m.result && m.result.partial || "").replace(/\[unk\]/g, " ").replace(/\s+/g, " ").trim(), p = voskClean(raw);
+        if (!raw) return; // silence : rien à faire
+        if (p !== raw) {
+          // la phrase en cours contient un leurre (« hmm », « euh »...) : on annule toute validation anticipée
+          clearTimeout(vPartialT); vPartial = raw; return;
+        }
         if (p !== vPartial) setVoiceNote(`🎙 « ${p} »...`);
         voskEarlyCommit(p);
       });
       vRec.on("result", m => {
         vPartial = ""; clearTimeout(vPartialT);
         const done = vExec; vExec = {};
-        const t = (m.result && m.result.text || "").replace(/\[unk\]/g, "").trim();
-        if (!t) return;
+        const t = voskClean(m.result && m.result.text || "");
+        if (!t) { if (vPartial === "" && /🎙 « /.test(($("voiceNote") || {}).textContent || "")) setVoiceNote("🎙 J'écoute... " + voiceHelpText()); return; } // bruit ou « hmm » : ignoré
         if (voskFinal(t, done)) return; // commandes simples (déjà exécutées pendant la phrase ou non)
         if (!handleVoice(t)) setVoiceNote(`Entendu « ${t} » mais pas compris. ${voiceHelpText()}`);
       });
