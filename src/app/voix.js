@@ -31,7 +31,8 @@ async function voskModel(){
       for (const url of VOSK_MODELS) {
         try {
           if (!/^https?:/.test(url)) { const h = await fetch(url, {method: "HEAD"}); if (!h.ok) continue; }
-          const m = new Vosk.Model(url, -1);
+          // adresse complète obligatoire : le modèle est chargé par un « worker » qui ne connaît pas l'adresse de la page
+          const m = new Vosk.Model(new URL(url, location.href).href, -1);
           vModel = await new Promise((ok, ko) => {
             const to = setTimeout(() => ko(new Error("timeout")), 180000);
             m.on("load", msg => { clearTimeout(to); msg.result ? ok(m) : ko(new Error("load")); });
