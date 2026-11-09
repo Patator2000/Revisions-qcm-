@@ -2541,6 +2541,19 @@ function dashData(){
   return {live, subj, m, p, w, u, total, g, tries, answersAll, act, weak: weak.slice(0, 5), days, pts, streak, best: Math.max(best, streak),
     today: act[today] || {a:0, c:0}, avg7: last7.reduce((s, v) => s + v, 0) / 7};
 }
+function smoothPath(P){
+  const n = P.length; if (n < 2) return ""; if (n === 2) return `M${P[0][0].toFixed(1)} ${P[0][1].toFixed(1)} L${P[1][0].toFixed(1)} ${P[1][1].toFixed(1)}`;
+  const dx = [], dy = [], m = [], t = [];
+  for (let i = 0; i < n - 1; i++) { dx[i] = P[i+1][0] - P[i][0]; dy[i] = P[i+1][1] - P[i][1]; m[i] = dy[i] / dx[i]; }
+  t[0] = m[0]; t[n-1] = m[n-2];
+  for (let i = 1; i < n - 1; i++) t[i] = m[i-1] * m[i] <= 0 ? 0 : (m[i-1] + m[i]) / 2;
+  for (let i = 0; i < n - 1; i++) { if (m[i] === 0) { t[i] = 0; t[i+1] = 0; continue; }
+    const a = t[i] / m[i], b = t[i+1] / m[i], h = a * a + b * b; if (h > 9) { const k = 3 / Math.sqrt(h); t[i] = k * a * m[i]; t[i+1] = k * b * m[i]; } }
+  let d = `M${P[0][0].toFixed(1)} ${P[0][1].toFixed(1)}`;
+  for (let i = 0; i < n - 1; i++) { const h = dx[i] / 3;
+    d += ` C${(P[i][0] + h).toFixed(1)} ${(P[i][1] + t[i] * h).toFixed(1)} ${(P[i+1][0] - h).toFixed(1)} ${(P[i+1][1] - t[i+1] * h).toFixed(1)} ${P[i+1][0].toFixed(1)} ${P[i+1][1].toFixed(1)}`; }
+  return d;
+}
 function dashArea(pts){
   if (!pts.length) return "";
   const W = 600, H = 170, vals = pts.map(p => p.v);
@@ -2548,7 +2561,7 @@ function dashArea(pts){
   const X = i => pts.length === 1 ? W : i / (pts.length - 1) * W, Y = v => H - 10 - (v - lo) / (hi - lo) * (H - 20);
   if (pts.length === 1) return `<div class="dash-plot dash-single"><i class="dash-dot now" style="left:97%;top:50%"></i></div><div class="dash-axis"><span></span><span>aujourd'hui · premier jour suivi</span><span></span></div>`;
   const P = pts.map((p, i) => [X(i), Y(p.v)]);
-  const line = P.map((q, i) => (i ? "L" : "M") + q[0].toFixed(1) + " " + q[1].toFixed(1)).join(" ");
+  const line = smoothPath(P);
   const data = JSON.stringify(pts.map((p, i) => ({x: X(i) / W * 100, y: Y(p.v) / H * 100, t: dashFmtDay(p.d), v: Math.round(p.v * 10) / 10, n: p.n})));
   return `<div class="dash-plot" data-pts='${data}'><svg class="dash-area" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
     <defs><linearGradient id="dashFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--ok)" stop-opacity=".35"/><stop offset="1" stop-color="var(--ok)" stop-opacity="0"/></linearGradient></defs>
@@ -2614,7 +2627,7 @@ function dashDonut(D){
 function dashSpark(arr, col){
   if (arr.length < 2) return "";
   const mx = Math.max(1, ...arr), W = 100, H = 28, P = arr.map((v, i) => [i / (arr.length - 1) * W, H - 3 - v / mx * (H - 6)]);
-  return `<svg class="dash-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><path d="${P.map((q, i) => (i ? "L" : "M") + q[0].toFixed(1) + " " + q[1].toFixed(1)).join(" ")}" fill="none" stroke="${col}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`;
+  return `<svg class="dash-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><path d="${smoothPath(P)}" fill="none" stroke="${col}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`;
 }
 function dashDelta(v, unit){
   if (v === null || !isFinite(v)) return "";
