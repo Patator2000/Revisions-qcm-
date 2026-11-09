@@ -3266,7 +3266,7 @@ setSave = function(){
   const online = storeMode === "account" && window.PROFILE_NAME;
   el.className = "save pm-wrap";
   el.innerHTML = `<button class="pm-btn" id="pmBtn" aria-haspopup="menu" aria-expanded="false" title="${online ? "Mon profil" : "Se connecter"}">
-    <span class="pm-av">${online ? profileInitial(window.PROFILE_NAME) : "?"}</span><span class="pm-name">${online ? escHtml(window.PROFILE_NAME) : "Se connecter"}</span><span class="pm-chev">▾</span></button>`;
+    <span class="pm-av">${online ? escHtml(profileInitial(window.PROFILE_NAME)) : "?"}</span><span class="pm-name">${online ? escHtml(window.PROFILE_NAME) : "Se connecter"}</span><span class="pm-chev">▾</span></button>`;
   $("pmBtn").onclick = e => { e.stopPropagation(); profileMenuOpen(); };
   const l = $("saveLong");
   if (l && online) l.textContent = `Profil ${window.PROFILE_NAME} : ta progression est enregistrée en ligne et te suit sur tous tes appareils.`;
