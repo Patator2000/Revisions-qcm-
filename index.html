@@ -477,7 +477,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 </section>
 
 </main>
-<script src="supabase.js"></script>
+<script src="vendor/supabase.js"></script>
 <script>
 window.SUPA_URL = "https://eempregmkymltwgzrofl.supabase.co";
 window.SUPA_KEY = "sb_publishable_4A1YYev7-Qmgbl_aRV7CIQ_Gxq267_N";
@@ -2868,7 +2868,7 @@ async function voskModel(){
   if (vModel) return vModel;
   if (vModelPromise) return vModelPromise;
   vModelPromise = (async () => {
-    if (!window.Vosk) await loadScript("vosk.js");
+    if (!window.Vosk) await loadScript("vendor/vosk.js");
     const t0 = Date.now();
     const tick = setInterval(() => { if (view === "quiz" && opts.voice) setVoiceNote(`⏳ Chargement de la reconnaissance vocale (environ 40 Mo la première fois, puis gardée par le navigateur)... ${Math.round((Date.now() - t0)/1000)} s`); }, 1000);
     try {
