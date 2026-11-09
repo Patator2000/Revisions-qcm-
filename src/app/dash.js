@@ -16,6 +16,10 @@ function histRecord(i, res){
 // ================= Tableau de bord de l'accueil =================
 const DASH_COL = {m: "var(--ok)", p: "var(--accent)", w: "var(--warn)", u: "var(--line)"};
 function dashDays(n){ const out = []; const t = new Date(); t.setHours(12,0,0,0); for (let i = n-1; i >= 0; i--) { const d = new Date(t); d.setDate(t.getDate() - i); out.push(dayKey(d)); } return out; }
+function dashSince(D, n){ // les n derniers jours, sans la période vide d'avant le premier jour de révision
+  const first = Object.keys(D.act).filter(d => D.act[d].a > 0).sort()[0] || dayKey();
+  return dashDays(n).filter(d => d >= first);
+}
 function dashFmtDay(k){ const [y,m,d] = k.split("-").map(Number); return new Date(y, m-1, d).toLocaleDateString("fr-FR", {day: "numeric", month: "short"}); }
 function dashData(){
   const live = Object.values(SUBJECTS).filter(x => fmtList(x).length);
@@ -72,7 +76,8 @@ function dashArea(pts){
   const W = 600, H = 170, vals = pts.map(p => p.v);
   let lo = Math.min(...vals), hi = Math.max(...vals); const pad = Math.max(2, (hi - lo) * .25); lo = Math.max(0, lo - pad); hi = Math.min(100, hi + pad); if (hi - lo < 4) { hi = Math.min(100, lo + 4); lo = Math.max(0, hi - 4); }
   const X = i => pts.length === 1 ? W : i / (pts.length - 1) * W, Y = v => H - 10 - (v - lo) / (hi - lo) * (H - 20);
-  const P = pts.length === 1 ? [[0, Y(vals[0])], [W, Y(vals[0])]] : pts.map((p, i) => [X(i), Y(p.v)]);
+  if (pts.length === 1) return `<div class="dash-plot dash-single"><i class="dash-dot now" style="left:97%;top:50%"></i></div><div class="dash-axis"><span></span><span>aujourd'hui · premier jour suivi</span><span></span></div>`;
+  const P = pts.map((p, i) => [X(i), Y(p.v)]);
   const line = P.map((q, i) => (i ? "L" : "M") + q[0].toFixed(1) + " " + q[1].toFixed(1)).join(" ");
   const data = JSON.stringify(pts.map((p, i) => ({x: X(i) / W * 100, y: Y(p.v) / H * 100, t: dashFmtDay(p.d), v: Math.round(p.v * 10) / 10, n: p.n})));
   return `<div class="dash-plot" data-pts='${data}'><svg class="dash-area" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
@@ -114,12 +119,12 @@ function dashGoal(D){
     <div class="dash-goal-bar"><i style="width:${Math.max(2, Math.min(100, fill))}%"></i></div></div>`;
 }
 function dashBars(D){
-  const vals = D.days.map(d => D.act[d] || {a:0, c:0}), mx = Math.max(5, ...vals.map(v => v.a));
+  const days = dashSince(D, 30), vals = days.map(d => D.act[d] || {a:0, c:0}), mx = Math.max(5, ...vals.map(v => v.a));
   const bars = vals.map((v, i) => {
-    const hT = v.a / mx * 100, hC = v.c / mx * 100, tip = `${dashFmtDay(D.days[i])} : ${v.a} réponse${v.a > 1 ? "s" : ""}, ${v.c} juste${v.c > 1 ? "s" : ""}`;
+    const hT = v.a / mx * 100, hC = v.c / mx * 100, tip = `${dashFmtDay(days[i])} : ${v.a} réponse${v.a > 1 ? "s" : ""}, ${v.c} juste${v.c > 1 ? "s" : ""}`;
     return `<div class="dash-bar" title="${tip}"><i class="ko" style="height:${hT}%"></i><i class="ok" style="height:${hC}%"></i></div>`;
   }).join("");
-  return `<div class="dash-bars">${bars}</div><div class="dash-axis"><span>${dashFmtDay(D.days[0])}</span><span>max ${mx} / jour</span><span>aujourd'hui</span></div>`;
+  return `<div class="dash-bars">${bars}</div><div class="dash-axis"><span>${days.length > 1 ? dashFmtDay(days[0]) : ""}</span><span>max ${mx} / jour</span><span>aujourd'hui</span></div>`;
 }
 function dashDonut(D){
   const R = 42, C = 2 * Math.PI * R, segs = [["m","Maîtrisées"],["p","En cours"],["w","À revoir"],["u","Jamais vues"]];
@@ -159,7 +164,7 @@ function renderDash(){
   const d7 = D.pts.length > 1 && ref ? pct - ref.v : null;
   const seenPct = D.total ? (D.total - D.u) / D.total * 100 : 0;
   const rate = D.tries ? D.g / D.tries * 100 : null, rateT = D.today.a ? D.today.c / D.today.a * 100 : null;
-  const days14 = dashDays(14), spA = days14.map(d => (D.act[d] && D.act[d].a) || 0), spR = days14.map(d => D.act[d] && D.act[d].a ? D.act[d].c / D.act[d].a * 100 : 0);
+  const days14 = dashSince(D, 14), spA = days14.map(d => (D.act[d] && D.act[d].a) || 0), spR = days14.map(d => D.act[d] && D.act[d].a ? D.act[d].c / D.act[d].a * 100 : 0);
   const fmtP = v => (Math.round(v * 10) / 10).toFixed(v < 10 && v % 1 ? 1 : 0).replace(".", ",");
   const weak = D.weak.length ? D.weak.map(z => {
     const col = z.x.id === "anat" ? "anat" : "physio", nm = String(z.x.THEMES[z.t] || z.t).replace(/</g, "&lt;");
@@ -182,16 +187,16 @@ function renderDash(){
     <div class="dash-k">Taux de réussite</div>
     <div class="dash-mid">${rate === null ? "-" : fmtP(rate) + "<small> %</small>"}</div>
     <div class="dash-sub">${rateT === null ? "pas encore de réponse aujourd'hui" : "aujourd'hui " + Math.round(rateT) + " %"} ${rate !== null && rateT !== null ? dashDelta(rateT - rate, " pts") : ""}</div>
-    ${dashSpark(spR, "var(--accent)")}<div class="dash-axis"><span>il y a 14 j</span><span>aujourd'hui</span></div>
+    ${days14.length > 1 ? dashSpark(spR, "var(--accent)") + `<div class="dash-axis"><span>${dashFmtDay(days14[0])}</span><span>aujourd'hui</span></div>` : ""}
   </div>
   <div class="dash-card span6 dash-kpi">
     <div class="dash-k">Aujourd'hui</div>
     <div class="dash-mid">${D.today.a}<small> réponse${D.today.a > 1 ? "s" : ""}</small></div>
     <div class="dash-sub">moyenne 7 j : ${fmtP(D.avg7)} ${D.avg7 > 0 ? dashDelta((D.today.a - D.avg7) / D.avg7 * 100, " %") : ""}</div>
-    ${dashSpark(spA, "var(--ok)")}<div class="dash-axis"><span>il y a 14 j</span><span>aujourd'hui</span></div>
+    ${days14.length > 1 ? dashSpark(spA, "var(--ok)") + `<div class="dash-axis"><span>${dashFmtDay(days14[0])}</span><span>aujourd'hui</span></div>` : ""}
   </div>
   <div class="dash-card span8">
-    <div class="dash-k">Activité sur 30 jours <span class="dash-legend"><i class="ok"></i>justes <i class="ko"></i>fausses</span></div>
+    <div class="dash-k">Activité par jour <span class="dash-legend"><i class="ok"></i>justes <i class="ko"></i>fausses</span></div>
     <div class="${Object.values(D.act).some(v => v.a) ? "" : "dash-empty"}" data-empty="Tes réponses de chaque jour s'afficheront ici">${dashBars(D)}</div>
   </div>
   <div class="dash-card span4">
