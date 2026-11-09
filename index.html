@@ -329,6 +329,21 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 @media (max-width:560px){.span6{grid-column:span 12}.dash-week{gap:4px}.dw-day b{font-size:.9rem}}
 @media (max-width:480px){.dash{gap:10px}.dash-card{padding:14px}.dash-big{font-size:2.4rem}.dash-mid{font-size:1.6rem}}
 .subj{padding:24px}
+/* ---- page de question en plein écran ---- */
+@media (min-width:1100px){
+  #v-quiz,#v-result{max-width:1080px}
+  #quizCard{padding:30px 36px}
+  .qtext{font-size:1.5rem;margin:26px 0 26px}
+  .ans{padding:20px;font-size:1.08rem;border-radius:14px}
+  .prop{padding:15px 18px;font-size:1.06rem;gap:14px}.prop .box{width:30px;height:30px}
+  .qhead{font-size:.92em}
+}
+@media (min-width:1600px){
+  #v-quiz,#v-result{max-width:1200px}
+  .qtext{font-size:1.7rem}
+  .ans{padding:24px;font-size:1.15rem}
+  .prop{padding:17px 20px;font-size:1.12rem}
+}
 #profileGate{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:20px}
 .pg-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px;max-width:420px;width:100%;box-shadow:var(--shadow)}
 .pg-card label{display:block;margin-top:12px}
@@ -2834,7 +2849,7 @@ const VOSK_MODELS = [
   "models/vosk-model-small-fr.tar.gz",                                                   // copie hébergée sur le site (si présente)
   "https://ccoreilly.github.io/vosk-browser/models/vosk-model-small-fr-pguyot-0.3.tar.gz" // modèle public de secours
 ];
-let vModel = null, vModelPromise = null, vRec = null, vStream = null, vCtx = null, vNode = null, vSrc = null, vOn = false;
+let voskTries = 0, vModel = null, vModelPromise = null, vRec = null, vStream = null, vCtx = null, vNode = null, vSrc = null, vOn = false;
 function voskGrammar(){
   const c = voiceCmds(), w = [];
   if (c.vf) w.push("vrai", "faux");
@@ -2901,6 +2916,7 @@ async function voskStart(){
       vNode.onaudioprocess = ev => { if (vOn && vRec && !paused && view === "quiz") { try { vRec.acceptWaveform(ev.inputBuffer); } catch(e) {} } };
       vSrc.connect(vNode); vNode.connect(vCtx.destination);
     }
+    voskTries = 0;
     setVoiceNote("🎙 J'écoute... " + VOICE_HELP);
   } catch(e) {
     vOn = false;
@@ -2908,7 +2924,21 @@ async function voskStart(){
     setVoiceNote(n === "NotAllowedError" || n === "SecurityError" ? MIC_MSG
       : n === "NotFoundError" ? "Aucun micro détecté : vérifie qu'un micro est branché et autorisé, puis recharge la page."
       : n === "NoMedia" ? "Ton navigateur ne donne pas accès au micro sur cette page."
-      : "La reconnaissance vocale n'a pas pu se charger (connexion ?). Recharge la page pour réessayer, ou réponds au clavier.");
+      : null);
+    if (!(n === "NotAllowedError" || n === "SecurityError" || n === "NotFoundError" || n === "NoMedia")) {
+      console.warn("Vosk", e);
+      voskTries++;
+      if (voskTries <= 2) { // petite coupure réseau : on réessaie tout seul
+        setVoiceNote("⏳ Nouvel essai de chargement de la reconnaissance vocale...");
+        setTimeout(() => { if (view === "quiz" && opts.voice && !vOn) voskStart(); }, 3000);
+        return;
+      }
+      setVoiceNote("La reconnaissance vocale n'a pas pu se charger. Tu peux répondre au clavier en attendant.");
+      const nEl = $("voiceNote"), b = document.createElement("button");
+      b.className = "linkbtn"; b.textContent = "Réessayer"; b.style.marginLeft = "8px";
+      b.onclick = () => { voskTries = 0; voskStart(); };
+      nEl.appendChild(b);
+    }
   }
 }
 function voskStop(){
