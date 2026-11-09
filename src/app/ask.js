@@ -3,11 +3,30 @@ let sampleFn = null, sampleOff = false, sampleReady = false;
 // Hors de claude.ai (version micro, site) : on ouvre claude.ai dans un nouvel onglet avec la question pré-remplie
 const EXTERNAL_AI = !(window.claude && window.claude.use);
 function claudeUrl(prompt){ return "https://claude.ai/new?q=" + encodeURIComponent(prompt.slice(0, 6000)); }
+// Conversation Claude unique (choisie dans le menu du profil) : la question est copiée puis la conversation s'ouvre
+function claudeChat(){ let u = window.PROFILE_CLAUDE || ""; if (!u) { try { u = localStorage.getItem("qcm-claude-chat") || ""; } catch(e) {} } return /^https:\/\/claude\.ai\/(chat|project)\//.test(u) ? u : ""; }
+async function copyText(t){
+  try { await navigator.clipboard.writeText(t); return true; } catch(e) {}
+  try { const a = document.createElement("textarea"); a.value = t; a.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(a); a.select(); const ok = document.execCommand("copy"); a.remove(); return ok; } catch(e) { return false; }
+}
 function openClaude(prompt, container){
+  const chat = claudeChat();
+  const p = document.createElement("div"); p.className = "msg ai";
+  if (chat) {
+    const txt = prompt.slice(0, 12000);
+    let w = null; try { w = window.open(chat, "kinesis-claude"); } catch(e) {}
+    copyText(txt).then(ok => {
+      p.innerHTML = ok
+        ? `<b>Question copiée.</b> Dans ta conversation Claude, colle-la (Ctrl+V, ou appui long puis « Coller » sur téléphone) et envoie. <a href="${chat}" target="kinesis-claude">Rouvrir la conversation</a>`
+        : `La copie automatique a échoué : sélectionne le texte ci-dessous, copie-le, puis colle-le dans <a href="${chat}" target="kinesis-claude">ta conversation Claude</a>.<textarea readonly rows="4" style="width:100%;margin-top:6px"></textarea>`;
+      const ta = p.querySelector("textarea"); if (ta) ta.value = txt;
+    });
+    if (container) container.appendChild(p);
+    return w;
+  }
   const url = claudeUrl(prompt);
   let w = null; try { w = window.open(url, "_blank", "noopener"); } catch(e) {}
-  const p = document.createElement("div"); p.className = "msg ai";
-  p.innerHTML = `Question envoyée à Claude dans un nouvel onglet. <a href="${url}" target="_blank" rel="noopener">Si rien ne s'est ouvert, clique ici</a>.`;
+  p.innerHTML = `Question envoyée à Claude dans un nouvel onglet. <a href="${url}" target="_blank" rel="noopener">Si rien ne s'est ouvert, clique ici</a>.${window.SUPA_URL ? '<br><span class="small muted">Pour garder toutes tes questions dans une seule conversation : menu du profil (en haut à droite), « Conversation Claude ».</span>' : ""}`;
   if (container) container.appendChild(p);
   return w;
 }

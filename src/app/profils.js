@@ -69,6 +69,7 @@ async function supaStart(live, anonLocals){
     SB_USER = s.data && s.data.session ? s.data.session.user : null;
     if (!SB_USER) { const r = await profileGate(); if (!r) return false; SB_USER = r.user; isNew = r.isNew; }
     window.PROFILE_NAME = (SB_USER.user_metadata && SB_USER.user_metadata.name) || SB_USER.email.split("@")[0];
+    window.PROFILE_CLAUDE = (SB_USER.user_metadata && SB_USER.user_metadata.claude_chat) || "";
     const {data, error} = await SB.from("progress").select("subject,mem,sess,updated_at").eq("user_id", SB_USER.id);
     if (error) throw error;
     const rows = {}; (data || []).forEach(r => rows[r.subject] = r);
@@ -144,12 +145,14 @@ function profileMenuOpen(){
     const stats = profileStats().map(t => `<div class="pm-stat"><span>${t.name}</span><b>${t.seen} % vues</b><b class="ok">${t.master} % maîtrisées</b></div><div class="pm-bar"><i style="width:${parseFloat(t.seen) || (t.seen[0] === "<" ? 1 : 0)}%"></i><i class="ok" style="width:${parseFloat(t.master) || (t.master[0] === "<" ? 1 : 0)}%"></i></div>`).join("");
     m.innerHTML = `<div class="pm-head"><div class="pm-av big">${profileInitial(window.PROFILE_NAME)}</div><div><b>${window.PROFILE_NAME}</b><div class="small muted"><i class="pm-dot"></i>Synchronisé en ligne</div></div></div>
       <div class="pm-sec"><div class="pm-title">Ma progression</div>${stats || '<div class="small muted">Pas encore de réponses.</div>'}</div>
+      <button class="pm-item" data-a="claude">Conversation Claude${claudeChat() ? ' <span class="pm-ok">réglée</span>' : ""}</button>
       <button class="pm-item" data-a="sync">Enregistrer maintenant</button>
       <button class="pm-item" data-a="switch">Changer de profil</button>
       <button class="pm-item danger" data-a="out">Se déconnecter</button>`;
   } else {
     m.innerHTML = `<div class="pm-head"><div class="pm-av big">?</div><div><b>Sans profil</b><div class="small muted">Progression gardée sur cet appareil seulement</div></div></div>
       ${window.PROFILE_ERROR ? `<div class="pm-sec small" style="color:var(--ko)">${window.PROFILE_ERROR.replace(/</g,"&lt;")}</div>` : ""}
+      <button class="pm-item" data-a="claude">Conversation Claude${claudeChat() ? ' <span class="pm-ok">réglée</span>' : ""}</button>
       <button class="pm-item" data-a="login">Se connecter ou créer un profil</button>`;
   }
   document.body.appendChild(m);
@@ -161,10 +164,36 @@ function profileMenuOpen(){
     if (a === "home") { profileMenuClose(); if (view === "quiz") { pauseTimer(); saveSession(); voiceStop(); } Object.values(SUBJECTS).filter(s => s.ref).forEach(s => flush(s)); go("home"); }
     if (a === "sync") { x.textContent = "Enregistrement..."; try { await Promise.all(Object.values(SUBJECTS).filter(s => s.ref).map(s => flush(s))); x.textContent = "Enregistré ✓"; } catch(e) { x.textContent = "Échec, réessaie"; } }
     if (a === "switch" || a === "out") { x.textContent = "Déconnexion..."; profileLeave(); }
+    if (a === "claude") { profileClaudeForm(m); return; }
     if (a === "login") { try { if (SB) await SB.auth.signOut(); } catch(e) {} location.reload(); }
   });
 }
-document.addEventListener("click", e => { const m = $("pmMenu"); if (m && !m.contains(e.target) && !e.target.closest("#pmBtn")) profileMenuClose(); });
+function profileClaudeForm(menu){
+  const cur = claudeChat();
+  menu.innerHTML = `<div class="pm-form">
+    <b>Conversation Claude</b>
+    <p class="small muted">Toutes tes questions sur les réponses iront dans la même conversation au lieu d'en créer une nouvelle à chaque fois.</p>
+    <ol class="small muted"><li>Ouvre (ou crée) dans Claude la conversation à utiliser, par exemple « Kinésis - questions ».</li><li>Copie son adresse (elle commence par claude.ai/chat/).</li><li>Colle-la ici.</li></ol>
+    <input id="pmClaude" placeholder="https://claude.ai/chat/..." value="${cur}">
+    <p class="small" id="pmClaudeMsg" style="min-height:1.2em;margin:6px 0"></p>
+    <div class="row"><button class="btn primary small" id="pmClaudeSave">Enregistrer</button>${cur ? '<button class="btn small" id="pmClaudeDel">Retirer</button>' : ""}<button class="btn ghost small" id="pmClaudeOpen">Ouvrir Claude</button></div>
+  </div>`;
+  const inp = menu.querySelector("#pmClaude"), msg = menu.querySelector("#pmClaudeMsg");
+  inp.focus();
+  const save = async (u) => {
+    try { if (u) localStorage.setItem("qcm-claude-chat", u); else localStorage.removeItem("qcm-claude-chat"); } catch(e) {}
+    window.PROFILE_CLAUDE = u;
+    if (SB && SB_USER && storeMode === "account") { try { await SB.auth.updateUser({data: {claude_chat: u}}); } catch(e) {} }
+  };
+  menu.querySelector("#pmClaudeSave").onclick = async () => {
+    let u = inp.value.trim(); if (u && !/^https?:\/\//.test(u)) u = "https://" + u;
+    if (!/^https:\/\/claude\.ai\/(chat|project)\/[\w-]+/.test(u)) { msg.style.color = "var(--ko)"; msg.textContent = "Colle l'adresse d'une conversation (claude.ai/chat/...) ou d'un projet Claude."; return; }
+    msg.style.color = ""; msg.textContent = "Enregistrement..."; await save(u); msg.style.color = "var(--ok)"; msg.textContent = "Enregistré ✓ Tes prochaines questions iront dans cette conversation.";
+  };
+  const del = menu.querySelector("#pmClaudeDel"); if (del) del.onclick = async () => { await save(""); profileMenuClose(); };
+  menu.querySelector("#pmClaudeOpen").onclick = () => window.open(cur || "https://claude.ai/new", "kinesis-claude");
+}
+document.addEventListener("click", e => { const m = $("pmMenu"); if (m && e.target.isConnected && !m.contains(e.target) && !e.target.closest("#pmBtn")) profileMenuClose(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") profileMenuClose(); });
 addEventListener("resize", profileMenuClose);
 const _setSaveBase = setSave;
