@@ -2930,7 +2930,7 @@ async function voskStart(){
     vRec.on("result", m => {
       const t = (m.result && m.result.text || "").replace(/\[unk\]/g, "").trim();
       if (!t) return;
-      if (!handleVoice(t)) setVoiceNote(`Entendu « ${t} » mais pas compris. ${VOICE_HELP}`);
+      if (!handleVoice(t)) setVoiceNote(`Entendu « ${t} » mais pas compris. ${voiceHelpText()}`);
     });
     if (!vNode) {
       vSrc = vCtx.createMediaStreamSource(vStream);
@@ -2939,7 +2939,7 @@ async function voskStart(){
       vSrc.connect(vNode); vNode.connect(vCtx.destination);
     }
     voskTries = 0;
-    setVoiceNote("🎙 J'écoute... " + VOICE_HELP);
+    setVoiceNote("🎙 J'écoute... " + voiceHelpText());
   } catch(e) {
     vOn = false;
     const n = e && e.name;
