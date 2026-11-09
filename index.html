@@ -228,6 +228,57 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 @media (max-width:560px){.brand-txt,.pm-name{display:none}.pm-btn{padding:3px 8px 3px 3px}.brand{margin-right:8px}}
 .pg-err{background:var(--ko-soft);color:var(--ink);border:1px solid var(--ko);border-radius:12px;padding:12px 14px;margin:0 0 16px;font-size:14px;word-break:break-word}
 #v-home h1{margin-bottom:20px}
+/* ---- largeur plein écran ---- */
+@media (min-width:1100px){.wrap{max-width:1200px}.top .in{max-width:1200px}}
+#v-quiz,#v-result{max-width:860px;margin-left:auto;margin-right:auto}
+#v-subject{max-width:1000px;margin-left:auto;margin-right:auto}
+/* ---- fond ---- */
+body{background:
+  radial-gradient(900px 500px at 8% -10%,color-mix(in srgb,var(--accent) 13%,transparent),transparent 70%),
+  radial-gradient(800px 500px at 100% 0%,color-mix(in srgb,var(--ok) 11%,transparent),transparent 70%),
+  var(--bg);background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:var(--hex-op,.5);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97' viewBox='0 0 56 97'%3E%3Cpath d='M28 1 54 16v31L28 62 2 47V16zM28 62v35' fill='none' stroke='%238891a0' stroke-opacity='.13' stroke-width='1'/%3E%3C/svg%3E");
+  -webkit-mask-image:linear-gradient(180deg,#000,transparent 75%);mask-image:linear-gradient(180deg,#000,transparent 75%)}
+@media (prefers-color-scheme:dark){body::before{--hex-op:.8}}
+/* ---- tableau de bord ---- */
+#v-home h1{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.dash-date{display:inline-block;font-size:.5em;font-weight:500;color:var(--muted)}.dash-date::first-letter{text-transform:uppercase}
+.dash-empty{position:relative}.dash-empty::after{content:attr(data-empty);position:absolute;inset:0;display:grid;place-items:center;font-size:.85rem;color:var(--muted);text-align:center;padding:0 20px}
+.home-h2{font-size:1.05rem;margin:26px 0 12px;color:var(--muted);font-weight:600;letter-spacing:.02em}
+.dash{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.dash-card{background:color-mix(in srgb,var(--surface) 92%,transparent);border:1px solid var(--line);border-radius:18px;padding:18px 20px;box-shadow:var(--shadow);min-width:0;backdrop-filter:blur(6px)}
+.span12{grid-column:span 12}.span8{grid-column:span 8}.span4{grid-column:span 4}.span3{grid-column:span 3}
+.dash-k{font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.dash-big{font-size:3rem;font-weight:800;letter-spacing:-.03em;line-height:1.05;margin-top:6px;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dash-big small,.dash-mid small{font-size:.45em;font-weight:600;color:var(--muted);letter-spacing:0}
+.dash-mid{font-size:2rem;font-weight:800;letter-spacing:-.02em;line-height:1.1;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.dash-sub{font-size:.82rem;color:var(--muted);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.dash-delta{font-size:.78rem;font-weight:700;padding:3px 8px;border-radius:999px;letter-spacing:0;white-space:nowrap}
+.dash-delta.up{background:var(--ok-soft);color:var(--ok)}.dash-delta.down{background:var(--ko-soft);color:var(--ko)}.dash-delta.flat{background:var(--surface2);color:var(--muted)}
+.dash-area{display:block;width:100%;height:170px;margin-top:14px}
+.dash-axis{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-top:6px}
+.dash-donut{position:relative;width:150px;height:150px;margin:12px auto 10px}.dash-donut svg{width:100%;height:100%}
+.dash-donut-c{position:absolute;inset:0;display:grid;place-content:center;text-align:center}.dash-donut-c b{font-size:1.5rem;line-height:1}.dash-donut-c span{font-size:.72rem;color:var(--muted)}
+.dash-legs{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}
+.dash-leg{display:flex;align-items:center;gap:6px;font-size:.8rem}.dash-leg i{width:9px;height:9px;border-radius:3px;flex:none}.dash-leg span{color:var(--muted);flex:1}.dash-leg b{font-variant-numeric:tabular-nums}
+.dash-meter{height:6px;border-radius:6px;background:var(--surface2);overflow:hidden;margin-top:12px}.dash-meter i{display:block;height:100%;background:var(--accent)}
+.dash-spark{display:block;width:100%;height:28px;margin-top:10px}
+.dash-dots{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;margin-top:12px}.dash-dots i{height:10px;border-radius:3px;background:var(--surface2)}.dash-dots i.on{background:var(--ok)}
+.dash-bars{display:flex;align-items:flex-end;gap:3px;height:150px;margin-top:14px}
+.dash-bar{flex:1;height:100%;position:relative;display:flex;align-items:flex-end}
+.dash-bar i{position:absolute;left:0;right:0;bottom:0;border-radius:3px 3px 0 0}.dash-bar i.ko{background:color-mix(in srgb,var(--ko) 35%,transparent)}.dash-bar i.ok{background:var(--ok)}
+.dash-bar:hover i.ok{filter:brightness(1.15)}
+.dash-legend{text-transform:none;letter-spacing:0;font-weight:500;display:flex;align-items:center;gap:5px}.dash-legend i{width:9px;height:9px;border-radius:3px;display:inline-block;margin-left:6px}.dash-legend i.ok{background:var(--ok)}.dash-legend i.ko{background:color-mix(in srgb,var(--ko) 35%,transparent)}
+.dash-weak{display:grid;grid-template-columns:1fr 70px 38px;gap:10px;align-items:center;width:100%;border:0;background:none;font:inherit;color:var(--ink);text-align:left;padding:8px 6px;border-radius:8px;cursor:pointer;font-size:.82rem}
+.dash-weak:hover{background:var(--surface2)}
+.dw-name{display:flex;align-items:center;gap:7px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.dw-name i{width:8px;height:8px;border-radius:50%;background:var(--c);flex:none}
+.dw-bar{height:6px;border-radius:6px;background:var(--surface2);overflow:hidden}.dw-bar b{display:block;height:100%;background:var(--ko)}
+.dw-pct{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.dash-wait{color:var(--muted);text-align:center;padding:30px}
+@media (max-width:900px){.span8,.span4{grid-column:span 12}.span3{grid-column:span 6}}
+@media (max-width:480px){.dash{gap:10px}.dash-card{padding:14px}.dash-big{font-size:2.4rem}.dash-mid{font-size:1.6rem}}
+.subj{padding:24px}
 #profileGate{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:20px}
 .pg-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px;max-width:420px;width:100%;box-shadow:var(--shadow)}
 .pg-card label{display:block;margin-top:12px}
@@ -249,6 +300,8 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 <!-- Accueil : choix de la matière -->
 <section id="v-home">
   <h1>Révisions</h1>
+  <div class="dash" id="dash"></div>
+  <h2 class="home-h2">Matières</h2>
   <div class="subjects" id="subjects"></div>
   <details class="sync" hidden><summary>Synchroniser avec l'autre version</summary>
     <p class="small muted" style="margin:6px 0 8px">Copie ta progression d'un côté, colle-la de l'autre (version en ligne et version micro). Les deux progressions sont fusionnées.</p>
@@ -1563,6 +1616,7 @@ function commit(i){
   const key = keys()[deck[i]], res = resultOf(i);
   if (res === null) { if (base[i]) S.mem[key] = base[i]; else delete S.mem[key]; }
   else S.mem[key] = applyResult(base[i], res, luck[i]);
+  try { histRecord(i, res); } catch(e) {}
   saveSession(); scheduleSave(S);
 }
 function summary(Sx, f){
@@ -1654,6 +1708,7 @@ function renderView(){
 
 // ================= Accueil =================
 function renderHome(){
+  try { renderDash(); } catch(e) { console.warn("dash", e); }
   $("subjects").innerHTML = Object.values(SUBJECTS).map(x => {
     const on = fmtList(x).length > 0, col = x.id === "anat" ? "anat" : "physio";
     const sm = summary(x), pct = on ? Math.round(sm.m / sm.total * 100) : 0;
@@ -1860,6 +1915,7 @@ $("reset").onclick = () => {
 const examMode = () => sim ? true : (fmt !== "open" && opts.mode === "exam");
 function start(list, timerSec){
   deck = list; answers = new Array(deck.length).fill(null); luck = new Array(deck.length).fill(false);
+  histDone = {};
   base = deck.map(qi => { const m = S.mem[keys()[qi]]; return m ? {...m} : null; }); cur = 0;
   stopTimer(); if (timerSec) startTimer(timerSec);
   $("clock").classList.toggle("hidden", !T);
@@ -2342,6 +2398,175 @@ $("syncImport").onclick = () => {
   try { const r = syncMerge($("syncArea").value); $("syncMsg").textContent = `Fusion faite : ${r.added} question${r.added>1?"s":""} ajoutée${r.added>1?"s":""}, ${r.updated} mise${r.updated>1?"s":""} à jour.`; $("syncArea").classList.add("hidden"); $("syncRow").classList.add("hidden"); renderHome(); }
   catch(e) { $("syncMsg").textContent = "Code non reconnu : vérifie que tu as tout collé."; }
 };
+
+// ================= Historique quotidien (pour le tableau de bord) =================
+// Stocké dans mem._h : { "AAAA-MM-JJ": {a: réponses, c: bonnes réponses, m: questions maîtrisées en fin de journée} }
+let histDone = {};
+function dayKey(d){ d = d || new Date(); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
+function histOf(x){ if (!x.mem._h || typeof x.mem._h !== "object") x.mem._h = {}; return x.mem._h; }
+function histRecord(i, res){
+  const h = histOf(S), d = dayKey(), prev = histDone[i];
+  if (prev && h[prev.d]) { h[prev.d].a = Math.max(0, (h[prev.d].a||0) - 1); h[prev.d].c = Math.max(0, (h[prev.d].c||0) - prev.v); }
+  if (res !== null) { const v = res === "ok" && !luck[i] ? 1 : 0; const e = h[d] || (h[d] = {a:0, c:0}); e.a = (e.a||0) + 1; e.c = (e.c||0) + v; histDone[i] = {d, v}; }
+  else delete histDone[i];
+  (h[d] || (h[d] = {a:0, c:0})).m = summary(S).m;
+  const ds = Object.keys(h).filter(k => /^\d{4}-/.test(k)).sort();
+  if (ds.length > 400) ds.slice(0, ds.length - 400).forEach(k => delete h[k]);
+}
+
+// ================= Tableau de bord de l'accueil =================
+const DASH_COL = {m: "var(--ok)", p: "var(--accent)", w: "var(--warn)", u: "var(--line)"};
+function dashDays(n){ const out = []; const t = new Date(); t.setHours(12,0,0,0); for (let i = n-1; i >= 0; i--) { const d = new Date(t); d.setDate(t.getDate() - i); out.push(dayKey(d)); } return out; }
+function dashFmtDay(k){ const [y,m,d] = k.split("-").map(Number); return new Date(y, m-1, d).toLocaleDateString("fr-FR", {day: "numeric", month: "short"}); }
+function dashData(){
+  const live = Object.values(SUBJECTS).filter(x => fmtList(x).length);
+  let m=0,p=0,w=0,u=0,total=0,g=0,tries=0,answersAll=0;
+  const act = {}, weak = [];
+  for (const x of live) {
+    const sm = summary(x); m+=sm.m; p+=sm.p; w+=sm.w; u+=sm.u; total+=sm.total;
+    for (const f of fmtList(x)) {
+      const th = {};
+      x.F[f].forEach((q, i) => {
+        const st = x.mem[x.K[f][i]]; if (!st) return;
+        const tr = (st.g||0) + (st.k||0) + (st.p||0) + (st.n||0);
+        g += st.g||0; tries += tr; answersAll += st.s||0;
+        const t = q[1]; const o = th[t] || (th[t] = {g:0, tr:0});
+        o.g += st.g||0; o.tr += tr;
+      });
+      for (const t in th) if (th[t].tr >= 3) {
+        const prevW = weak.find(z => z.x === x && z.t === t);
+        if (prevW) { prevW.g += th[t].g; prevW.tr += th[t].tr; } else weak.push({x, t, g: th[t].g, tr: th[t].tr});
+      }
+    }
+    const h = x.mem._h || {};
+    for (const d in h) if (/^\d{4}-/.test(d)) { const e = act[d] || (act[d] = {a:0, c:0}); e.a += h[d].a||0; e.c += h[d].c||0; }
+  }
+  weak.forEach(z => z.r = z.g / z.tr); weak.sort((a, b) => a.r - b.r);
+  // courbe de maîtrise (30 jours), valeurs reportées d'un jour sur l'autre
+  const days = dashDays(30);
+  const recs = live.map(x => { const h = x.mem._h || {}; return Object.keys(h).filter(k => /^\d{4}-/.test(k) && h[k].m !== undefined).sort().map(k => [k, h[k].m]); });
+  const first = recs.flat().map(r => r[0]).sort()[0];
+  const pts = [];
+  for (const d of days) {
+    if (!first || d < first) continue;
+    let tot = 0;
+    live.forEach((x, n) => { const r = recs[n]; if (!r.length) { tot += summary(x).m; return; } const b = r.filter(z => z[0] <= d); tot += b.length ? b[b.length-1][1] : r[0][1]; });
+    pts.push({d, v: total ? tot / total * 100 : 0});
+  }
+  if (!pts.length) pts.push({d: dayKey(), v: total ? m / total * 100 : 0});
+  // série de jours
+  const today = dayKey(); let streak = 0, best = 0, run = 0;
+  { const t = new Date(); t.setHours(12); let i = 0; if (!(act[today] && act[today].a)) i = 1;
+    for (;; i++) { const d = new Date(t); d.setDate(t.getDate() - i); const e = act[dayKey(d)]; if (e && e.a) streak++; else break; } }
+  const all = Object.keys(act).sort(); let last = null;
+  for (const d of all) { if (!act[d].a) continue; const cur = new Date(d + "T12:00"); if (last && (cur - last) / 864e5 < 1.5) run++; else run = 1; best = Math.max(best, run); last = cur; }
+  const last7 = dashDays(8).slice(0, 7).map(d => (act[d] && act[d].a) || 0);
+  return {live, m, p, w, u, total, g, tries, answersAll, act, weak: weak.slice(0, 5), days, pts, streak, best: Math.max(best, streak),
+    today: act[today] || {a:0, c:0}, avg7: last7.reduce((s, v) => s + v, 0) / 7};
+}
+function dashArea(pts){
+  if (!pts.length) return "";
+  const W = 600, H = 170, vals = pts.map(p => p.v);
+  let lo = Math.min(...vals), hi = Math.max(...vals); const pad = Math.max(2, (hi - lo) * .25); lo = Math.max(0, lo - pad); hi = Math.min(100, hi + pad); if (hi - lo < 4) { hi = Math.min(100, lo + 4); lo = Math.max(0, hi - 4); }
+  const n = Math.max(2, pts.length), X = i => pts.length === 1 ? (i ? W : 0) : i / (pts.length - 1) * W, Y = v => H - 8 - (v - lo) / (hi - lo) * (H - 16);
+  const P = pts.length === 1 ? [[0, Y(vals[0])], [W, Y(vals[0])]] : pts.map((p, i) => [X(i), Y(p.v)]);
+  const line = P.map((q, i) => (i ? "L" : "M") + q[0].toFixed(1) + " " + q[1].toFixed(1)).join(" ");
+  return `<svg class="dash-area" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" data-n="${n}">
+    <defs><linearGradient id="dashFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--ok)" stop-opacity=".35"/><stop offset="1" stop-color="var(--ok)" stop-opacity="0"/></linearGradient></defs>
+    <path d="${line} L${W} ${H} L0 ${H} Z" fill="url(#dashFill)"/>
+    <path d="${line}" fill="none" stroke="var(--ok)" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>
+  </svg><div class="dash-axis"><span>${dashFmtDay(pts[0].d)}</span><span>${lo.toFixed(0)} % - ${hi.toFixed(0)} %</span><span>aujourd'hui</span></div>`;
+}
+function dashBars(D){
+  const vals = D.days.map(d => D.act[d] || {a:0, c:0}), mx = Math.max(5, ...vals.map(v => v.a));
+  const bars = vals.map((v, i) => {
+    const hT = v.a / mx * 100, hC = v.c / mx * 100, tip = `${dashFmtDay(D.days[i])} : ${v.a} réponse${v.a > 1 ? "s" : ""}, ${v.c} juste${v.c > 1 ? "s" : ""}`;
+    return `<div class="dash-bar" title="${tip}"><i class="ko" style="height:${hT}%"></i><i class="ok" style="height:${hC}%"></i></div>`;
+  }).join("");
+  return `<div class="dash-bars">${bars}</div><div class="dash-axis"><span>${dashFmtDay(D.days[0])}</span><span>max ${mx} / jour</span><span>aujourd'hui</span></div>`;
+}
+function dashDonut(D){
+  const R = 42, C = 2 * Math.PI * R, segs = [["m","Maîtrisées"],["p","En cours"],["w","À revoir"],["u","Jamais vues"]];
+  let off = 0; const arcs = segs.map(([k]) => { const v = D[k] / (D.total || 1) * C; const s = `<circle r="${R}" cx="55" cy="55" fill="none" stroke="${DASH_COL[k]}" stroke-width="13" stroke-dasharray="${v} ${C - v}" stroke-dashoffset="${-off}" transform="rotate(-90 55 55)"/>`; off += v; return s; }).join("");
+  const leg = segs.map(([k, l]) => `<div class="dash-leg"><i style="background:${DASH_COL[k]}"></i><span>${l}</span><b>${D[k]}</b></div>`).join("");
+  return `<div class="dash-donut"><svg viewBox="0 0 110 110">${arcs}</svg><div class="dash-donut-c"><b>${D.total}</b><span>questions</span></div></div><div class="dash-legs">${leg}</div>`;
+}
+function dashSpark(arr, col){
+  if (arr.length < 2) return "";
+  const mx = Math.max(1, ...arr), W = 100, H = 28, P = arr.map((v, i) => [i / (arr.length - 1) * W, H - 3 - v / mx * (H - 6)]);
+  return `<svg class="dash-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><path d="${P.map((q, i) => (i ? "L" : "M") + q[0].toFixed(1) + " " + q[1].toFixed(1)).join(" ")}" fill="none" stroke="${col}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`;
+}
+function dashDelta(v, unit){
+  if (v === null || !isFinite(v)) return "";
+  const r = Math.round(v * 10) / 10; if (r === 0) return "";
+  return `<span class="dash-delta ${r > 0 ? "up" : "down"}">${r > 0 ? "▲ +" : "▼ "}${String(r).replace(".", ",")}${unit}</span>`;
+}
+function renderDash(){
+  const el = $("dash"); if (!el) return;
+  const h1 = document.querySelector("#v-home h1");
+  const name = window.PROFILE_NAME && storeMode === "account" ? window.PROFILE_NAME : "";
+  const hr = new Date().getHours();
+  h1.innerHTML = `${hr < 5 || hr >= 18 ? "Bonsoir" : "Salut"}${name ? " " + name.replace(/</g, "&lt;") : ""} <span class="dash-date">${new Date().toLocaleDateString("fr-FR", {weekday: "long", day: "numeric", month: "long"})}</span>`;
+  if (!storeReady) { el.innerHTML = `<div class="dash-card span12 dash-wait">Chargement de ta progression...</div>`; return; }
+  const D = dashData();
+  const pct = D.total ? D.m / D.total * 100 : 0;
+  const ref = D.pts.length > 7 ? D.pts[D.pts.length - 8] : D.pts[0];
+  const d7 = D.pts.length > 1 && ref ? pct - ref.v : null;
+  const seenPct = D.total ? (D.total - D.u) / D.total * 100 : 0;
+  const rate = D.tries ? D.g / D.tries * 100 : null, rateT = D.today.a ? D.today.c / D.today.a * 100 : null;
+  const days14 = dashDays(14), spA = days14.map(d => (D.act[d] && D.act[d].a) || 0), spR = days14.map(d => D.act[d] && D.act[d].a ? D.act[d].c / D.act[d].a * 100 : 0);
+  const fmtP = v => (Math.round(v * 10) / 10).toFixed(v < 10 && v % 1 ? 1 : 0).replace(".", ",");
+  const weak = D.weak.length ? D.weak.map(z => {
+    const col = z.x.id === "anat" ? "anat" : "physio", nm = String(z.x.THEMES[z.t] || z.t).replace(/</g, "&lt;");
+    return `<button class="dash-weak" data-s="${z.x.id}" data-t="${z.t}" style="--c:var(--${col})"><span class="dw-name"><i></i>${nm}</span><span class="dw-bar"><b style="width:${Math.round(z.r * 100)}%"></b></span><span class="dw-pct">${Math.round(z.r * 100)} %</span></button>`;
+  }).join("") : `<p class="small muted" style="margin:6px 0 0">Réponds à quelques séries : les thèmes où tu te trompes le plus apparaîtront ici (au moins 3 réponses par thème).</p>`;
+  el.innerHTML = `
+  <div class="dash-card span8 dash-hero">
+    <div class="dash-k">Maîtrise globale</div>
+    <div class="dash-big">${fmtP(pct)}<small> %</small> ${dashDelta(d7, " pt" + (Math.abs(d7) >= 2 ? "s" : "") + " sur 7 j")}</div>
+    <div class="dash-sub">${D.m} questions maîtrisées sur ${D.total} · ${D.live.map(x => `${x.name} ${fmtP(summary(x).m / summary(x).total * 100)} %`).join(" · ")}</div>
+    <div class="${D.pts.length < 2 ? "dash-empty" : ""}" data-empty="La courbe se dessine au fil des jours de révision">${dashArea(D.pts)}</div>
+  </div>
+  <div class="dash-card span4">
+    <div class="dash-k">Répartition</div>
+    ${dashDonut(D)}
+  </div>
+  <div class="dash-card span3 dash-kpi">
+    <div class="dash-k">Questions vues</div>
+    <div class="dash-mid">${fmtP(seenPct)}<small> %</small></div>
+    <div class="dash-sub">${D.total - D.u} sur ${D.total}</div>
+    <div class="dash-meter"><i style="width:${seenPct}%"></i></div>
+  </div>
+  <div class="dash-card span3 dash-kpi">
+    <div class="dash-k">Taux de réussite</div>
+    <div class="dash-mid">${rate === null ? "-" : fmtP(rate) + "<small> %</small>"}</div>
+    <div class="dash-sub">${rateT === null ? "pas encore de réponse aujourd'hui" : "aujourd'hui " + Math.round(rateT) + " %"} ${rate !== null && rateT !== null ? dashDelta(rateT - rate, " pts") : ""}</div>
+    ${dashSpark(spR, "var(--accent)")}
+  </div>
+  <div class="dash-card span3 dash-kpi">
+    <div class="dash-k">Série</div>
+    <div class="dash-mid">${D.streak}<small> jour${D.streak > 1 ? "s" : ""}</small></div>
+    <div class="dash-sub">record : ${D.best} jour${D.best > 1 ? "s" : ""} d'affilée</div>
+    <div class="dash-dots">${dashDays(14).map(d => `<i class="${D.act[d] && D.act[d].a ? "on" : ""}" title="${dashFmtDay(d)}"></i>`).join("")}</div>
+  </div>
+  <div class="dash-card span3 dash-kpi">
+    <div class="dash-k">Aujourd'hui</div>
+    <div class="dash-mid">${D.today.a}<small> réponse${D.today.a > 1 ? "s" : ""}</small></div>
+    <div class="dash-sub">moyenne 7 j : ${fmtP(D.avg7)} ${D.avg7 > 0 ? dashDelta((D.today.a - D.avg7) / D.avg7 * 100, " %") : ""}</div>
+    ${dashSpark(spA, "var(--ok)")}
+  </div>
+  <div class="dash-card span8">
+    <div class="dash-k">Activité sur 30 jours <span class="dash-legend"><i class="ok"></i>justes <i class="ko"></i>fausses</span></div>
+    <div class="${Object.values(D.act).some(v => v.a) ? "" : "dash-empty"}" data-empty="Tes réponses de chaque jour s'afficheront ici">${dashBars(D)}</div>
+  </div>
+  <div class="dash-card span4">
+    <div class="dash-k">Points faibles</div>
+    ${weak}
+  </div>`;
+  el.querySelectorAll(".dash-weak").forEach(b => b.onclick = () => {
+    const x = SUBJECTS[b.dataset.s]; S = x; fmt = S.fmt; x.sel = new Set([b.dataset.t]); go("subject");
+  });
+}
 
 // ================= Poser une question (Claude + liens Google) =================
 let sampleFn = null, sampleOff = false, sampleReady = false;
