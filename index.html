@@ -222,6 +222,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 .pm-sec{padding:10px 8px;border-bottom:1px solid var(--line);margin-bottom:4px}
 .pm-title{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:6px}
 .pm-stat{display:grid;grid-template-columns:1fr auto auto;gap:10px;font-size:13px;padding:3px 0}.pm-stat b{font-weight:600}.pm-stat b.ok{color:var(--ok)}
+.pm-bar{position:relative;height:5px;border-radius:3px;background:var(--line);margin:2px 0 8px;overflow:hidden}.pm-bar i{position:absolute;left:0;top:0;bottom:0;background:color-mix(in srgb,var(--accent) 40%,transparent);border-radius:3px}.pm-bar i.ok{background:var(--ok)}
 .pm-item{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;font-size:14px;color:var(--ink);padding:9px 10px;border-radius:8px;cursor:pointer}
 .pm-item:hover{background:var(--accent-soft)}.pm-item.danger{color:var(--ko)}
 @media (max-width:560px){.brand-txt,.pm-name{display:none}.pm-btn{padding:3px 8px 3px 3px}.brand{margin-right:8px}}
@@ -2706,9 +2707,10 @@ function profileErrorBanner(){
 // ================= En-tête : bouton profil en haut à droite =================
 function profileInitial(n){ return (n || "?").trim().charAt(0).toUpperCase(); }
 function profileStats(){
-  return Object.values(SUBJECTS).filter(x => x.mem).map(x => {
-    const v = Object.values(x.mem); const seen = v.length, master = v.filter(st => st && st.l >= 4).length;
-    return {name: x.name, seen, master};
+  return Object.values(SUBJECTS).filter(x => x.mem && fmtList(x).length).map(x => {
+    const sm = summary(x), t = sm.total || 1;
+    const pc = n => { const v = n / t * 100; return v > 0 && v < 1 ? "< 1" : String(Math.round(v)); };
+    return {name: x.name, seen: pc(sm.total - sm.u), master: pc(sm.m)};
   });
 }
 async function profileLeave(){
@@ -2723,7 +2725,7 @@ function profileMenuOpen(){
   const online = storeMode === "account" && window.PROFILE_NAME;
   const m = document.createElement("div"); m.id = "pmMenu"; m.className = "pm-menu"; m.setAttribute("role", "menu");
   if (online) {
-    const stats = profileStats().map(t => `<div class="pm-stat"><span>${t.name}</span><b>${t.seen} ${t.seen > 1 ? "vues" : "vue"}</b><b class="ok">${t.master} ${t.master > 1 ? "maîtrisées" : "maîtrisée"}</b></div>`).join("");
+    const stats = profileStats().map(t => `<div class="pm-stat"><span>${t.name}</span><b>${t.seen} % vues</b><b class="ok">${t.master} % maîtrisées</b></div><div class="pm-bar"><i style="width:${parseFloat(t.seen) || (t.seen[0] === "<" ? 1 : 0)}%"></i><i class="ok" style="width:${parseFloat(t.master) || (t.master[0] === "<" ? 1 : 0)}%"></i></div>`).join("");
     m.innerHTML = `<div class="pm-head"><div class="pm-av big">${profileInitial(window.PROFILE_NAME)}</div><div><b>${window.PROFILE_NAME}</b><div class="small muted"><i class="pm-dot"></i>Synchronisé en ligne</div></div></div>
       <div class="pm-sec"><div class="pm-title">Ma progression</div>${stats || '<div class="small muted">Pas encore de réponses.</div>'}</div>
       <button class="pm-item" data-a="home">Accueil</button>
