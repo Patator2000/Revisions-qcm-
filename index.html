@@ -124,9 +124,14 @@ h2{font-size:1rem;margin:0 0 .7em}
 .ans.bad{background:var(--ko-soft);border-color:var(--ko);color:var(--ko)}
 .ans:disabled{cursor:default}
 .ans.nsp{font-weight:500;color:var(--muted)}
-.luck{margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.luck button{border:1.5px dashed var(--warn);background:transparent;color:var(--warn);padding:8px 13px;border-radius:10px;cursor:pointer;font-size:.9em}
+.luck{margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:34px}
+.luck button{display:inline-flex;align-items:center;gap:6px;border:1.5px dashed color-mix(in srgb,var(--warn) 70%,transparent);background:transparent;color:var(--warn);padding:5px 11px;border-radius:999px;cursor:pointer;font:inherit;font-size:.82em;transition:all .15s}
+.luck button:hover:not(:disabled){background:var(--warn-soft)}
+.luck .lk-x{margin-left:2px;opacity:.7;font-size:1.1em;line-height:1}
+.luck #luckNote{font-size:.8em;color:var(--warn)}
+#qtheme,#hist{display:none!important}
 .luck button.on{background:var(--warn-soft);border-style:solid;font-weight:600}
+.luck button.on:disabled{opacity:1;cursor:default}
 .luck button:disabled{opacity:.4;cursor:default}
 .hist{font-size:.8em;color:var(--muted);margin-top:8px}
 .fb{margin-top:16px;padding:13px 15px;border-radius:12px;border-left:4px solid}
@@ -1981,14 +1986,12 @@ function render(){
   const lb = $("luckBtn"), res = resultOf(cur), locked = isLocked();
   $("luckRow").classList.toggle("hidden", fmt === "open");
   lb.classList.toggle("on", luck[cur]);
-  lb.textContent = luck[cur] ? "Au pif : oui (annuler)" : "Je réponds au pif";
-  lb.disabled = res === "nsp";
-  $("luckNote").textContent = luck[cur]
-    ? (!locked ? "Noté. Si ta réponse est juste : les points comptent, mais la question reviendra."
-       : res === "ok" ? "Juste, mais au pif : les points comptent, la question reviendra." : "La question reviendra de toute façon.")
-    : (!locked ? "Clique ici avant de répondre si tu n'es pas sûr." : "");
-  const h = base[cur];
-  $("hist").textContent = h ? `Déjà vue ${h.s} fois : ${h.g} réussie${h.g>1?"s":""} sûre${h.g>1?"s":""}, ${h.p} au pif, ${h.k} ratée${h.k>1?"s":""} ou partielle${h.k>1?"s":""}, ${h.n} NSP.` : "Nouvelle question pour toi.";
+  lb.innerHTML = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg><span>${luck[cur] ? "Au pif" : "Je réponds au pif"}</span>${luck[cur] && !locked ? '<span class="lk-x">×</span>' : ""}`;
+  lb.disabled = res === "nsp" || locked;
+  lb.classList.toggle("hidden", locked && !luck[cur]);
+  lb.title = locked ? "" : luck[cur] ? "Annuler : je suis sûr de ma réponse" : "À cocher avant de répondre si tu n'es pas sûr : une bonne réponse compte dans le score, mais la question reviendra";
+  $("luckNote").textContent = luck[cur] && locked ? (res === "ok" ? "Juste, mais elle reviendra" : "Elle reviendra") : "";
+  $("hist").textContent = "";
   $("prev").disabled = cur === 0;
   $("next").textContent = cur === deck.length-1 ? "Voir le bilan" : "Suivante";
   $("live").textContent = liveText();
