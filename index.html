@@ -93,6 +93,9 @@ h2{font-size:1rem;margin:0 0 .7em}
 .themes-box .chips{gap:5px}
 .themes-box .chip{padding:3px 9px 3px 6px;font-size:.76em;gap:5px}
 .themes-box .chip .dot{width:11px;height:11px}.themes-box .chip.on .dot::after{width:4px;height:4px}
+.reset-link{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:none;color:var(--muted);font:inherit;font-size:.78em;padding:4px 10px;border-radius:999px;cursor:pointer;transition:all .15s}
+.reset-link:hover{color:var(--ko);border-color:var(--ko);background:var(--ko-soft)}
+.reset-link.armed{color:#fff;background:var(--ko);border-color:var(--ko)}
 /* Réglages */
 .settings{display:grid;gap:14px}
 .set{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
@@ -381,7 +384,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
     <div class="stats" id="stats"></div>
     <div class="row" style="margin-top:12px;justify-content:space-between">
       <span class="small muted hidden" id="saveLong"></span>
-      <span class="row"><span class="small muted" id="resetMsg"></span><button class="btn ghost small" id="reset">Remettre à zéro</button></span>
+      <span class="row"><span class="small muted" id="resetMsg"></span><button class="reset-link" id="reset" title="Effacer ta progression dans cette matière"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Remettre à zéro</button></span>
     </div>
     <div class="row hidden" id="reportsRow" style="margin-top:8px;justify-content:space-between">
       <span class="small muted" id="reportsCount"></span>
@@ -1951,8 +1954,9 @@ $("sessResume").onclick = () => {
 $("sessDrop").onclick = () => { clearSession(); renderSubject(); };
 let resetArmed = false;
 $("reset").onclick = () => {
-  if (!resetArmed) { resetArmed = true; $("resetMsg").textContent = `Effacer ta progression en ${S.name} (${FMT_LABEL[fmt]}) ? Clique encore pour confirmer.`; setTimeout(() => { resetArmed = false; $("resetMsg").textContent = ""; }, 4000); return; }
-  resetArmed = false; for (const k of keys()) delete S.mem[k]; scheduleSave(S); renderSubject(); $("resetMsg").textContent = "Progression remise à zéro.";
+  const rb = $("reset"), lbl = rb.lastChild;
+  if (!resetArmed) { resetArmed = true; rb.classList.add("armed"); lbl.textContent = "Confirmer l'effacement"; $("resetMsg").textContent = `Toute ta progression en ${S.name} (${FMT_LABEL[fmt]}) sera effacée.`; setTimeout(() => { resetArmed = false; rb.classList.remove("armed"); lbl.textContent = "Remettre à zéro"; $("resetMsg").textContent = ""; }, 4000); return; }
+  resetArmed = false; rb.classList.remove("armed"); lbl.textContent = "Remettre à zéro"; for (const k of keys()) delete S.mem[k]; scheduleSave(S); renderSubject(); $("resetMsg").textContent = "Progression remise à zéro.";
 };
 
 // ================= Série =================
