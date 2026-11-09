@@ -248,7 +248,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 .home-h2{font-size:1.05rem;margin:26px 0 12px;color:var(--muted);font-weight:600;letter-spacing:.02em}
 .dash{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
 .dash-card{background:color-mix(in srgb,var(--surface) 92%,transparent);border:1px solid var(--line);border-radius:18px;padding:18px 20px;box-shadow:var(--shadow);min-width:0;backdrop-filter:blur(6px)}
-.span12{grid-column:span 12}.span8{grid-column:span 8}.span4{grid-column:span 4}.span3{grid-column:span 3}
+.span6{grid-column:span 6}.span12{grid-column:span 12}.span8{grid-column:span 8}.span4{grid-column:span 4}.span3{grid-column:span 3}
 .dash-k{font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .dash-big{font-size:3rem;font-weight:800;letter-spacing:-.03em;line-height:1.05;margin-top:6px;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .dash-big small,.dash-mid small{font-size:.45em;font-weight:600;color:var(--muted);letter-spacing:0}
@@ -258,7 +258,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 .dash-delta.up{background:var(--ok-soft);color:var(--ok)}.dash-delta.down{background:var(--ko-soft);color:var(--ko)}.dash-delta.flat{background:var(--surface2);color:var(--muted)}
 .dash-area{display:block;width:100%;height:170px;margin-top:14px}
 .dash-axis{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-top:6px}
-.dash-donut{position:relative;width:150px;height:150px;margin:12px auto 10px}.dash-donut svg{width:100%;height:100%}
+.dash-donut{position:relative;width:140px;height:140px;margin:12px auto 10px}.dash-donut svg{width:100%;height:100%}
 .dash-donut-c{position:absolute;inset:0;display:grid;place-content:center;text-align:center}.dash-donut-c b{font-size:1.5rem;line-height:1}.dash-donut-c span{font-size:.72rem;color:var(--muted)}
 .dash-legs{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}
 .dash-leg{display:flex;align-items:center;gap:6px;font-size:.8rem}.dash-leg i{width:9px;height:9px;border-radius:3px;flex:none}.dash-leg span{color:var(--muted);flex:1}.dash-leg b{font-variant-numeric:tabular-nums}
@@ -275,8 +275,41 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 .dw-name{display:flex;align-items:center;gap:7px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.dw-name i{width:8px;height:8px;border-radius:50%;background:var(--c);flex:none}
 .dw-bar{height:6px;border-radius:6px;background:var(--surface2);overflow:hidden}.dw-bar b{display:block;height:100%;background:var(--ko)}
 .dw-pct{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.dash-plot{position:relative}
+.dash-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--ok);border:2px solid var(--surface);transform:translate(-50%,-50%);pointer-events:none}
+.dash-dot.now{box-shadow:0 0 0 5px color-mix(in srgb,var(--ok) 25%,transparent);animation:dashPulse 2s infinite}
+@keyframes dashPulse{50%{box-shadow:0 0 0 9px color-mix(in srgb,var(--ok) 8%,transparent)}}
+.dash-dot.hov{display:none;background:var(--ink)}
+.dash-tip{display:none;position:absolute;top:-6px;transform:translate(-50%,-100%);background:var(--ink);color:var(--bg);font-size:.75rem;padding:5px 9px;border-radius:8px;white-space:nowrap;pointer-events:none;line-height:1.35}.dash-tip span{opacity:.7}
+.dash-goal{margin-top:16px}
+.dash-goal-h{display:flex;justify-content:space-between;gap:10px;font-size:.82rem;color:var(--muted);flex-wrap:wrap}.dash-goal-h b{color:var(--ink)}
+.dash-goal-bar{height:10px;border-radius:10px;background:var(--surface2);margin-top:7px;overflow:hidden}
+.dash-goal-bar i{display:block;height:100%;border-radius:10px;background:linear-gradient(90deg,#4f7cff,#14b88a);position:relative;overflow:hidden}
+.dash-goal-bar i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);transform:translateX(-100%);animation:dashShine 2.6s infinite}
+@keyframes dashShine{to{transform:translateX(100%)}}
+.dash-week-h{font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin:16px 0 8px}
+.dash-week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.dw-day{border-radius:12px;padding:8px 4px;text-align:center;background:var(--surface2);border:1px solid transparent}
+.dw-day span{display:block;font-size:.7rem;color:var(--muted);text-transform:capitalize}.dw-day b{display:block;font-size:1.05rem;font-variant-numeric:tabular-nums;margin-top:2px}
+.dw-day.l1{background:color-mix(in srgb,var(--ok) 10%,var(--surface2))}
+.dw-day.l2{background:color-mix(in srgb,var(--ok) 25%,var(--surface2))}
+.dw-day.l3{background:color-mix(in srgb,var(--ok) 45%,var(--surface2))}
+.dw-day.l4{background:var(--ok)}.dw-day.l4 b,.dw-day.l4 span{color:#fff}
+.dw-day.today{border-color:var(--ok)}
+.dash-pace{display:flex;align-items:center;gap:14px;margin:12px 0 4px;padding:14px;border-radius:14px;background:linear-gradient(135deg,color-mix(in srgb,#4f7cff 14%,transparent),color-mix(in srgb,#14b88a 16%,transparent))}
+.dp-big{font-size:2.2rem;font-weight:800;letter-spacing:-.03em;line-height:1;background:linear-gradient(90deg,#4f7cff,#14b88a);-webkit-background-clip:text;background-clip:text;color:transparent;font-variant-numeric:tabular-nums}
+.dp-txt{display:flex;flex-direction:column;font-size:.8rem;gap:2px}.dp-txt span{color:var(--muted)}.dp-txt span b{color:var(--ink)}
+.dash-rep{display:flex;flex-direction:column;align-items:center}
+.dash-rep .dash-legs{width:100%}
+.dash-donut-c b small{font-size:.55em;color:var(--muted)}
+.dash-subj{margin-top:16px}
+.ds-h{display:flex;justify-content:space-between;align-items:center;font-size:.86rem;font-weight:600;margin-bottom:6px;gap:8px}
+.ds-h em{font-style:normal}.ds-muted{color:var(--muted);font-weight:500;font-size:.8rem}
+.ds-bar{display:flex;height:10px;border-radius:10px;background:var(--surface2);overflow:hidden;gap:2px}.ds-bar i{display:block;height:100%}
+.dash-kpi .dash-spark{height:44px}
 .dash-wait{color:var(--muted);text-align:center;padding:30px}
 @media (max-width:900px){.span8,.span4{grid-column:span 12}.span3{grid-column:span 6}}
+@media (max-width:560px){.span6{grid-column:span 12}.dash-week{gap:4px}.dw-day b{font-size:.9rem}}
 @media (max-width:480px){.dash{gap:10px}.dash-card{padding:14px}.dash-big{font-size:2.4rem}.dash-mid{font-size:1.6rem}}
 .subj{padding:24px}
 #profileGate{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:20px}
@@ -2451,9 +2484,13 @@ function dashData(){
     if (!first || d < first) continue;
     let tot = 0;
     live.forEach((x, n) => { const r = recs[n]; if (!r.length) { tot += summary(x).m; return; } const b = r.filter(z => z[0] <= d); tot += b.length ? b[b.length-1][1] : r[0][1]; });
-    pts.push({d, v: total ? tot / total * 100 : 0});
+    pts.push({d, v: total ? tot / total * 100 : 0, n: tot});
   }
-  if (!pts.length) pts.push({d: dayKey(), v: total ? m / total * 100 : 0});
+  if (!pts.length) pts.push({d: dayKey(), v: total ? m / total * 100 : 0, n: m});
+  const wk = dashDays(8)[0];
+  const subj = live.map((x, n) => { const r = recs[n], sm = summary(x); let ref = sm.m;
+    if (r.length) { const b = r.filter(z => z[0] <= wk); ref = b.length ? b[b.length-1][1] : r[0][1]; }
+    return {x, sm, gain: sm.m - ref}; });
   // série de jours
   const today = dayKey(); let streak = 0, best = 0, run = 0;
   { const t = new Date(); t.setHours(12); let i = 0; if (!(act[today] && act[today].a)) i = 1;
@@ -2461,21 +2498,54 @@ function dashData(){
   const all = Object.keys(act).sort(); let last = null;
   for (const d of all) { if (!act[d].a) continue; const cur = new Date(d + "T12:00"); if (last && (cur - last) / 864e5 < 1.5) run++; else run = 1; best = Math.max(best, run); last = cur; }
   const last7 = dashDays(8).slice(0, 7).map(d => (act[d] && act[d].a) || 0);
-  return {live, m, p, w, u, total, g, tries, answersAll, act, weak: weak.slice(0, 5), days, pts, streak, best: Math.max(best, streak),
+  return {live, subj, m, p, w, u, total, g, tries, answersAll, act, weak: weak.slice(0, 5), days, pts, streak, best: Math.max(best, streak),
     today: act[today] || {a:0, c:0}, avg7: last7.reduce((s, v) => s + v, 0) / 7};
 }
 function dashArea(pts){
   if (!pts.length) return "";
   const W = 600, H = 170, vals = pts.map(p => p.v);
   let lo = Math.min(...vals), hi = Math.max(...vals); const pad = Math.max(2, (hi - lo) * .25); lo = Math.max(0, lo - pad); hi = Math.min(100, hi + pad); if (hi - lo < 4) { hi = Math.min(100, lo + 4); lo = Math.max(0, hi - 4); }
-  const n = Math.max(2, pts.length), X = i => pts.length === 1 ? (i ? W : 0) : i / (pts.length - 1) * W, Y = v => H - 8 - (v - lo) / (hi - lo) * (H - 16);
+  const X = i => pts.length === 1 ? W : i / (pts.length - 1) * W, Y = v => H - 10 - (v - lo) / (hi - lo) * (H - 20);
   const P = pts.length === 1 ? [[0, Y(vals[0])], [W, Y(vals[0])]] : pts.map((p, i) => [X(i), Y(p.v)]);
   const line = P.map((q, i) => (i ? "L" : "M") + q[0].toFixed(1) + " " + q[1].toFixed(1)).join(" ");
-  return `<svg class="dash-area" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" data-n="${n}">
+  const data = JSON.stringify(pts.map((p, i) => ({x: X(i) / W * 100, y: Y(p.v) / H * 100, t: dashFmtDay(p.d), v: Math.round(p.v * 10) / 10, n: p.n})));
+  return `<div class="dash-plot" data-pts='${data}'><svg class="dash-area" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
     <defs><linearGradient id="dashFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--ok)" stop-opacity=".35"/><stop offset="1" stop-color="var(--ok)" stop-opacity="0"/></linearGradient></defs>
     <path d="${line} L${W} ${H} L0 ${H} Z" fill="url(#dashFill)"/>
     <path d="${line}" fill="none" stroke="var(--ok)" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>
-  </svg><div class="dash-axis"><span>${dashFmtDay(pts[0].d)}</span><span>${lo.toFixed(0)} % - ${hi.toFixed(0)} %</span><span>aujourd'hui</span></div>`;
+  </svg><i class="dash-dot now" style="left:${X(pts.length-1) / W * 100}%;top:${Y(vals[vals.length-1]) / H * 100}%"></i><i class="dash-dot hov"></i><div class="dash-tip"></div></div>
+  <div class="dash-axis"><span>${dashFmtDay(pts[0].d)}</span><span>${lo.toFixed(0)} % - ${hi.toFixed(0)} %</span><span>aujourd'hui</span></div>`;
+}
+function dashPlotHover(root){
+  root.querySelectorAll(".dash-plot").forEach(pl => {
+    const pts = JSON.parse(pl.dataset.pts || "[]"), dot = pl.querySelector(".hov"), tip = pl.querySelector(".dash-tip");
+    if (pts.length < 2) return;
+    const show = e => { const r = pl.getBoundingClientRect(), x = ((e.touches ? e.touches[0].clientX : e.clientX) - r.left) / r.width * 100;
+      let b = pts[0]; for (const p of pts) if (Math.abs(p.x - x) < Math.abs(b.x - x)) b = p;
+      dot.style.cssText = `left:${b.x}%;top:${b.y}%;display:block`; tip.style.cssText = `left:${Math.min(85, Math.max(15, b.x))}%;display:block`;
+      tip.innerHTML = `<b>${String(b.v).replace(".", ",")} %</b> · ${b.n} maîtrisées<br><span>${b.t}</span>`; };
+    pl.addEventListener("mousemove", show); pl.addEventListener("touchstart", show, {passive: true}); pl.addEventListener("touchmove", show, {passive: true});
+    pl.addEventListener("mouseleave", () => { dot.style.display = "none"; tip.style.display = "none"; });
+  });
+}
+function dashWeek(D){
+  const byDay = {}; D.pts.forEach(p => byDay[p.d] = p.n);
+  const ds = dashDays(8), today = dayKey();
+  const cells = ds.slice(1).map((d, i) => {
+    const prev = byDay[ds[i]], cur = byDay[d], a = D.act[d] && D.act[d].a;
+    const g = cur !== undefined && prev !== undefined ? cur - prev : null;
+    const lvl = g === null ? 0 : g <= 0 ? (a ? 1 : 0) : g < 5 ? 2 : g < 15 ? 3 : 4;
+    const [y, mo, dd] = d.split("-").map(Number), wd = new Date(y, mo-1, dd).toLocaleDateString("fr-FR", {weekday: "short"}).replace(".", "");
+    return `<div class="dw-day l${lvl}${d === today ? " today" : ""}" title="${dashFmtDay(d)} : ${a || 0} réponse${a > 1 ? "s" : ""}"><span>${d === today ? "auj." : wd}</span><b>${g === null ? "·" : (g > 0 ? "+" : "") + g}</b></div>`;
+  }).join("");
+  return `<div class="dash-week-h"><span>Questions maîtrisées gagnées chaque jour</span></div><div class="dash-week">${cells}</div>`;
+}
+function dashGoal(D){
+  const pct = D.total ? D.m / D.total * 100 : 0, steps = [5, 10, 25, 50, 75, 90, 100];
+  const next = steps.find(s => s > pct + 1e-9) || 100, prev = [0, ...steps].filter(s => s < next).pop();
+  const need = Math.max(0, Math.ceil(next / 100 * D.total) - D.m), fill = (pct - prev) / (next - prev) * 100;
+  return `<div class="dash-goal"><div class="dash-goal-h"><span>Prochain palier : <b>${next} %</b></span><span>${need ? `plus que <b>${need}</b> question${need > 1 ? "s" : ""} à maîtriser` : "atteint !"}</span></div>
+    <div class="dash-goal-bar"><i style="width:${Math.max(2, Math.min(100, fill))}%"></i></div></div>`;
 }
 function dashBars(D){
   const vals = D.days.map(d => D.act[d] || {a:0, c:0}), mx = Math.max(5, ...vals.map(v => v.a));
@@ -2489,7 +2559,16 @@ function dashDonut(D){
   const R = 42, C = 2 * Math.PI * R, segs = [["m","Maîtrisées"],["p","En cours"],["w","À revoir"],["u","Jamais vues"]];
   let off = 0; const arcs = segs.map(([k]) => { const v = D[k] / (D.total || 1) * C; const s = `<circle r="${R}" cx="55" cy="55" fill="none" stroke="${DASH_COL[k]}" stroke-width="13" stroke-dasharray="${v} ${C - v}" stroke-dashoffset="${-off}" transform="rotate(-90 55 55)"/>`; off += v; return s; }).join("");
   const leg = segs.map(([k, l]) => `<div class="dash-leg"><i style="background:${DASH_COL[k]}"></i><span>${l}</span><b>${D[k]}</b></div>`).join("");
-  return `<div class="dash-donut"><svg viewBox="0 0 110 110">${arcs}</svg><div class="dash-donut-c"><b>${D.total}</b><span>questions</span></div></div><div class="dash-legs">${leg}</div>`;
+  const subs = D.subj.map(({x, sm, gain}) => {
+    const t = sm.total || 1, seg = k => `<i style="width:${sm[k] / t * 100}%;background:${DASH_COL[k]}"></i>`;
+    return `<div class="dash-subj"><div class="ds-h"><span>${x.name}</span><span>${gain > 0 ? `<em class="dash-delta up">▲ +${gain} cette semaine</em>` : `<em class="ds-muted">${Math.round(sm.m / t * 100)} % maîtrisé</em>`}</span></div><div class="ds-bar">${seg("m")}${seg("p")}${seg("w")}</div></div>`;
+  }).join("");
+  const wkGain = D.subj.reduce((a, z) => a + Math.max(0, z.gain), 0);
+  const pct = D.total ? D.m / D.total * 100 : 0, steps = [5, 10, 25, 50, 75, 90, 100], next = steps.find(s => s > pct + 1e-9) || 100;
+  const need = Math.max(0, Math.ceil(next / 100 * D.total) - D.m), perDay = wkGain / 7, eta = perDay > 0 ? Math.ceil(need / perDay) : null;
+  const pace = `<div class="dash-pace"><div class="dp-big">${wkGain > 0 ? "+" + wkGain : "0"}</div><div class="dp-txt"><b>questions maîtrisées cette semaine</b><span>${
+    !need ? "Palier de " + next + " % atteint, bravo !" : eta ? `À ce rythme, ${next} % dans environ <b>${eta} jour${eta > 1 ? "s" : ""}</b>` : "Lance une série pour démarrer ta progression"}</span></div></div>`;
+  return pace + `<div class="dash-rep"><div class="dash-donut"><svg viewBox="0 0 110 110">${arcs}</svg><div class="dash-donut-c"><b>${D.total ? Math.round(D.m / D.total * 100) : 0}<small> %</small></b><span>maîtrisé</span></div></div><div class="dash-legs">${leg}</div></div>${subs}`;
 }
 function dashSpark(arr, col){
   if (arr.length < 2) return "";
@@ -2525,35 +2604,25 @@ function renderDash(){
     <div class="dash-k">Maîtrise globale</div>
     <div class="dash-big">${fmtP(pct)}<small> %</small> ${dashDelta(d7, " pt" + (Math.abs(d7) >= 2 ? "s" : "") + " sur 7 j")}</div>
     <div class="dash-sub">${D.m} questions maîtrisées sur ${D.total} · ${D.live.map(x => `${x.name} ${fmtP(summary(x).m / summary(x).total * 100)} %`).join(" · ")}</div>
+    ${dashGoal(D)}
     <div class="${D.pts.length < 2 ? "dash-empty" : ""}" data-empty="La courbe se dessine au fil des jours de révision">${dashArea(D.pts)}</div>
+    ${dashWeek(D)}
   </div>
   <div class="dash-card span4">
     <div class="dash-k">Répartition</div>
     ${dashDonut(D)}
   </div>
-  <div class="dash-card span3 dash-kpi">
-    <div class="dash-k">Questions vues</div>
-    <div class="dash-mid">${fmtP(seenPct)}<small> %</small></div>
-    <div class="dash-sub">${D.total - D.u} sur ${D.total}</div>
-    <div class="dash-meter"><i style="width:${seenPct}%"></i></div>
-  </div>
-  <div class="dash-card span3 dash-kpi">
+  <div class="dash-card span6 dash-kpi">
     <div class="dash-k">Taux de réussite</div>
     <div class="dash-mid">${rate === null ? "-" : fmtP(rate) + "<small> %</small>"}</div>
     <div class="dash-sub">${rateT === null ? "pas encore de réponse aujourd'hui" : "aujourd'hui " + Math.round(rateT) + " %"} ${rate !== null && rateT !== null ? dashDelta(rateT - rate, " pts") : ""}</div>
-    ${dashSpark(spR, "var(--accent)")}
+    ${dashSpark(spR, "var(--accent)")}<div class="dash-axis"><span>il y a 14 j</span><span>aujourd'hui</span></div>
   </div>
-  <div class="dash-card span3 dash-kpi">
-    <div class="dash-k">Série</div>
-    <div class="dash-mid">${D.streak}<small> jour${D.streak > 1 ? "s" : ""}</small></div>
-    <div class="dash-sub">record : ${D.best} jour${D.best > 1 ? "s" : ""} d'affilée</div>
-    <div class="dash-dots">${dashDays(14).map(d => `<i class="${D.act[d] && D.act[d].a ? "on" : ""}" title="${dashFmtDay(d)}"></i>`).join("")}</div>
-  </div>
-  <div class="dash-card span3 dash-kpi">
+  <div class="dash-card span6 dash-kpi">
     <div class="dash-k">Aujourd'hui</div>
     <div class="dash-mid">${D.today.a}<small> réponse${D.today.a > 1 ? "s" : ""}</small></div>
     <div class="dash-sub">moyenne 7 j : ${fmtP(D.avg7)} ${D.avg7 > 0 ? dashDelta((D.today.a - D.avg7) / D.avg7 * 100, " %") : ""}</div>
-    ${dashSpark(spA, "var(--ok)")}
+    ${dashSpark(spA, "var(--ok)")}<div class="dash-axis"><span>il y a 14 j</span><span>aujourd'hui</span></div>
   </div>
   <div class="dash-card span8">
     <div class="dash-k">Activité sur 30 jours <span class="dash-legend"><i class="ok"></i>justes <i class="ko"></i>fausses</span></div>
@@ -2563,6 +2632,7 @@ function renderDash(){
     <div class="dash-k">Points faibles</div>
     ${weak}
   </div>`;
+  dashPlotHover(el);
   el.querySelectorAll(".dash-weak").forEach(b => b.onclick = () => {
     const x = SUBJECTS[b.dataset.s]; S = x; fmt = S.fmt; x.sel = new Set([b.dataset.t]); go("subject");
   });
