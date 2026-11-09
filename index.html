@@ -206,6 +206,25 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 .voice-note{margin-top:10px;background:var(--surface2);border-radius:10px;padding:8px 12px}
 .sync{margin-top:26px;font-size:.78em;color:var(--muted)}
 .sync summary{font-size:.95em;opacity:.8}
+.brand{display:flex;align-items:center;gap:8px;border:0;background:none;padding:0;margin-right:14px;font:inherit;color:var(--ink);cursor:pointer}
+.brand-logo{width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:800;font-size:15px}
+.brand-txt{font-weight:700;white-space:nowrap}.brand-txt small{font-weight:500;color:var(--muted);margin-left:2px}
+.pm-wrap{padding:0;border:0;background:none}
+.pm-btn{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 10px 4px 4px;font:inherit;font-size:14px;cursor:pointer}
+.pm-btn:hover{border-color:var(--accent)}
+.pm-av{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px;flex:none}
+.pm-av.big{width:44px;height:44px;font-size:19px}
+.pm-chev{color:var(--muted);font-size:11px}
+.pm-menu{position:fixed;z-index:40;width:290px;max-width:calc(100vw - 16px);background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.18);padding:8px;animation:pmIn .12s ease-out}
+@keyframes pmIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.pm-head{display:flex;gap:12px;align-items:center;padding:8px 8px 12px;border-bottom:1px solid var(--line)}
+.pm-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:5px;vertical-align:1px}
+.pm-sec{padding:10px 8px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.pm-title{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:6px}
+.pm-stat{display:grid;grid-template-columns:1fr auto auto;gap:10px;font-size:13px;padding:3px 0}.pm-stat b{font-weight:600}.pm-stat b.ok{color:var(--ok)}
+.pm-item{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;font-size:14px;color:var(--ink);padding:9px 10px;border-radius:8px;cursor:pointer}
+.pm-item:hover{background:var(--accent-soft)}.pm-item.danger{color:var(--ko)}
+@media (max-width:560px){.brand-txt,.pm-name{display:none}.pm-btn{padding:3px 8px 3px 3px}.brand{margin-right:8px}}
 #profileGate{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:20px}
 .pg-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px;max-width:420px;width:100%;box-shadow:var(--shadow)}
 .pg-card label{display:block;margin-top:12px}
@@ -215,6 +234,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 </head>
 <body>
 <header class="top"><div class="in">
+  <button class="brand" id="brand" onclick="if(view==='quiz'){pauseTimer();saveSession();voiceStop();} if(S)flush(S); go('home')" title="Accueil"><span class="brand-logo">R</span><span class="brand-txt">Révisions <small>L1 STAPS</small></span></button>
   <nav class="crumb" id="crumb"></nav>
   <div class="spacer"></div>
   <div class="save" id="save"><i></i><span>Chargement...</span></div>
@@ -2663,22 +2683,65 @@ async function supaStart(live, anonLocals){
     return false;
   }
 }
-// Affichage du profil dans l'en-tête
+// ================= En-tête : bouton profil en haut à droite =================
+function profileInitial(n){ return (n || "?").trim().charAt(0).toUpperCase(); }
+function profileStats(){
+  return Object.values(SUBJECTS).filter(x => x.mem).map(x => {
+    const v = Object.values(x.mem); const seen = v.length, master = v.filter(st => st && st.l >= 4).length;
+    return {name: x.name, seen, master};
+  });
+}
+async function profileLeave(){
+  try { if (view === "quiz") { pauseTimer(); saveSession(); voiceStop(); } } catch(e) {}
+  try { await Promise.all(Object.values(SUBJECTS).filter(x => x.ref).map(x => flush(x))); } catch(e) {}
+  try { await SB.auth.signOut(); } catch(e) {}
+  location.reload();
+}
+function profileMenuClose(){ const m = $("pmMenu"); if (m) m.remove(); const b = $("pmBtn"); if (b) b.setAttribute("aria-expanded", "false"); }
+function profileMenuOpen(){
+  if ($("pmMenu")) { profileMenuClose(); return; }
+  const online = storeMode === "account" && window.PROFILE_NAME;
+  const m = document.createElement("div"); m.id = "pmMenu"; m.className = "pm-menu"; m.setAttribute("role", "menu");
+  if (online) {
+    const stats = profileStats().map(t => `<div class="pm-stat"><span>${t.name}</span><b>${t.seen} ${t.seen > 1 ? "vues" : "vue"}</b><b class="ok">${t.master} ${t.master > 1 ? "maîtrisées" : "maîtrisée"}</b></div>`).join("");
+    m.innerHTML = `<div class="pm-head"><div class="pm-av big">${profileInitial(window.PROFILE_NAME)}</div><div><b>${window.PROFILE_NAME}</b><div class="small muted"><i class="pm-dot"></i>Synchronisé en ligne</div></div></div>
+      <div class="pm-sec"><div class="pm-title">Ma progression</div>${stats || '<div class="small muted">Pas encore de réponses.</div>'}</div>
+      <button class="pm-item" data-a="home">Accueil</button>
+      <button class="pm-item" data-a="sync">Enregistrer maintenant</button>
+      <button class="pm-item" data-a="switch">Changer de profil</button>
+      <button class="pm-item danger" data-a="out">Se déconnecter</button>`;
+  } else {
+    m.innerHTML = `<div class="pm-head"><div class="pm-av big">?</div><div><b>Sans profil</b><div class="small muted">Progression gardée sur cet appareil seulement</div></div></div>
+      <button class="pm-item" data-a="home">Accueil</button>
+      <button class="pm-item" data-a="login">Se connecter ou créer un profil</button>`;
+  }
+  document.body.appendChild(m);
+  const b = $("pmBtn"), r = b.getBoundingClientRect();
+  m.style.top = (r.bottom + 8) + "px"; m.style.right = Math.max(8, innerWidth - r.right) + "px";
+  b.setAttribute("aria-expanded", "true");
+  m.querySelectorAll("[data-a]").forEach(x => x.onclick = async () => {
+    const a = x.dataset.a;
+    if (a === "home") { profileMenuClose(); if (view === "quiz") { pauseTimer(); saveSession(); voiceStop(); } Object.values(SUBJECTS).filter(s => s.ref).forEach(s => flush(s)); go("home"); }
+    if (a === "sync") { x.textContent = "Enregistrement..."; try { await Promise.all(Object.values(SUBJECTS).filter(s => s.ref).map(s => flush(s))); x.textContent = "Enregistré ✓"; } catch(e) { x.textContent = "Échec, réessaie"; } }
+    if (a === "switch" || a === "out") { x.textContent = "Déconnexion..."; profileLeave(); }
+    if (a === "login") location.reload();
+  });
+}
+document.addEventListener("click", e => { const m = $("pmMenu"); if (m && !m.contains(e.target) && !e.target.closest("#pmBtn")) profileMenuClose(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") profileMenuClose(); });
+addEventListener("resize", profileMenuClose);
 const _setSaveBase = setSave;
 setSave = function(){
   _setSaveBase();
-  if (window.PROFILE_NAME && storeMode === "account") {
-    const el = $("save");
-    el.querySelector("span").textContent = "Profil " + window.PROFILE_NAME;
-    el.title = "Progression enregistrée en ligne sur ton profil";
-    if (!el.querySelector(".pg-out")) {
-      const b = document.createElement("button"); b.className = "linkbtn pg-out"; b.textContent = "changer";
-      b.style.marginLeft = "6px";
-      b.onclick = async () => { try { await SB.auth.signOut(); } catch(e) {} location.reload(); };
-      el.appendChild(b);
-    }
-    const l = $("saveLong"); if (l) l.textContent = `Profil ${window.PROFILE_NAME} : ta progression est enregistrée en ligne et te suit sur tous tes appareils.`;
-  }
+  const el = $("save");
+  if (storeMode !== "account" && storeMode !== "local") return; // pendant le chargement : pastille normale
+  const online = storeMode === "account" && window.PROFILE_NAME;
+  el.className = "save pm-wrap";
+  el.innerHTML = `<button class="pm-btn" id="pmBtn" aria-haspopup="menu" aria-expanded="false" title="${online ? "Mon profil" : "Se connecter"}">
+    <span class="pm-av">${online ? profileInitial(window.PROFILE_NAME) : "?"}</span><span class="pm-name">${online ? window.PROFILE_NAME : "Se connecter"}</span><span class="pm-chev">▾</span></button>`;
+  $("pmBtn").onclick = e => { e.stopPropagation(); profileMenuOpen(); };
+  const l = $("saveLong");
+  if (l && online) l.textContent = `Profil ${window.PROFILE_NAME} : ta progression est enregistrée en ligne et te suit sur tous tes appareils.`;
 };
 
 </script>
