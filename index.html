@@ -1630,7 +1630,7 @@ const fr = (x, d=2) => (Math.round(x*100)/100).toFixed(d).replace(".", ",").repl
 
 // ================= Sauvegarde =================
 function lsLoad(Sx){ try { const r = localStorage.getItem(Sx.ls); return r ? JSON.parse(r) : null; } catch(e){ return null; } }
-function lsSave(Sx){ try { localStorage.setItem(Sx.ls, JSON.stringify(Sx.mem)); localStorage.setItem(Sx.ls + "-sess", JSON.stringify(Sx.sess || null)); return true; } catch(e){ return false; } }
+function lsSave(Sx){ try { localStorage.setItem(Sx.ls, JSON.stringify(Sx.mem)); localStorage.setItem(Sx.ls + "-sess", JSON.stringify(Sx.sess || null)); localStorage.setItem(Sx.ls + "-t", String(Date.now())); return true; } catch(e){ return false; } }
 function lsLoadSess(Sx){ try { const r = localStorage.getItem(Sx.ls + "-sess"); return r ? JSON.parse(r) : null; } catch(e){ return null; } }
 function setSave(){
   const el = $("save"), txt = el.querySelector("span");
@@ -1689,7 +1689,7 @@ async function flush(Sx){
 }
 
 // ================= Navigation =================
-function go(v){ view = v; renderView(); window.scrollTo(0,0); }
+function go(v){ view = v; renderView(); window.scrollTo(0,0); saveRoute(); }
 function renderView(){
   ["home","subject","quiz","result"].forEach(v => $("v-"+v).classList.toggle("hidden", v !== view));
   const c = $("crumb");
@@ -1891,7 +1891,7 @@ $("pauseBtn").onclick = () => setPaused(!paused);
 $("pauseResume").onclick = () => setPaused(false);
 $("pauseQuit").onclick = () => { saveSession(); flush(S); setPaused(false); pauseTimer(); go("subject"); };
 $("sessResume").onclick = () => {
-  const s = S.sess; if (!s) return;
+  const s = S.sess; if (!s) return; histDone = {};
   fmt = S.fmt = s.fmt;
   const idx = {}; keys().forEach((k,i) => idx[k] = i);
   const keep = s.keys.map((k,i) => idx[k] !== undefined ? i : -1).filter(i => i >= 0);
@@ -2568,6 +2568,26 @@ function renderDash(){
   });
 }
 
+// ================= Retour au même endroit après un rechargement =================
+let routeRestoring = false;
+function saveRoute(){ if (routeRestoring) return; try { localStorage.setItem("qcm-route", JSON.stringify({v: view, s: S ? S.id : null, at: Date.now()})); } catch(e) {} }
+function restoreRoute(){
+  let r = null; try { r = JSON.parse(localStorage.getItem("qcm-route") || "null"); } catch(e) {}
+  if (!r || !r.s || !SUBJECTS[r.s] || r.v === "home") return;
+  if (Date.now() - (r.at || 0) > 12 * 3600e3) return; // trop ancien : on repart de l'accueil
+  const x = SUBJECTS[r.s]; if (!fmtList(x).length) return;
+  routeRestoring = true;
+  try {
+    S = x; fmt = S.fmt;
+    if (r.v === "quiz" && S.sess) { go("subject"); renderSubject(); $("sessResume").onclick(); }
+    else go("subject");
+  } finally { routeRestoring = false; saveRoute(); }
+}
+// avant de quitter ou recharger : on fige la série en cours (position, chrono) dans ce navigateur
+function freezeNow(){ try { if (view === "quiz" && S) { saveSession(); lsSave(S); } } catch(e) {} }
+addEventListener("pagehide", freezeNow);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") { freezeNow(); if (S && S.ref) try { flush(S); } catch(e) {} } });
+
 // ================= Poser une question (Claude + liens Google) =================
 let sampleFn = null, sampleOff = false, sampleReady = false;
 // Hors de claude.ai (version micro, site) : on ouvre claude.ai dans un nouvel onglet avec la question pré-remplie
@@ -2716,7 +2736,7 @@ function svgImg(svg){
   return `<img class="svg" alt="Schéma" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}">`;
 }
 
-renderView(); setSave(); initStore(); initSample();
+renderView(); setSave(); initStore().then(restoreRoute, restoreRoute); initSample();
 
 
 window.VOICE_ENGINE = "vosk";
@@ -2885,16 +2905,23 @@ async function supaStart(live, anonLocals){
     SB_USER = s.data && s.data.session ? s.data.session.user : null;
     if (!SB_USER) { const r = await profileGate(); if (!r) return false; SB_USER = r.user; isNew = r.isNew; }
     window.PROFILE_NAME = (SB_USER.user_metadata && SB_USER.user_metadata.name) || SB_USER.email.split("@")[0];
-    const {data, error} = await SB.from("progress").select("subject,mem,sess").eq("user_id", SB_USER.id);
+    const {data, error} = await SB.from("progress").select("subject,mem,sess,updated_at").eq("user_id", SB_USER.id);
     if (error) throw error;
     const rows = {}; (data || []).forEach(r => rows[r.subject] = r);
     for (const x of live) {
       const base = x.ls; x.ls = base + "-" + SB_USER.id; // cache local propre au profil
       const row = rows[x.id];
-      if (row) { x.mem = row.mem || {}; x.sess = row.sess || null; }
+      const cache = lsLoad(x);
+      let localT = 0; try { localT = +localStorage.getItem(x.ls + "-t") || 0; } catch(e) {}
+      const rowT = row && row.updated_at ? Date.parse(row.updated_at) : 0;
+      if (row && cache && localT > rowT + 1500) {
+        // cet appareil a des réponses plus récentes que le serveur (page fermée avant l'envoi) : on les garde
+        x.mem = cache; let ls = null; try { ls = JSON.parse(localStorage.getItem(x.ls + "-sess") || "null"); } catch(e) {}
+        x.sess = ls; scheduleSave(x);
+      }
+      else if (row) { x.mem = row.mem || {}; x.sess = row.sess || null; }
       else {
         // nouveau profil : on y verse la progression de cet appareil (faite sans profil)
-        const cache = lsLoad(x);
         x.mem = cache || (isNew && anonLocals[x.id]) || {}; x.sess = null;
       }
       const sid = x.id;
