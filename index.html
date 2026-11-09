@@ -227,6 +227,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 .pm-item:hover{background:var(--accent-soft)}.pm-item.danger{color:var(--ko)}
 @media (max-width:560px){.brand-txt,.pm-name{display:none}.pm-btn{padding:3px 8px 3px 3px}.brand{margin-right:8px}}
 .pg-err{background:var(--ko-soft);color:var(--ink);border:1px solid var(--ko);border-radius:12px;padding:12px 14px;margin:0 0 16px;font-size:14px;word-break:break-word}
+#v-home h1{margin-bottom:20px}
 #profileGate{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:20px}
 .pg-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px;max-width:420px;width:100%;box-shadow:var(--shadow)}
 .pg-card label{display:block;margin-top:12px}
@@ -248,10 +249,8 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 <!-- Accueil : choix de la matière -->
 <section id="v-home">
   <h1>Révisions</h1>
-  <div class="exam-info">Réponse à l'oral activée : autorise le micro quand le navigateur le demande (désactivable dans les réglages d'une matière). Les questions à Claude et la correction du CP s'ouvrent dans claude.ai. </div>
-  <p class="lead">Choisis ta matière. Ta progression est enregistrée séparément pour chacune.</p>
   <div class="subjects" id="subjects"></div>
-  <details class="sync"><summary>Synchroniser avec l'autre version</summary>
+  <details class="sync" hidden><summary>Synchroniser avec l'autre version</summary>
     <p class="small muted" style="margin:6px 0 8px">Copie ta progression d'un côté, colle-la de l'autre (version en ligne et version micro). Les deux progressions sont fusionnées.</p>
     <div class="row"><button class="btn ghost small" id="syncCopy">Copier ma progression</button><button class="btn ghost small" id="syncOpen">Coller une progression</button><span class="small muted" id="syncMsg"></span></div>
     <textarea id="syncArea" class="hidden" rows="3" style="width:100%;margin-top:8px;font-size:.8em" placeholder="Colle ici le code copié dans l'autre version"></textarea>
@@ -1664,7 +1663,7 @@ function renderHome(){
       <h3>${x.name}</h3><p>${x.desc}</p>
       ${on ? `<div class="meter"><i style="width:${pct}%"></i></div>
       <div class="foot"><span>${sm.total} questions</span><span>${storeReady ? `${pct} % maîtrisé` : "..."}</span></div>
-      <div class="foot" style="margin-top:4px"><span>${fl}</span></div>` : ""}
+` : ""}
     </button>`;
   }).join("");
   $("subjects").querySelectorAll(".subj").forEach(b => b.onclick = () => {
