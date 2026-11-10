@@ -8,11 +8,12 @@ const PREMIUM = {
   //   "examens" = simulations CCI / CT chronométrées
   reserve: window.ABONNEMENT_RESERVE || [],
   avantages: [
-    "Simulations d'examen chronométrées (CCI, CT) illimitées",
-    "Nouvelles questions dès chaque nouveau cours",
-    "Statistiques détaillées et classement",
-    "Soutiens le projet"
+    "Tous les cours : CM, TD et QCM 3 et suivants (les cours 1 et 2 restent gratuits)",
+    "Les nouvelles questions dès chaque nouveau cours",
+    "Simulations d'examen sur tout le programme",
+    "Essai gratuit de 7 jours à la création du profil"
   ],
+  acces: null, essaiFin: null, charge: false,
   etat: null // null = inconnu, true / false une fois vérifié
 };
 const premiumOn = () => window.ABONNEMENT_ACTIF === true;
@@ -25,6 +26,29 @@ async function premiumCheck(force){
   catch(e) { PREMIUM.etat = false; }
   return PREMIUM.etat;
 }
+// Accès aux questions Kinésis+ (abonné ou en essai) : chargées depuis Supabase, à leur place d'origine
+async function premiumLoad(){
+  if (!premiumOn() || PREMIUM.charge || typeof SB === "undefined" || !SB || !SB_USER) return;
+  try {
+    const a = await SB.rpc("has_access"); PREMIUM.acces = !a.error && a.data === true;
+    const e = await SB.rpc("trial_end"); PREMIUM.essaiFin = e.data ? new Date(e.data) : null;
+    if (!PREMIUM.acces) return;
+    let from = 0, n = 0;
+    for (;;) {
+      const r = await SB.from("premium_content").select("subject,fmt,idx,item").order("subject").order("fmt").order("idx").range(from, from + 999);
+      if (r.error) throw r.error;
+      for (const row of r.data) {
+        const x = SUBJECTS[row.subject]; if (!x || !x.F[row.fmt]) continue;
+        const cur = x.F[row.fmt][row.idx];
+        if (qLocked(cur)) { x.F[row.fmt][row.idx] = row.item; n++; }
+      }
+      if (r.data.length < 1000) break; from += 1000;
+    }
+    PREMIUM.charge = true;
+    if (n && view !== "quiz") renderView();
+  } catch(e) { console.warn("Kinésis+ : chargement impossible", e); }
+}
+function premiumTrialLeft(){ if (!PREMIUM.essaiFin) return 0; return Math.max(0, Math.ceil((PREMIUM.essaiFin - Date.now()) / 864e5)); }
 // Lance fn si la fonction est libre (ou si l'abonnement est désactivé), sinon propose Kinésis+
 async function premiumGate(feature, fn){
   if (!premiumOn() || !PREMIUM.reserve.includes(feature) || await premiumCheck()) return fn();
@@ -45,7 +69,7 @@ function premiumOffer(feature){
   d.innerHTML = `<div class="prem-card" role="dialog" aria-label="Kinésis+">
     <button class="prem-x" aria-label="Fermer">×</button>
     <div class="prem-badge">Kinésis+</div>
-    <h2>${feature ? "Cette fonction fait partie de Kinésis+" : "Passe à Kinésis+"}</h2>
+    <h2>${feature === "contenu" ? (PREMIUM.essaiFin && PREMIUM.essaiFin < new Date() ? "Ton essai gratuit est terminé" : "Les cours 3 et suivants sont dans Kinésis+") : feature ? "Cette fonction fait partie de Kinésis+" : "Passe à Kinésis+"}</h2>
     <div class="prem-price"><b>${PREMIUM.prix}</b> / mois <span>sans engagement, résiliable à tout moment</span></div>
     <ul>${PREMIUM.avantages.map(a => `<li>${a}</li>`).join("")}</ul>
     <button class="btn primary" id="premGo" ${online ? "" : "disabled"}>${online ? "S'abonner" : "Connecte-toi à un profil pour t'abonner"}</button>

@@ -18,6 +18,12 @@ SUPA_KEY = "sb_publishable_4A1YYev7-Qmgbl_aRV7CIQ_Gxq267_N"
 # Mise en service : voir docs/abonnement.md
 ABONNEMENT_ACTIF = False
 ABONNEMENT_RESERVE = []  # fonctions réservées aux abonnés, ex. ["examens"]
+# Thèmes gratuits quand l'abonnement est actif (cours 1 et 2) ; le reste vient de Supabase (table premium_content)
+import os
+TEST_ACTIF = os.environ.get("KINESIS_TEST_ACTIF") == "1"  # test local : version « abonnement actif » écrite dans build/, sans toucher au site
+if TEST_ACTIF:
+    ABONNEMENT_ACTIF = True
+GRATUIT = {"anat": ["Q1", "Q2", "T1", "T2", "C1", "C2"], "physio": ["T1", "T2", "C1", "C2"]}
 
 DATA = ["anatomie.js", "physiologie.js", "physiologie_examen.js", "physiologie_examen_2.js", "physiologie_complements.js"]
 
@@ -32,6 +38,24 @@ def check(name, html):
     assert 'charset="UTF-8"' in html, f"{name} : encodage UTF-8 absent"
 
 
+import subprocess, sys
+
+def split_content():
+    out = subprocess.run(["node", str(ROOT / "tools" / "contenu.js"), json.dumps(GRATUIT)], capture_output=True, text=True, check=True)
+    return json.loads(out.stdout)
+
+# Contenu payant à charger dans Supabase : python3 build.py --contenu
+if "--contenu" in sys.argv:
+    paid = split_content()["paid"]
+    (ROOT / "build").mkdir(exist_ok=True)
+    rows = [f"('{p['subject']}','{p['fmt']}',{p['idx']},$j${json.dumps(p['item'], ensure_ascii=False)}$j$::jsonb)" for p in paid]
+    parts = [rows[i:i + 220] for i in range(0, len(rows), 220)]
+    for n, chunk in enumerate(parts, 1):
+        head = "delete from public.premium_content;\n" if n == 1 else ""
+        sql = head + "insert into public.premium_content (subject, fmt, idx, item) values\n" + ",\n".join(chunk) + "\non conflict (subject, fmt, idx) do update set item = excluded.item;\n"
+        (ROOT / "build" / f"contenu_payant_{n}.sql").write_text(sql, encoding="utf-8")
+    print(f"{len(paid)} questions Kinésis+ -> build/contenu_payant_1..{len(parts)}.sql")
+
 # 1) assemblage commun
 data = "\n".join(read("data/" + f) for f in DATA)
 app = (read("app/app.js")
@@ -45,6 +69,9 @@ full = read("template.html").replace("/*__DATA__*/", data).replace("/*__APP__*/"
 check("claude", full)
 
 # 3) site GitHub Pages : profils Supabase, voix Vosk sur l'appareil
+if ABONNEMENT_ACTIF:
+    # seules les questions des cours 1-2 restent dans la page ; les autres sont des emplacements verrouillés
+    full = read("template.html").replace("/*__DATA__*/", split_content()["js"]).replace("/*__APP__*/", app)
 site = full.replace('<meta name="viewport"', '<meta name="theme-color" content="#2f5fd0">\n<meta name="viewport"', 1)
 site = site.replace('<details class="sync">', '<details class="sync" hidden>', 1)
 site = site.replace(
@@ -63,5 +90,5 @@ site = site.replace("voice:false, auto:true};", "voice:true, auto:true};").repla
 assert "voice:true" in site
 site = site.replace("Ta progression est gardée dans ce navigateur.", "")
 check("site", site)
-(ROOT / "index.html").write_text(site, encoding="utf-8")
+(ROOT / ("build/site_actif.html" if TEST_ACTIF else "index.html")).write_text(site, encoding="utf-8")
 print("build ok")

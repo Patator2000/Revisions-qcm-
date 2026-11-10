@@ -39,11 +39,13 @@ const PREFIX = {vf: "q", qcm: "m", open: "o"};
 for (const id in SUBJECTS) {
   const S = SUBJECTS[id];
   S.id = id; S.FOCUSSET = new Set(S.FOCUS);
-  S.K = {}; for (const f in S.F) S.K[f] = S.F[f].map(q => (f === "vf" ? "" : PREFIX[f]) + hkey(q[2]));
+  S.K = {}; for (const f in S.F) S.K[f] = S.F[f].map(q => qLocked(q) ? q[2].lock : (f === "vf" ? "" : PREFIX[f]) + hkey(q[2]));
   S.mem = {}; S.ref = null; S.saving = false; S.dirty = false; S.timer = null;
   S.sel = new Set(Object.keys(S.THEMES)); S.fmt = "vf"; S.target = null; S.sess = null;
   S.TARGETS = S.TARGETS || []; S.RATE = S.RATE || {vf: 30, qcm: 60};
 }
+// Question Kinésis+ pas encore chargée : [partie, thème, {lock: clé}] (voir tools/contenu.js)
+function qLocked(q){ return !!q && q[2] !== null && typeof q[2] === "object" && !Array.isArray(q[2]); }
 function hkey(s){ let h = 5381; for (let i=0;i<s.length;i++) h = ((h<<5) + h + s.charCodeAt(i)) >>> 0; return "q" + h.toString(36); }
 
 const $ = id => document.getElementById(id);
@@ -236,9 +238,10 @@ function renderSubject(){
       const seen = idx.some(i => level(S,i)!==null);
       const pct = Math.round(idx.filter(i => level(S,i)>=4).length / idx.length * 100);
       const b = document.createElement("button");
-      b.className = "chip" + (S.sel.has(t) ? " on" : ""); b.dataset.t = t;
-      b.innerHTML = `<span class="dot"></span><span>${S.THEMES[t]}${S.FOCUSSET.has(t) ? ' <span class="star">*</span>' : ""}</span><span class="pct">${idx.length}${seen ? ` · ${pct} %` : ""}</span>`;
-      b.onclick = () => { S.sel.has(t) ? S.sel.delete(t) : S.sel.add(t); b.classList.toggle("on"); updCount(); };
+      const locked = idx.every(i => qLocked(Q[i]));
+      b.className = "chip" + (S.sel.has(t) && !locked ? " on" : "") + (locked ? " locked" : ""); b.dataset.t = t;
+      b.innerHTML = `<span class="dot"></span><span>${S.THEMES[t]}${S.FOCUSSET.has(t) ? ' <span class="star">*</span>' : ""}</span><span class="pct">${locked ? "🔒 Kinésis+" : idx.length + (seen ? ` · ${pct} %` : "")}</span>`;
+      b.onclick = () => { if (locked) { if (typeof premiumOffer === "function") premiumOffer("contenu"); return; } S.sel.has(t) ? S.sel.delete(t) : S.sel.add(t); b.classList.toggle("on"); updCount(); };
       chips.appendChild(b);
     }
     el.querySelector("[data-all]").onclick = () => { themes.forEach(t => S.sel.add(t)); renderSubject(); };
@@ -273,7 +276,7 @@ function simConfig(){
   const t = S.TARGETS.find(x => x.id === S.target && x.sim);
   if (t) {
     const f = t.fmt || "vf";
-    const avail = S.F[f].filter(q => targetThemes(t).includes(q[1])).length;
+    const avail = S.F[f].filter(q => targetThemes(t).includes(q[1]) && !qLocked(q)).length;
     const n = Math.min(t.sim.n, avail), sec = t.sim.sec ? Math.round(t.sim.sec * n / t.sim.n) : n * S.RATE[f];
     const known = !!t.sim.sec;
     return {label: "Simulation " + t.label, fmt: f, n, sec, themes: targetThemes(t),
@@ -293,7 +296,7 @@ function renderSessCard(){
   const when = new Date(s.at).toLocaleString("fr-FR", {weekday:"long", hour:"2-digit", minute:"2-digit"});
   $("sessTxt").textContent = `${s.label || FMT_LABEL[s.fmt]} : ${done} réponse${done>1?"s":""} sur ${s.keys.length}${s.left != null ? `, ${Math.ceil(s.left/60)} min restantes` : ""} (mise en pause ${when}).`;
 }
-function selected(){ const Q = items(); return Q.map((q,i) => i).filter(i => S.sel.has(Q[i][1])); }
+function selected(){ const Q = items(); return Q.map((q,i) => i).filter(i => S.sel.has(Q[i][1]) && !qLocked(Q[i])); }
 function updCount(){
   const n = selected().length, lim = opts.count ? Math.min(n, opts.count) : n;
   $("selCount").textContent = !storeReady ? "Chargement de ta progression..." : `${lim} question${lim>1?"s":""} sur ${n} sélectionnée${n>1?"s":""}`;
@@ -328,7 +331,10 @@ $("start").onclick = () => {
 $("simStart").onclick = () => {
   const cfg = simConfig(); if (!cfg) return;
   fmt = S.fmt = cfg.fmt;
-  const pool = S.F[fmt].map((q,i) => i).filter(i => cfg.themes.includes(S.F[fmt][i][1]));
+  const inT = S.F[fmt].map((q,i) => i).filter(i => cfg.themes.includes(S.F[fmt][i][1]));
+  // une simulation qui porte sur des cours Kinésis+ non accessibles : on propose Kinésis+ plutôt qu'un examen tronqué
+  if (inT.some(i => qLocked(S.F[fmt][i]))) { if (typeof premiumOffer === "function") premiumOffer("contenu"); return; }
+  const pool = inT;
   const list = shuffle(pool).slice(0, cfg.n);
   sim = {label: cfg.label};
   start(list, cfg.sec);
@@ -371,6 +377,7 @@ $("sessResume").onclick = () => {
   const idx = {}; keys().forEach((k,i) => idx[k] = i);
   const keep = s.keys.map((k,i) => idx[k] !== undefined ? i : -1).filter(i => i >= 0);
   if (!keep.length) { clearSession(); renderSubject(); return; }
+  if (keep.some(i => qLocked(items()[idx[s.keys[i]]]))) { if (typeof premiumOffer === "function") premiumOffer("contenu"); return; } // série avec des questions Kinésis+ non accessibles
   opts.mode = s.mode || opts.mode;
   sim = s.label ? {label: s.label} : null;
   deck = keep.map(i => idx[s.keys[i]]); answers = keep.map(i => s.answers[i]); luck = keep.map(i => !!s.luck[i]); base = keep.map(i => s.base[i]);

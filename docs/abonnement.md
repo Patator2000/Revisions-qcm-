@@ -11,9 +11,19 @@
 | Gestion / résiliation (portail Stripe) | `supabase/functions/abonnement-gestion` | écrit, non déployé |
 | Réception des paiements (webhook) | `supabase/functions/stripe-webhook` | écrit, non déployé |
 | Fenêtre « Kinésis+ » et entrée du menu | `src/app/abonnement.js` | écrit, masqué |
+| Questions des cours 3 et suivants (641) | Supabase, table `premium_content` (`supabase/contenu_payant.sql`) | chargées, lisibles seulement avec un accès |
+| Essai gratuit de 7 jours dès la création du profil | `has_access()`, `trial_end()`, réglage `essai_jours` | en place |
 | Interrupteur | `build.py` : `ABONNEMENT_ACTIF = False` | éteint |
 
 Sécurité : le site ne peut que **lire** son propre abonnement. Seul le webhook, avec la clé secrète de Stripe et la clé « service » de Supabase rangées sur le serveur, peut l'écrire. Aucune clé secrète n'est dans ce dépôt.
+
+## Contenu gratuit et contenu Kinésis+
+
+- **Gratuit, dans la page** : CM 1-2, TD 1-2 et QCM 1-2 (anatomie et physiologie).
+- **Kinésis+** : tout le reste (CM, TD, QCM 3 et suivants), stocké dans Supabase et servi seulement aux abonnés ou aux profils en essai. Chaque question garde sa place, donc la progression déjà faite est conservée.
+- **Mettre à jour le contenu payant** après une modification des questions : `python3 build.py --contenu`, puis exécuter `build/contenu_payant_1..3.sql` dans l'éditeur SQL de Supabase.
+- **Limite** : un abonné peut toujours recopier ce qu'il voit à l'écran. La protection empêche seulement de tout récupérer sans compte.
+- **Important** : tant que le dépôt GitHub est public, les questions restent lisibles dans `src/data`. Le jour du lancement, passer le dépôt en **privé** (GitHub Pages reste disponible avec un compte GitHub Pro, sinon héberger le site ailleurs, par exemple Netlify ou Cloudflare Pages).
 
 ## Mise en service (le jour venu)
 
@@ -26,8 +36,8 @@ Sécurité : le site ne peut que **lire** son propre abonnement. Seul le webhook
    - `SITE_URL` : `https://patator2000.github.io/Revisions-qcm-/`
 4. **Déployer les fonctions** : `supabase functions deploy abonnement-paiement`, `abonnement-gestion`, `stripe-webhook` (le fichier `supabase/config.toml` règle déjà la vérification des jetons).
 5. **Webhook Stripe** : ajouter l'adresse `https://eempregmkymltwgzrofl.supabase.co/functions/v1/stripe-webhook` avec les événements `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`. Copier le secret de signature dans `STRIPE_WEBHOOK_SECRET`.
-6. **Choisir ce qui devient payant** dans `build.py` : `ABONNEMENT_RESERVE = ["examens"]` réserve les simulations d'examen. Laisser vide pour un abonnement de soutien sans rien bloquer.
-7. **Allumer** : `ABONNEMENT_ACTIF = True`, puis `python3 build.py` et publier.
+6. **Options** dans `build.py` : `GRATUIT` liste les thèmes gratuits ; `ABONNEMENT_RESERVE = ["examens"]` réserve aussi les simulations d'examen.
+7. **Allumer** : `ABONNEMENT_ACTIF = True`, puis `python3 build.py` et publier. La page ne contient alors plus que les cours 1-2. Passer le dépôt en privé.
 8. **Tester en mode test Stripe** (carte de test `4242 4242 4242 4242`) avant de passer aux clés réelles.
 
 ## Avant de faire payer : à vérifier

@@ -91,6 +91,7 @@ h2{font-size:1rem;margin:0 0 .7em}
 .th-t{font-weight:700}.th-edit{margin-left:auto;color:var(--accent);font-size:.85em}.themes-box[open] .th-edit{display:none}
 .themes-box .part{padding:10px 0 2px}.themes-box .part-head{margin-bottom:6px}.themes-box .part-head b{font-size:.84em}
 .themes-box .chips{gap:5px}
+.chip.locked{opacity:.75;border-style:dashed}.chip.locked .pct{color:var(--accent);font-weight:600}
 .themes-box .chip{padding:3px 9px 3px 6px;font-size:.76em;gap:5px}
 .themes-box .chip .dot{width:11px;height:11px}.themes-box .chip.on .dot::after{width:4px;height:4px}
 .reset-link{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:none;color:var(--muted);font:inherit;font-size:.78em;padding:4px 10px;border-radius:999px;cursor:pointer;transition:all .15s}
@@ -1656,11 +1657,13 @@ const PREFIX = {vf: "q", qcm: "m", open: "o"};
 for (const id in SUBJECTS) {
   const S = SUBJECTS[id];
   S.id = id; S.FOCUSSET = new Set(S.FOCUS);
-  S.K = {}; for (const f in S.F) S.K[f] = S.F[f].map(q => (f === "vf" ? "" : PREFIX[f]) + hkey(q[2]));
+  S.K = {}; for (const f in S.F) S.K[f] = S.F[f].map(q => qLocked(q) ? q[2].lock : (f === "vf" ? "" : PREFIX[f]) + hkey(q[2]));
   S.mem = {}; S.ref = null; S.saving = false; S.dirty = false; S.timer = null;
   S.sel = new Set(Object.keys(S.THEMES)); S.fmt = "vf"; S.target = null; S.sess = null;
   S.TARGETS = S.TARGETS || []; S.RATE = S.RATE || {vf: 30, qcm: 60};
 }
+// Question Kinésis+ pas encore chargée : [partie, thème, {lock: clé}] (voir tools/contenu.js)
+function qLocked(q){ return !!q && q[2] !== null && typeof q[2] === "object" && !Array.isArray(q[2]); }
 function hkey(s){ let h = 5381; for (let i=0;i<s.length;i++) h = ((h<<5) + h + s.charCodeAt(i)) >>> 0; return "q" + h.toString(36); }
 
 const $ = id => document.getElementById(id);
@@ -1853,9 +1856,10 @@ function renderSubject(){
       const seen = idx.some(i => level(S,i)!==null);
       const pct = Math.round(idx.filter(i => level(S,i)>=4).length / idx.length * 100);
       const b = document.createElement("button");
-      b.className = "chip" + (S.sel.has(t) ? " on" : ""); b.dataset.t = t;
-      b.innerHTML = `<span class="dot"></span><span>${S.THEMES[t]}${S.FOCUSSET.has(t) ? ' <span class="star">*</span>' : ""}</span><span class="pct">${idx.length}${seen ? ` · ${pct} %` : ""}</span>`;
-      b.onclick = () => { S.sel.has(t) ? S.sel.delete(t) : S.sel.add(t); b.classList.toggle("on"); updCount(); };
+      const locked = idx.every(i => qLocked(Q[i]));
+      b.className = "chip" + (S.sel.has(t) && !locked ? " on" : "") + (locked ? " locked" : ""); b.dataset.t = t;
+      b.innerHTML = `<span class="dot"></span><span>${S.THEMES[t]}${S.FOCUSSET.has(t) ? ' <span class="star">*</span>' : ""}</span><span class="pct">${locked ? "🔒 Kinésis+" : idx.length + (seen ? ` · ${pct} %` : "")}</span>`;
+      b.onclick = () => { if (locked) { if (typeof premiumOffer === "function") premiumOffer("contenu"); return; } S.sel.has(t) ? S.sel.delete(t) : S.sel.add(t); b.classList.toggle("on"); updCount(); };
       chips.appendChild(b);
     }
     el.querySelector("[data-all]").onclick = () => { themes.forEach(t => S.sel.add(t)); renderSubject(); };
@@ -1890,7 +1894,7 @@ function simConfig(){
   const t = S.TARGETS.find(x => x.id === S.target && x.sim);
   if (t) {
     const f = t.fmt || "vf";
-    const avail = S.F[f].filter(q => targetThemes(t).includes(q[1])).length;
+    const avail = S.F[f].filter(q => targetThemes(t).includes(q[1]) && !qLocked(q)).length;
     const n = Math.min(t.sim.n, avail), sec = t.sim.sec ? Math.round(t.sim.sec * n / t.sim.n) : n * S.RATE[f];
     const known = !!t.sim.sec;
     return {label: "Simulation " + t.label, fmt: f, n, sec, themes: targetThemes(t),
@@ -1910,7 +1914,7 @@ function renderSessCard(){
   const when = new Date(s.at).toLocaleString("fr-FR", {weekday:"long", hour:"2-digit", minute:"2-digit"});
   $("sessTxt").textContent = `${s.label || FMT_LABEL[s.fmt]} : ${done} réponse${done>1?"s":""} sur ${s.keys.length}${s.left != null ? `, ${Math.ceil(s.left/60)} min restantes` : ""} (mise en pause ${when}).`;
 }
-function selected(){ const Q = items(); return Q.map((q,i) => i).filter(i => S.sel.has(Q[i][1])); }
+function selected(){ const Q = items(); return Q.map((q,i) => i).filter(i => S.sel.has(Q[i][1]) && !qLocked(Q[i])); }
 function updCount(){
   const n = selected().length, lim = opts.count ? Math.min(n, opts.count) : n;
   $("selCount").textContent = !storeReady ? "Chargement de ta progression..." : `${lim} question${lim>1?"s":""} sur ${n} sélectionnée${n>1?"s":""}`;
@@ -1945,7 +1949,10 @@ $("start").onclick = () => {
 $("simStart").onclick = () => {
   const cfg = simConfig(); if (!cfg) return;
   fmt = S.fmt = cfg.fmt;
-  const pool = S.F[fmt].map((q,i) => i).filter(i => cfg.themes.includes(S.F[fmt][i][1]));
+  const inT = S.F[fmt].map((q,i) => i).filter(i => cfg.themes.includes(S.F[fmt][i][1]));
+  // une simulation qui porte sur des cours Kinésis+ non accessibles : on propose Kinésis+ plutôt qu'un examen tronqué
+  if (inT.some(i => qLocked(S.F[fmt][i]))) { if (typeof premiumOffer === "function") premiumOffer("contenu"); return; }
+  const pool = inT;
   const list = shuffle(pool).slice(0, cfg.n);
   sim = {label: cfg.label};
   start(list, cfg.sec);
@@ -1988,6 +1995,7 @@ $("sessResume").onclick = () => {
   const idx = {}; keys().forEach((k,i) => idx[k] = i);
   const keep = s.keys.map((k,i) => idx[k] !== undefined ? i : -1).filter(i => i >= 0);
   if (!keep.length) { clearSession(); renderSubject(); return; }
+  if (keep.some(i => qLocked(items()[idx[s.keys[i]]]))) { if (typeof premiumOffer === "function") premiumOffer("contenu"); return; } // série avec des questions Kinésis+ non accessibles
   opts.mode = s.mode || opts.mode;
   sim = s.label ? {label: s.label} : null;
   deck = keep.map(i => idx[s.keys[i]]); answers = keep.map(i => s.answers[i]); luck = keep.map(i => !!s.luck[i]); base = keep.map(i => s.base[i]);
@@ -3207,6 +3215,7 @@ async function supaStart(live, anonLocals){
     window.PROFILE_NAME = (SB_USER.user_metadata && SB_USER.user_metadata.name) || SB_USER.email.split("@")[0];
     window.PROFILE_CLAUDE = (SB_USER.user_metadata && SB_USER.user_metadata.claude_chat) || "";
     if (typeof premiumCheck === "function") premiumCheck(true);
+    if (typeof premiumLoad === "function") setTimeout(premiumLoad, 0);
     SB.from("profiles").select("classement").eq("user_id", SB_USER.id).maybeSingle().then(r => { window.PROFILE_RANKED = !(r.data && r.data.classement === false); }, () => {});
     let rows = {}, offline = false;
     const q = await SB.from("progress").select("subject,mem,sess,updated_at").eq("user_id", SB_USER.id);
@@ -3349,7 +3358,7 @@ function profileMenuOpen(){
     const stats = profileStats().map(t => `<div class="pm-stat"><span>${t.name}</span><b>${t.seen} % vues</b><b class="ok">${t.master} % maîtrisées</b></div><div class="pm-bar"><i style="width:${parseFloat(t.seen) || (t.seen[0] === "<" ? 1 : 0)}%"></i><i class="ok" style="width:${parseFloat(t.master) || (t.master[0] === "<" ? 1 : 0)}%"></i></div>`).join("");
     m.innerHTML = `<div class="pm-head"><div class="pm-av big">${escHtml(profileInitial(window.PROFILE_NAME))}</div><div><b>${escHtml(window.PROFILE_NAME)}</b><div class="small muted"><i class="pm-dot"></i>Synchronisé en ligne</div></div></div>
       <div class="pm-sec"><div class="pm-title">Ma progression</div>${stats || '<div class="small muted">Pas encore de réponses.</div>'}</div>
-      ${typeof premiumOn === "function" && premiumOn() ? `<button class="pm-item" data-a="premium">Kinésis+ ${PREMIUM.etat === true ? '<span class="pm-ok">actif</span>' : '<span class="pm-ok prem">' + PREMIUM.prix + ' / mois</span>'}</button>` : ""}
+      ${typeof premiumOn === "function" && premiumOn() ? `<button class="pm-item" data-a="premium">Kinésis+ ${PREMIUM.etat === true ? '<span class="pm-ok">actif</span>' : premiumTrialLeft() ? '<span class="pm-ok prem">essai : ' + premiumTrialLeft() + ' j</span>' : '<span class="pm-ok prem">' + PREMIUM.prix + ' / mois</span>'}</button>` : ""}
       <button class="pm-item" data-a="claude">Conversation Claude${claudeChat() ? ' <span class="pm-ok">réglée</span>' : ""}</button>
       <button class="pm-item" data-a="rank">Apparaître dans le classement <span class="pm-sw${window.PROFILE_RANKED === false ? "" : " on"}"></span></button>
       <button class="pm-item" data-a="sync">Enregistrer maintenant</button>
@@ -3436,11 +3445,12 @@ const PREMIUM = {
   //   "examens" = simulations CCI / CT chronométrées
   reserve: window.ABONNEMENT_RESERVE || [],
   avantages: [
-    "Simulations d'examen chronométrées (CCI, CT) illimitées",
-    "Nouvelles questions dès chaque nouveau cours",
-    "Statistiques détaillées et classement",
-    "Soutiens le projet"
+    "Tous les cours : CM, TD et QCM 3 et suivants (les cours 1 et 2 restent gratuits)",
+    "Les nouvelles questions dès chaque nouveau cours",
+    "Simulations d'examen sur tout le programme",
+    "Essai gratuit de 7 jours à la création du profil"
   ],
+  acces: null, essaiFin: null, charge: false,
   etat: null // null = inconnu, true / false une fois vérifié
 };
 const premiumOn = () => window.ABONNEMENT_ACTIF === true;
@@ -3453,6 +3463,29 @@ async function premiumCheck(force){
   catch(e) { PREMIUM.etat = false; }
   return PREMIUM.etat;
 }
+// Accès aux questions Kinésis+ (abonné ou en essai) : chargées depuis Supabase, à leur place d'origine
+async function premiumLoad(){
+  if (!premiumOn() || PREMIUM.charge || typeof SB === "undefined" || !SB || !SB_USER) return;
+  try {
+    const a = await SB.rpc("has_access"); PREMIUM.acces = !a.error && a.data === true;
+    const e = await SB.rpc("trial_end"); PREMIUM.essaiFin = e.data ? new Date(e.data) : null;
+    if (!PREMIUM.acces) return;
+    let from = 0, n = 0;
+    for (;;) {
+      const r = await SB.from("premium_content").select("subject,fmt,idx,item").order("subject").order("fmt").order("idx").range(from, from + 999);
+      if (r.error) throw r.error;
+      for (const row of r.data) {
+        const x = SUBJECTS[row.subject]; if (!x || !x.F[row.fmt]) continue;
+        const cur = x.F[row.fmt][row.idx];
+        if (qLocked(cur)) { x.F[row.fmt][row.idx] = row.item; n++; }
+      }
+      if (r.data.length < 1000) break; from += 1000;
+    }
+    PREMIUM.charge = true;
+    if (n && view !== "quiz") renderView();
+  } catch(e) { console.warn("Kinésis+ : chargement impossible", e); }
+}
+function premiumTrialLeft(){ if (!PREMIUM.essaiFin) return 0; return Math.max(0, Math.ceil((PREMIUM.essaiFin - Date.now()) / 864e5)); }
 // Lance fn si la fonction est libre (ou si l'abonnement est désactivé), sinon propose Kinésis+
 async function premiumGate(feature, fn){
   if (!premiumOn() || !PREMIUM.reserve.includes(feature) || await premiumCheck()) return fn();
@@ -3473,7 +3506,7 @@ function premiumOffer(feature){
   d.innerHTML = `<div class="prem-card" role="dialog" aria-label="Kinésis+">
     <button class="prem-x" aria-label="Fermer">×</button>
     <div class="prem-badge">Kinésis+</div>
-    <h2>${feature ? "Cette fonction fait partie de Kinésis+" : "Passe à Kinésis+"}</h2>
+    <h2>${feature === "contenu" ? (PREMIUM.essaiFin && PREMIUM.essaiFin < new Date() ? "Ton essai gratuit est terminé" : "Les cours 3 et suivants sont dans Kinésis+") : feature ? "Cette fonction fait partie de Kinésis+" : "Passe à Kinésis+"}</h2>
     <div class="prem-price"><b>${PREMIUM.prix}</b> / mois <span>sans engagement, résiliable à tout moment</span></div>
     <ul>${PREMIUM.avantages.map(a => `<li>${a}</li>`).join("")}</ul>
     <button class="btn primary" id="premGo" ${online ? "" : "disabled"}>${online ? "S'abonner" : "Connecte-toi à un profil pour t'abonner"}</button>
