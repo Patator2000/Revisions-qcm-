@@ -197,18 +197,22 @@ function renderDash(){
     <div class="dash-k">Répartition</div>
     ${dashDonut(D)}
   </div>
-  <div class="dash-card span6 dash-kpi">
+  <div class="dash-card ${window.SUPA_URL ? "span4" : "span6"} dash-kpi">
     <div class="dash-k">Taux de réussite</div>
     <div class="dash-mid">${rate === null ? "-" : fmtP(rate) + "<small> %</small>"}</div>
     <div class="dash-sub">${rateT === null ? "pas encore de réponse aujourd'hui" : "aujourd'hui " + Math.round(rateT) + " %"} ${rate !== null && rateT !== null ? dashDelta(rateT - rate, " pts") : ""}</div>
     ${days14.length > 1 ? dashSpark(spR, "var(--accent)") + `<div class="dash-axis"><span>${dashFmtDay(days14[0])}</span><span>aujourd'hui</span></div>` : ""}
   </div>
-  <div class="dash-card span6 dash-kpi">
+  <div class="dash-card ${window.SUPA_URL ? "span4" : "span6"} dash-kpi">
     <div class="dash-k">Aujourd'hui</div>
     <div class="dash-mid">${D.today.a}<small> réponse${D.today.a > 1 ? "s" : ""}</small></div>
     <div class="dash-sub">moyenne 7 j : ${fmtP(D.avg7)} ${D.avg7 > 0 ? dashDelta((D.today.a - D.avg7) / D.avg7 * 100, " %") : ""}</div>
     ${days14.length > 1 ? dashSpark(spA, "var(--ok)") + `<div class="dash-axis"><span>${dashFmtDay(days14[0])}</span><span>aujourd'hui</span></div>` : ""}
   </div>
+  ${window.SUPA_URL ? `<div class="dash-card span4 dash-rank" id="dashRank">
+    <div class="dash-k">Classement <span class="rk-tabs"><button data-p="semaine" class="${rankPer === "semaine" ? "on" : ""}">Semaine</button><button data-p="general" class="${rankPer === "general" ? "on" : ""}">Général</button></span></div>
+    <div id="rankList" class="rk-list"><div class="small muted">Chargement...</div></div>
+  </div>` : ""}
   <div class="dash-card span8">
     <div class="dash-k">Activité par jour <span class="dash-legend"><i class="ok"></i>justes <i class="ko"></i>fausses</span></div>
     <div class="${Object.values(D.act).some(v => v.a) ? "" : "dash-empty"}" data-empty="Tes réponses de chaque jour s'afficheront ici">${dashBars(D)}</div>
@@ -218,6 +222,10 @@ function renderDash(){
     ${weak}
   </div>`;
   dashPlotHover(el);
+  if (window.SUPA_URL) {
+    el.querySelectorAll(".rk-tabs button").forEach(b => b.onclick = () => { rankPer = b.dataset.p; el.querySelectorAll(".rk-tabs button").forEach(x => x.classList.toggle("on", x === b)); rankLoad(true); });
+    rankLoad(false);
+  }
   el.querySelectorAll(".dash-weak").forEach(b => b.onclick = () => {
     const x = SUBJECTS[b.dataset.s]; S = x; fmt = S.fmt; x.sel = new Set([b.dataset.t]); go("subject");
   });
@@ -242,3 +250,34 @@ function restoreRoute(){
 function freezeNow(){ try { if (view === "quiz" && S) { saveSession(); lsSave(S); } } catch(e) {} }
 addEventListener("pagehide", freezeNow);
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") { freezeNow(); if (S && S.ref) try { flush(S); } catch(e) {} } });
+
+// ================= Classement entre profils =================
+let rankPer = "semaine", rankCache = {};
+async function rankLoad(force){
+  const box = $("rankList"); if (!box) return;
+  if (typeof SB === "undefined" || !SB || !SB_USER || storeMode !== "account") {
+    box.innerHTML = `<p class="small muted" style="margin:6px 0 0">Connecte-toi à un profil pour apparaître dans le classement et te comparer aux autres.</p>`; return;
+  }
+  const c = rankCache[rankPer];
+  if (c && !force && Date.now() - c.at < 60000) { rankDraw(c.rows); return; }
+  if (c) rankDraw(c.rows);
+  try {
+    const r = await SB.rpc("leaderboard", {periode: rankPer});
+    if (r.error) throw r.error;
+    rankCache[rankPer] = {at: Date.now(), rows: r.data || []};
+    rankDraw(rankCache[rankPer].rows);
+  } catch(e) { if (!c) box.innerHTML = `<p class="small muted" style="margin:6px 0 0">Classement indisponible pour le moment.</p>`; }
+}
+function rankDraw(rows){
+  const box = $("rankList"); if (!box) return;
+  const key = rankPer === "general" ? "maitrisees" : "reponses_7j", unit = rankPer === "general" ? "maîtrisées" : "réponses";
+  if (!rows.length) { box.innerHTML = `<p class="small muted" style="margin:6px 0 0">Personne n'a encore de score.</p>`; return; }
+  const me = rows.find(r => r.moi), top = rows.slice(0, 5);
+  const line = r => `<div class="rk-row${r.moi ? " me" : ""}"><span class="rk-n r${Math.min(r.rang, 4)}">${r.rang}</span><span class="rk-name">${escHtml(r.prenom)}${r.moi ? " <em>(toi)</em>" : ""}</span><b>${r[key]}</b><span class="rk-u">${unit}</span></div>`;
+  let h = top.map(line).join("");
+  if (me && !top.includes(me)) h += `<div class="rk-gap">...</div>` + line(me);
+  const n = rows.length;
+  h += `<div class="small muted rk-foot">${n} profil${n > 1 ? "s" : ""} classé${n > 1 ? "s" : ""} · ${rankPer === "general" ? "questions maîtrisées" : "réponses sur 7 jours"}</div>`;
+  box.innerHTML = h;
+}
+if (typeof escHtml !== "function") var escHtml = t => String(t == null ? "" : t).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));

@@ -241,6 +241,14 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 .pm-stat{display:grid;grid-template-columns:1fr auto auto;gap:10px;font-size:13px;padding:3px 0}.pm-stat b{font-weight:600}.pm-stat b.ok{color:var(--ok)}
 .pm-bar{position:relative;height:5px;border-radius:3px;background:var(--line);margin:2px 0 8px;overflow:hidden}.pm-bar i{position:absolute;left:0;top:0;bottom:0;background:color-mix(in srgb,var(--accent) 40%,transparent);border-radius:3px}.pm-bar i.ok{background:var(--ok)}
 .pm-item{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;font-size:14px;color:var(--ink);padding:9px 10px;border-radius:8px;cursor:pointer}
+.pm-sw{float:right;width:30px;height:17px;border-radius:999px;background:var(--line);position:relative;margin-top:2px;transition:background .15s}.pm-sw::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#fff;transition:left .15s}.pm-sw.on{background:var(--ok)}.pm-sw.on::after{left:15px}
+.prem-wrap{position:fixed;inset:0;z-index:60;background:rgba(10,15,30,.55);display:grid;place-items:center;padding:20px;backdrop-filter:blur(3px)}
+.prem-card{position:relative;background:var(--surface);border-radius:20px;padding:28px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.prem-card h2{margin:10px 0 8px}.prem-card ul{padding-left:20px;margin:14px 0 18px}.prem-card li{margin:5px 0}
+.prem-badge{display:inline-block;font-weight:800;font-size:.8rem;letter-spacing:.06em;color:#fff;background:linear-gradient(90deg,#4f7cff,#14b88a);padding:4px 10px;border-radius:999px}
+.prem-price b{font-size:1.8rem}.prem-price span{display:block;font-size:.8rem;color:var(--muted)}
+.prem-x{position:absolute;top:10px;right:14px;border:0;background:none;font-size:1.6rem;color:var(--muted);cursor:pointer}
+.pm-ok.prem{color:#fff;background:linear-gradient(90deg,#4f7cff,#14b88a)}
 .pm-ok{font-size:.75em;color:var(--ok);background:var(--ok-soft);padding:1px 7px;border-radius:999px;margin-left:6px}
 .pm-form{padding:8px}.pm-form p{margin:6px 0}.pm-form ol{margin:6px 0 10px;padding-left:18px}.pm-form input{width:100%;font:inherit;font-size:.85em;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
 .pm-item:hover{background:var(--accent-soft)}.pm-item.danger{color:var(--ko)}
@@ -326,9 +334,21 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 .ds-h{display:flex;justify-content:space-between;align-items:center;font-size:.86rem;font-weight:600;margin-bottom:6px;gap:8px}
 .ds-h em{font-style:normal}.ds-muted{color:var(--muted);font-weight:500;font-size:.8rem}
 .ds-bar{display:flex;height:10px;border-radius:10px;background:var(--surface2);overflow:hidden;gap:2px}.ds-bar i{display:block;height:100%}
-.dash-kpi .dash-spark{height:44px}
+.dash-kpi{display:flex;flex-direction:column}.dash-kpi .dash-spark{height:auto;flex:1;min-height:44px;max-height:180px}
+.rk-tabs{display:inline-flex;background:var(--surface2);border-radius:999px;padding:2px;text-transform:none;letter-spacing:0}
+.rk-tabs button{border:0;background:none;font:inherit;font-size:.78rem;padding:3px 10px;border-radius:999px;color:var(--muted);cursor:pointer}
+.rk-tabs button.on{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.rk-list{margin-top:10px}
+.rk-row{display:grid;grid-template-columns:26px 1fr auto auto;gap:8px;align-items:center;padding:7px 6px;border-radius:9px;font-size:.88rem}
+.rk-row.me{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.rk-n{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:.75rem;font-weight:700;background:var(--surface2);color:var(--muted)}
+.rk-n.r1{background:linear-gradient(135deg,#f7c948,#e0a800);color:#fff}.rk-n.r2{background:linear-gradient(135deg,#cfd6df,#9aa5b1);color:#fff}.rk-n.r3{background:linear-gradient(135deg,#e2a26b,#b8693a);color:#fff}
+.rk-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rk-name em{font-style:normal;color:var(--muted);font-size:.85em}
+.rk-row b{font-variant-numeric:tabular-nums}.rk-u{font-size:.72rem;color:var(--muted)}
+.rk-gap{text-align:center;color:var(--muted);font-size:.8rem;line-height:1}
+.rk-foot{margin-top:8px}
 .dash-wait{color:var(--muted);text-align:center;padding:30px}
-@media (max-width:900px){.span8,.span4{grid-column:span 12}.span3{grid-column:span 6}}
+@media (max-width:900px){.span8,.span4{grid-column:span 12}.dash-kpi.span4{grid-column:span 6}.span3{grid-column:span 6}}
 @media (max-width:560px){.span6{grid-column:span 12}.dash-week{gap:4px}.dw-day b{font-size:.9rem}}
 @media (max-width:480px){.dash{gap:10px}.dash-card{padding:14px}.dash-big{font-size:2.4rem}.dash-mid{font-size:1.6rem}}
 .subj{padding:24px}
@@ -484,6 +504,8 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 <script>
 window.SUPA_URL = "https://eempregmkymltwgzrofl.supabase.co";
 window.SUPA_KEY = "sb_publishable_4A1YYev7-Qmgbl_aRV7CIQ_Gxq267_N";
+window.ABONNEMENT_ACTIF = false;
+window.ABONNEMENT_RESERVE = [];
 
 const ANAT_THEMES = {
   Q1: "QCM 1 - Plans, axes et mouvements",
@@ -2667,18 +2689,22 @@ function renderDash(){
     <div class="dash-k">Répartition</div>
     ${dashDonut(D)}
   </div>
-  <div class="dash-card span6 dash-kpi">
+  <div class="dash-card ${window.SUPA_URL ? "span4" : "span6"} dash-kpi">
     <div class="dash-k">Taux de réussite</div>
     <div class="dash-mid">${rate === null ? "-" : fmtP(rate) + "<small> %</small>"}</div>
     <div class="dash-sub">${rateT === null ? "pas encore de réponse aujourd'hui" : "aujourd'hui " + Math.round(rateT) + " %"} ${rate !== null && rateT !== null ? dashDelta(rateT - rate, " pts") : ""}</div>
     ${days14.length > 1 ? dashSpark(spR, "var(--accent)") + `<div class="dash-axis"><span>${dashFmtDay(days14[0])}</span><span>aujourd'hui</span></div>` : ""}
   </div>
-  <div class="dash-card span6 dash-kpi">
+  <div class="dash-card ${window.SUPA_URL ? "span4" : "span6"} dash-kpi">
     <div class="dash-k">Aujourd'hui</div>
     <div class="dash-mid">${D.today.a}<small> réponse${D.today.a > 1 ? "s" : ""}</small></div>
     <div class="dash-sub">moyenne 7 j : ${fmtP(D.avg7)} ${D.avg7 > 0 ? dashDelta((D.today.a - D.avg7) / D.avg7 * 100, " %") : ""}</div>
     ${days14.length > 1 ? dashSpark(spA, "var(--ok)") + `<div class="dash-axis"><span>${dashFmtDay(days14[0])}</span><span>aujourd'hui</span></div>` : ""}
   </div>
+  ${window.SUPA_URL ? `<div class="dash-card span4 dash-rank" id="dashRank">
+    <div class="dash-k">Classement <span class="rk-tabs"><button data-p="semaine" class="${rankPer === "semaine" ? "on" : ""}">Semaine</button><button data-p="general" class="${rankPer === "general" ? "on" : ""}">Général</button></span></div>
+    <div id="rankList" class="rk-list"><div class="small muted">Chargement...</div></div>
+  </div>` : ""}
   <div class="dash-card span8">
     <div class="dash-k">Activité par jour <span class="dash-legend"><i class="ok"></i>justes <i class="ko"></i>fausses</span></div>
     <div class="${Object.values(D.act).some(v => v.a) ? "" : "dash-empty"}" data-empty="Tes réponses de chaque jour s'afficheront ici">${dashBars(D)}</div>
@@ -2688,6 +2714,10 @@ function renderDash(){
     ${weak}
   </div>`;
   dashPlotHover(el);
+  if (window.SUPA_URL) {
+    el.querySelectorAll(".rk-tabs button").forEach(b => b.onclick = () => { rankPer = b.dataset.p; el.querySelectorAll(".rk-tabs button").forEach(x => x.classList.toggle("on", x === b)); rankLoad(true); });
+    rankLoad(false);
+  }
   el.querySelectorAll(".dash-weak").forEach(b => b.onclick = () => {
     const x = SUBJECTS[b.dataset.s]; S = x; fmt = S.fmt; x.sel = new Set([b.dataset.t]); go("subject");
   });
@@ -2712,6 +2742,37 @@ function restoreRoute(){
 function freezeNow(){ try { if (view === "quiz" && S) { saveSession(); lsSave(S); } } catch(e) {} }
 addEventListener("pagehide", freezeNow);
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") { freezeNow(); if (S && S.ref) try { flush(S); } catch(e) {} } });
+
+// ================= Classement entre profils =================
+let rankPer = "semaine", rankCache = {};
+async function rankLoad(force){
+  const box = $("rankList"); if (!box) return;
+  if (typeof SB === "undefined" || !SB || !SB_USER || storeMode !== "account") {
+    box.innerHTML = `<p class="small muted" style="margin:6px 0 0">Connecte-toi à un profil pour apparaître dans le classement et te comparer aux autres.</p>`; return;
+  }
+  const c = rankCache[rankPer];
+  if (c && !force && Date.now() - c.at < 60000) { rankDraw(c.rows); return; }
+  if (c) rankDraw(c.rows);
+  try {
+    const r = await SB.rpc("leaderboard", {periode: rankPer});
+    if (r.error) throw r.error;
+    rankCache[rankPer] = {at: Date.now(), rows: r.data || []};
+    rankDraw(rankCache[rankPer].rows);
+  } catch(e) { if (!c) box.innerHTML = `<p class="small muted" style="margin:6px 0 0">Classement indisponible pour le moment.</p>`; }
+}
+function rankDraw(rows){
+  const box = $("rankList"); if (!box) return;
+  const key = rankPer === "general" ? "maitrisees" : "reponses_7j", unit = rankPer === "general" ? "maîtrisées" : "réponses";
+  if (!rows.length) { box.innerHTML = `<p class="small muted" style="margin:6px 0 0">Personne n'a encore de score.</p>`; return; }
+  const me = rows.find(r => r.moi), top = rows.slice(0, 5);
+  const line = r => `<div class="rk-row${r.moi ? " me" : ""}"><span class="rk-n r${Math.min(r.rang, 4)}">${r.rang}</span><span class="rk-name">${escHtml(r.prenom)}${r.moi ? " <em>(toi)</em>" : ""}</span><b>${r[key]}</b><span class="rk-u">${unit}</span></div>`;
+  let h = top.map(line).join("");
+  if (me && !top.includes(me)) h += `<div class="rk-gap">...</div>` + line(me);
+  const n = rows.length;
+  h += `<div class="small muted rk-foot">${n} profil${n > 1 ? "s" : ""} classé${n > 1 ? "s" : ""} · ${rankPer === "general" ? "questions maîtrisées" : "réponses sur 7 jours"}</div>`;
+  box.innerHTML = h;
+}
+if (typeof escHtml !== "function") var escHtml = t => String(t == null ? "" : t).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 // ================= Poser une question (Claude + liens Google) =================
 let sampleFn = null, sampleOff = false, sampleReady = false;
@@ -3145,6 +3206,8 @@ async function supaStart(live, anonLocals){
     if (!SB_USER) { const r = await profileGate(); if (!r) return false; SB_USER = r.user; isNew = r.isNew; }
     window.PROFILE_NAME = (SB_USER.user_metadata && SB_USER.user_metadata.name) || SB_USER.email.split("@")[0];
     window.PROFILE_CLAUDE = (SB_USER.user_metadata && SB_USER.user_metadata.claude_chat) || "";
+    if (typeof premiumCheck === "function") premiumCheck(true);
+    SB.from("profiles").select("classement").eq("user_id", SB_USER.id).maybeSingle().then(r => { window.PROFILE_RANKED = !(r.data && r.data.classement === false); }, () => {});
     let rows = {}, offline = false;
     const q = await SB.from("progress").select("subject,mem,sess,updated_at").eq("user_id", SB_USER.id);
     if (q.error) {
@@ -3286,7 +3349,9 @@ function profileMenuOpen(){
     const stats = profileStats().map(t => `<div class="pm-stat"><span>${t.name}</span><b>${t.seen} % vues</b><b class="ok">${t.master} % maîtrisées</b></div><div class="pm-bar"><i style="width:${parseFloat(t.seen) || (t.seen[0] === "<" ? 1 : 0)}%"></i><i class="ok" style="width:${parseFloat(t.master) || (t.master[0] === "<" ? 1 : 0)}%"></i></div>`).join("");
     m.innerHTML = `<div class="pm-head"><div class="pm-av big">${escHtml(profileInitial(window.PROFILE_NAME))}</div><div><b>${escHtml(window.PROFILE_NAME)}</b><div class="small muted"><i class="pm-dot"></i>Synchronisé en ligne</div></div></div>
       <div class="pm-sec"><div class="pm-title">Ma progression</div>${stats || '<div class="small muted">Pas encore de réponses.</div>'}</div>
+      ${typeof premiumOn === "function" && premiumOn() ? `<button class="pm-item" data-a="premium">Kinésis+ ${PREMIUM.etat === true ? '<span class="pm-ok">actif</span>' : '<span class="pm-ok prem">' + PREMIUM.prix + ' / mois</span>'}</button>` : ""}
       <button class="pm-item" data-a="claude">Conversation Claude${claudeChat() ? ' <span class="pm-ok">réglée</span>' : ""}</button>
+      <button class="pm-item" data-a="rank">Apparaître dans le classement <span class="pm-sw${window.PROFILE_RANKED === false ? "" : " on"}"></span></button>
       <button class="pm-item" data-a="sync">Enregistrer maintenant</button>
       <button class="pm-item" data-a="switch">Changer de profil</button>
       <button class="pm-item danger" data-a="out">Se déconnecter</button>`;
@@ -3306,6 +3371,16 @@ function profileMenuOpen(){
     if (a === "sync") { x.textContent = "Enregistrement..."; try { await Promise.all(Object.values(SUBJECTS).filter(s => s.ref).map(s => flush(s))); x.textContent = "Enregistré ✓"; } catch(e) { x.textContent = "Échec, réessaie"; } }
     if (a === "switch" || a === "out") { x.textContent = "Déconnexion..."; profileLeave(); }
     if (a === "claude") { profileClaudeForm(m); return; }
+    if (a === "premium") { profileMenuClose(); if (PREMIUM.etat === true) premiumManage(); else premiumOffer(); return; }
+    if (a === "rank") {
+      const on = window.PROFILE_RANKED === false; // nouvel état
+      x.querySelector(".pm-sw").classList.toggle("on", on);
+      const r = await SB.from("profiles").upsert({user_id: SB_USER.id, classement: on});
+      if (r.error) { x.querySelector(".pm-sw").classList.toggle("on", !on); return; }
+      window.PROFILE_RANKED = on; if (typeof rankCache !== "undefined") rankCache = {};
+      if (view === "home") try { rankLoad(true); } catch(e) {}
+      return;
+    }
     if (a === "login") { try { if (SB) await SB.auth.signOut(); } catch(e) {} location.reload(); }
   });
 }
@@ -3350,6 +3425,85 @@ setSave = function(){
   const l = $("saveLong");
   if (l && online) l.textContent = `Profil ${window.PROFILE_NAME} : ta progression est enregistrée en ligne et te suit sur tous tes appareils.`;
 };
+
+// ================= Abonnement Kinésis+ (4,99 € / mois) : PRÉPARÉ, DÉSACTIVÉ =================
+// Tant que window.ABONNEMENT_ACTIF vaut false (réglé dans build.py), ce module ne montre rien
+// et ne bloque rien : tout le site reste gratuit et identique.
+// Pour l'activer : voir docs/abonnement.md.
+const PREMIUM = {
+  prix: "4,99 €",
+  // Fonctions réservées aux abonnés une fois l'abonnement activé (à choisir) :
+  //   "examens" = simulations CCI / CT chronométrées
+  reserve: window.ABONNEMENT_RESERVE || [],
+  avantages: [
+    "Simulations d'examen chronométrées (CCI, CT) illimitées",
+    "Nouvelles questions dès chaque nouveau cours",
+    "Statistiques détaillées et classement",
+    "Soutiens le projet"
+  ],
+  etat: null // null = inconnu, true / false une fois vérifié
+};
+const premiumOn = () => window.ABONNEMENT_ACTIF === true;
+
+async function premiumCheck(force){
+  if (!premiumOn()) return true;
+  if (PREMIUM.etat !== null && !force) return PREMIUM.etat;
+  if (typeof SB === "undefined" || !SB || !SB_USER) return (PREMIUM.etat = false);
+  try { const r = await SB.rpc("is_premium"); PREMIUM.etat = !r.error && r.data === true; }
+  catch(e) { PREMIUM.etat = false; }
+  return PREMIUM.etat;
+}
+// Lance fn si la fonction est libre (ou si l'abonnement est désactivé), sinon propose Kinésis+
+async function premiumGate(feature, fn){
+  if (!premiumOn() || !PREMIUM.reserve.includes(feature) || await premiumCheck()) return fn();
+  premiumOffer(feature);
+}
+async function premiumCall(fnName){
+  const s = await SB.auth.getSession(); const tok = s.data && s.data.session && s.data.session.access_token;
+  const r = await fetch(`${window.SUPA_URL}/functions/v1/${fnName}`, {method: "POST", headers: {Authorization: `Bearer ${tok}`, apikey: window.SUPA_KEY, "Content-Type": "application/json"}, body: "{}"});
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || !j.url) throw new Error(j.error || ("erreur " + r.status));
+  location.href = j.url;
+}
+function premiumOffer(feature){
+  if (!premiumOn()) return;
+  const old = $("premiumBox"); if (old) old.remove();
+  const d = document.createElement("div"); d.id = "premiumBox"; d.className = "prem-wrap";
+  const online = storeMode === "account" && SB_USER;
+  d.innerHTML = `<div class="prem-card" role="dialog" aria-label="Kinésis+">
+    <button class="prem-x" aria-label="Fermer">×</button>
+    <div class="prem-badge">Kinésis+</div>
+    <h2>${feature ? "Cette fonction fait partie de Kinésis+" : "Passe à Kinésis+"}</h2>
+    <div class="prem-price"><b>${PREMIUM.prix}</b> / mois <span>sans engagement, résiliable à tout moment</span></div>
+    <ul>${PREMIUM.avantages.map(a => `<li>${a}</li>`).join("")}</ul>
+    <button class="btn primary" id="premGo" ${online ? "" : "disabled"}>${online ? "S'abonner" : "Connecte-toi à un profil pour t'abonner"}</button>
+    <p class="small muted" id="premMsg" style="min-height:1.2em;margin:8px 0 0">Paiement sécurisé par Stripe. Kinésis ne voit jamais tes coordonnées bancaires.</p>
+  </div>`;
+  document.body.appendChild(d);
+  d.querySelector(".prem-x").onclick = () => d.remove();
+  d.onclick = e => { if (e.target === d) d.remove(); };
+  const go = d.querySelector("#premGo");
+  if (online) go.onclick = async () => { go.disabled = true; go.textContent = "Ouverture du paiement..."; try { await premiumCall("abonnement-paiement"); } catch(e) { go.disabled = false; go.textContent = "S'abonner"; d.querySelector("#premMsg").textContent = "Impossible d'ouvrir le paiement : " + e.message; } };
+}
+function premiumNote(t){ const m = document.createElement("div"); m.className = "pg-off"; m.textContent = t; document.querySelector("main").prepend(m); setTimeout(() => m.remove(), 9000); }
+async function premiumManage(){ try { await premiumCall("abonnement-gestion"); } catch(e) { premiumNote("Impossible d'ouvrir la gestion de l'abonnement : " + e.message); } }
+
+if (premiumOn()) {
+  // retour depuis Stripe
+  const q = new URLSearchParams(location.search).get("abonnement");
+  if (q) {
+    history.replaceState(null, "", location.pathname);
+    setTimeout(async () => { const ok = await premiumCheck(true); premiumNote(q === "merci" ? (ok ? "Bienvenue dans Kinésis+ ! Merci pour ton soutien." : "Paiement reçu : ton abonnement sera actif dans quelques secondes (recharge la page).") : "Paiement annulé : rien n'a été prélevé."); }, 1500);
+  }
+  // fonctions réservées : interception avant le lancement (synchrone, d'après l'état déjà vérifié)
+  let premiumPass = false;
+  document.addEventListener("click", e => {
+    const b = e.target.closest("#simStart");
+    if (!b || premiumPass || !PREMIUM.reserve.includes("examens") || PREMIUM.etat === true) return;
+    e.stopImmediatePropagation(); e.preventDefault();
+    premiumCheck().then(ok => { if (ok) { premiumPass = true; b.click(); premiumPass = false; } else premiumOffer("examens"); });
+  }, true);
+}
 
 </script>
 </body>

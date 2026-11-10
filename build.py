@@ -4,6 +4,7 @@ Usage : python3 build.py
 - index.html            : le site publié sur GitHub Pages
 - build/claude.html     : la variante pour un artefact claude.ai (non publiée)
 """
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -12,6 +13,11 @@ SRC = ROOT / "src"
 # Projet Supabase (clé publique « publishable » : prévue pour être visible dans le navigateur)
 SUPA_URL = "https://eempregmkymltwgzrofl.supabase.co"
 SUPA_KEY = "sb_publishable_4A1YYev7-Qmgbl_aRV7CIQ_Gxq267_N"
+
+# Abonnement Kinésis+ (4,99 €/mois) : préparé mais INVISIBLE tant que ce réglage vaut False.
+# Mise en service : voir docs/abonnement.md
+ABONNEMENT_ACTIF = False
+ABONNEMENT_RESERVE = []  # fonctions réservées aux abonnés, ex. ["examens"]
 
 DATA = ["anatomie.js", "physiologie.js", "physiologie_examen.js", "physiologie_examen_2.js", "physiologie_complements.js"]
 
@@ -45,12 +51,13 @@ site = site.replace(
     'const MIC_MSG = "Micro bloqué : claude.ai n\'autorise pas le micro dans ses pages publiées. Utilise la version « micro » à ouvrir dans Chrome, ou réponds au clavier (V, F, N, A à E, P, Entrée).";',
     'const MIC_MSG = "Micro refusé par le navigateur : touche l\'icône de cadenas (ou de réglages) à gauche de l\'adresse, autorise le micro, puis recharge la page. En attendant, réponds au clavier (V, F, N, A à E, P, Entrée).";')
 assert "Micro refusé" in site
-cfg = f'window.SUPA_URL = "{SUPA_URL}";\nwindow.SUPA_KEY = "{SUPA_KEY}";\n'
+cfg = (f'window.SUPA_URL = "{SUPA_URL}";\nwindow.SUPA_KEY = "{SUPA_KEY}";\n'
+       f'window.ABONNEMENT_ACTIF = {"true" if ABONNEMENT_ACTIF else "false"};\nwindow.ABONNEMENT_RESERVE = {json.dumps(ABONNEMENT_RESERVE)};\n')
 j = site.index("<script>") + len("<script>")
 site = site[:j] + "\n" + cfg + site[j:]
 site = site.replace("<script>", '<script src="vendor/supabase.js"></script>\n<script>', 1)
 i = site.rindex("</script>")
-site = site[:i] + '\nwindow.VOICE_ENGINE = "vosk";\n' + read("app/voix.js") + "\n" + read("app/profils.js") + "\n" + site[i:]
+site = site[:i] + '\nwindow.VOICE_ENGINE = "vosk";\n' + read("app/voix.js") + "\n" + read("app/profils.js") + "\n" + read("app/abonnement.js") + "\n" + site[i:]
 site = site.replace("(Chrome recommandé)", "(marche dans tous les navigateurs, Brave compris)")
 site = site.replace("voice:false, auto:true};", "voice:true, auto:true};").replace('<button class="switch" id="swVoice"', '<button class="switch on" id="swVoice"')
 assert "voice:true" in site

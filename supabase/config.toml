@@ -1,0 +1,12 @@
+# Réglages des fonctions serveur Kinésis+ (utilisés par « supabase functions deploy »)
+project_id = "eempregmkymltwgzrofl"
+
+[functions.abonnement-paiement]
+verify_jwt = true
+
+[functions.abonnement-gestion]
+verify_jwt = true
+
+# Stripe appelle ce point sans jeton Supabase : la signature Stripe est vérifiée dans le code
+[functions.stripe-webhook]
+verify_jwt = false

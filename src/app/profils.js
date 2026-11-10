@@ -70,6 +70,8 @@ async function supaStart(live, anonLocals){
     if (!SB_USER) { const r = await profileGate(); if (!r) return false; SB_USER = r.user; isNew = r.isNew; }
     window.PROFILE_NAME = (SB_USER.user_metadata && SB_USER.user_metadata.name) || SB_USER.email.split("@")[0];
     window.PROFILE_CLAUDE = (SB_USER.user_metadata && SB_USER.user_metadata.claude_chat) || "";
+    if (typeof premiumCheck === "function") premiumCheck(true);
+    SB.from("profiles").select("classement").eq("user_id", SB_USER.id).maybeSingle().then(r => { window.PROFILE_RANKED = !(r.data && r.data.classement === false); }, () => {});
     let rows = {}, offline = false;
     const q = await SB.from("progress").select("subject,mem,sess,updated_at").eq("user_id", SB_USER.id);
     if (q.error) {
@@ -211,7 +213,9 @@ function profileMenuOpen(){
     const stats = profileStats().map(t => `<div class="pm-stat"><span>${t.name}</span><b>${t.seen} % vues</b><b class="ok">${t.master} % maîtrisées</b></div><div class="pm-bar"><i style="width:${parseFloat(t.seen) || (t.seen[0] === "<" ? 1 : 0)}%"></i><i class="ok" style="width:${parseFloat(t.master) || (t.master[0] === "<" ? 1 : 0)}%"></i></div>`).join("");
     m.innerHTML = `<div class="pm-head"><div class="pm-av big">${escHtml(profileInitial(window.PROFILE_NAME))}</div><div><b>${escHtml(window.PROFILE_NAME)}</b><div class="small muted"><i class="pm-dot"></i>Synchronisé en ligne</div></div></div>
       <div class="pm-sec"><div class="pm-title">Ma progression</div>${stats || '<div class="small muted">Pas encore de réponses.</div>'}</div>
+      ${typeof premiumOn === "function" && premiumOn() ? `<button class="pm-item" data-a="premium">Kinésis+ ${PREMIUM.etat === true ? '<span class="pm-ok">actif</span>' : '<span class="pm-ok prem">' + PREMIUM.prix + ' / mois</span>'}</button>` : ""}
       <button class="pm-item" data-a="claude">Conversation Claude${claudeChat() ? ' <span class="pm-ok">réglée</span>' : ""}</button>
+      <button class="pm-item" data-a="rank">Apparaître dans le classement <span class="pm-sw${window.PROFILE_RANKED === false ? "" : " on"}"></span></button>
       <button class="pm-item" data-a="sync">Enregistrer maintenant</button>
       <button class="pm-item" data-a="switch">Changer de profil</button>
       <button class="pm-item danger" data-a="out">Se déconnecter</button>`;
@@ -231,6 +235,16 @@ function profileMenuOpen(){
     if (a === "sync") { x.textContent = "Enregistrement..."; try { await Promise.all(Object.values(SUBJECTS).filter(s => s.ref).map(s => flush(s))); x.textContent = "Enregistré ✓"; } catch(e) { x.textContent = "Échec, réessaie"; } }
     if (a === "switch" || a === "out") { x.textContent = "Déconnexion..."; profileLeave(); }
     if (a === "claude") { profileClaudeForm(m); return; }
+    if (a === "premium") { profileMenuClose(); if (PREMIUM.etat === true) premiumManage(); else premiumOffer(); return; }
+    if (a === "rank") {
+      const on = window.PROFILE_RANKED === false; // nouvel état
+      x.querySelector(".pm-sw").classList.toggle("on", on);
+      const r = await SB.from("profiles").upsert({user_id: SB_USER.id, classement: on});
+      if (r.error) { x.querySelector(".pm-sw").classList.toggle("on", !on); return; }
+      window.PROFILE_RANKED = on; if (typeof rankCache !== "undefined") rankCache = {};
+      if (view === "home") try { rankLoad(true); } catch(e) {}
+      return;
+    }
     if (a === "login") { try { if (SB) await SB.auth.signOut(); } catch(e) {} location.reload(); }
   });
 }
