@@ -244,3 +244,26 @@ PHYSIO_OPEN.push(
 ["P3","C7","Expliquez les seuils lactiques et l'effet de l'entraînement.",["Lactatémie = production moins clairance","Production lactique quand aérobie et alactique ne suffisent plus","Seuil aérobie (LT) : le lactate dépasse sa valeur de repos","OBLA : 4 mmol/L, valeur arbitraire ; seuils exprimés en % de VO2max","Sédentaire : LT à 50-60 % de VO2max ; endurant : 70-80 %","L'entraînement décale la courbe vers la droite ; seuils ventilatoires liés aux seuils lactiques"]],
 ["P3","C7","Expliquez l'intervention des trois filières énergétiques selon l'intensité et la durée de l'exercice.",["Elles fonctionnent toujours ensemble ; l'intensité et la durée fixent la dominante","Alactique : Pmax en moins d'1 s, épuisée en moins de 10 s en sprint","Lactique : Pmax en 5 s ; l'acidose (H+) inhibe la PFK et limite la glycolyse","Aérobie : Pmax en 3 min (glucides) ou 30 min (lipides), grande capacité (93 min à 70 % de VO2max pour le glycogène)","Moins de 70 % de VO2max : surtout lipides ; plus de 70 % : surtout glucides (croisement)","Fatigue : ATP-PCr pour les efforts brefs, acidose pour 30 s à 2 min, glycogène pour les efforts longs"]]
 );
+
+// ---------- Questions sur schéma (CM fonction musculaire, bioénergétique)
+PHYSIO_Q.push(
+["P3","C5","Schéma : le n°3, qui enveloppe tout le muscle, est l'épimysium.",1,"Épimysium autour du muscle, périmysium autour des faisceaux, endomysium autour de chaque fibre.","img/physio/c5_enveloppes.webp"],
+["P3","C5","Schéma : le n°1 entoure chaque fibre musculaire : c'est l'endomysium.",0,"Le n°1 est le périmysium, qui entoure les faisceaux ; l'endomysium (n°2) entoure chaque fibre.","img/physio/c5_enveloppes.webp"],
+["P3","C5","Schéma : le n°4 est un faisceau, groupe de fibres musculaires entouré de périmysium.",1,"Plusieurs centaines de fibres forment un faisceau.","img/physio/c5_enveloppes.webp"],
+["P3","C5","Schéma : la phase n°1, entre le stimulus et le début de la tension, est la période de latence.",1,"Quelques millisecondes : temps du couplage excitation-contraction.","img/physio/c5_secousse.webp"],
+["P3","C5","Schéma : la phase n°3, la plus longue, est la période de contraction.",0,"C'est la période de relâchement (retour du Ca2+ dans le réticulum sarcoplasmique).","img/physio/c5_secousse.webp"],
+["P3","C5","Schéma : le muscle soléaire a une secousse plus rapide que le muscle du bulbe de l'œil.",0,"C'est l'inverse : le muscle de l'œil est le plus rapide, le soléaire (riche en fibres lentes) le plus lent.","img/physio/c5_secousses_muscles.webp"],
+["P3","C5","Schéma : le tracé n°4, aux contractions complètement fusionnées, est un tétanos complet.",1,"1 secousse, 2 sommation temporelle, 3 tétanos incomplet, 4 tétanos complet.","img/physio/c5_tetanos.webp"],
+["P3","C5","Schéma : le tracé n°2 est un tétanos incomplet.",0,"Le n°2 est une sommation temporelle ; le tétanos incomplet est le n°3.","img/physio/c5_tetanos.webp"],
+["P3","C5","Schéma : le n°2, qui correspond à la longueur des filaments épais de myosine, est la bande A.",1,"La bande A (sombre) contient la myosine ; la bande I (claire) seulement de l'actine.","img/physio/c5_sarcomere.webp"],
+["P3","C5","Schéma : la zone n°1 contient les filaments épais de myosine.",0,"Le n°1 est la bande I : seulement des filaments minces d'actine.","img/physio/c5_sarcomere.webp"],
+["P3","C6","Schéma : dans le cycle de Cori, l'acide lactique du muscle passe par le sang jusqu'au foie, qui le retransforme en glucose.",1,"C'est la néoglucogenèse : l'acide lactique n'est pas un déchet.","img/physio/c6_cori.webp"],
+["P3","C7","Schéma : au-delà d'une certaine vitesse, la consommation d'O2 n'augmente plus : c'est le plateau de VO2max.",1,"VO2max = consommation maximale d'oxygène, potentiel aérobie de l'individu.","img/physio/c7_vo2max.webp"],
+["P3","C7","Schéma : la VO2max des sujets entraînés est plus basse que celle des non entraînés.",0,"Elle est plus élevée chez les entraînés (environ 60 contre 35 ml/kg/min sur ce graphique).","img/physio/c7_vo2max.webp"],
+["P3","C7","Schéma : la zone n°1, au début de l'exercice, est le déficit d'oxygène.",1,"Le transport d'O2 n'est pas immédiatement suffisant : les voies anaérobies compensent.","img/physio/c7_deficit.webp"],
+["P3","C7","Schéma : la zone n°1, après la fin de l'exercice, correspond à l'EPOC.",1,"Excès de consommation d'O2 post-exercice : reconstitution d'ATP-PCr, des stocks d'O2, recyclage des lactates.","img/physio/c7_epoc.webp"],
+["P3","C7","Schéma : au-delà du croisement (environ 70 % de la puissance aérobie), les lipides restent le substrat principal.",0,"Au-delà de 70 % de VO2max, ce sont les glucides (hydrates de carbone) qui dominent.","img/physio/c7_croisement.webp"],
+["P3","C7","Schéma : au repos et à faible intensité, les lipides sont le substrat préférentiel.",1,"Sous 70 % de VO2max, l'organisme utilise préférentiellement les lipides.","img/physio/c7_croisement.webp"],
+["P3","C7","Schéma : l'OBLA correspond à une lactatémie de 4 mmol/L.",1,"OBLA : intensité correspondant à la valeur arbitraire de 4 mmol de lactate par litre.","img/physio/c7_seuils.webp"],
+["P3","C7","Schéma : quand la vitesse augmente, le seuil LT apparaît après l'OBLA.",0,"Le seuil aérobie (LT) apparaît avant l'OBLA.","img/physio/c7_seuils.webp"]
+);
