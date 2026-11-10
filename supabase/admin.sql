@@ -34,3 +34,12 @@ create policy "reports_update_admin" on public.reports for update to authenticat
   using ((select public.is_admin())) with check ((select public.is_admin()));
 
 notify pgrst, 'reload schema';
+
+-- Pseudo unique : vérification avant la création d'un profil (forme normalisée, sans majuscules ni accents)
+create or replace function public.pseudo_pris(slug text)
+returns boolean language sql stable security definer set search_path = ''
+as $$ select exists (select 1 from auth.users u where split_part(u.email, '@', 1) = 'rqcm.' || lower(slug)); $$;
+comment on function public.pseudo_pris(text) is 'Vrai si un profil Kinésis utilise déjà ce pseudo (forme normalisée).';
+revoke all on function public.pseudo_pris(text) from public;
+grant execute on function public.pseudo_pris(text) to anon, authenticated;
+notify pgrst, 'reload schema';

@@ -4,10 +4,12 @@ var SB, SB_USER; // pas d initialisation ici : initStore tourne avant la fin du 
 var PROFILE_DOMAINS = ["users.noreply.github.com", "proton.me", "outlook.com", "gmail.com"];
 function profileSlug(n){ return n.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40); }
 function profileEmail(n, i){ return "rqcm." + profileSlug(n) + "@" + PROFILE_DOMAINS[i || 0]; }
+// null = vérification impossible (hors ligne) : Supabase refusera de toute façon un doublon
+async function pseudoTaken(n){ try { const r = await SB.rpc("pseudo_pris", {slug: profileSlug(n)}); return r.error ? null : r.data === true; } catch(e) { return null; } }
 function sbErr(e){
   const m = (e && (e.message || e.error_description || String(e))) || "";
-  if (/invalid login credentials/i.test(m)) return "Prénom ou code incorrect.";
-  if (/already registered|already been registered|exists/i.test(m)) return "Ce profil existe déjà : utilise « Se connecter » avec son code.";
+  if (/invalid login credentials/i.test(m)) return "Pseudo ou code incorrect.";
+  if (/already registered|already been registered|exists/i.test(m)) return "Ce pseudo est déjà pris : choisis-en un autre (ou connecte-toi si c'est le tien).";
   if (/email/i.test(m) && /invalid/i.test(m)) return "Supabase refuse l'adresse technique du profil. Envoie-moi ce message : " + m;
   if (/password/i.test(m) && /6|short|least/i.test(m)) return "Le code doit faire au moins 6 caractères.";
   if (/email not confirmed/i.test(m)) return "Supabase demande une confirmation par e-mail : désactive « Confirm email » dans Authentication, puis Sign In / Providers, puis Email.";
@@ -20,8 +22,9 @@ function profileGate(){
     const g = document.createElement("div"); g.id = "profileGate";
     g.innerHTML = `<div class="pg-card">
       <h1 style="margin-top:0">Révisions</h1>
-      <p class="muted small" style="margin-top:0">Choisis ton profil : ta progression est enregistrée en ligne et te suit sur ton téléphone comme sur ton ordinateur.</p>
-      <label class="small"><b>Prénom</b><input id="pgName" autocomplete="username" placeholder="ex. Thomas"></label>
+      <p class="muted small" style="margin-top:0">Connecte-toi ou crée ton profil : ta progression est enregistrée en ligne et te suit sur ton téléphone comme sur ton ordinateur.</p>
+      <label class="small"><b>Pseudo</b> <span class="muted">(unique)</span><input id="pgName" autocomplete="username" placeholder="ex. Thomas" maxlength="30"></label>
+      <p class="small muted" id="pgAvail" style="min-height:1.3em;margin:4px 0 0"></p>
       <label class="small"><b>Code</b> <span class="muted">(6 caractères ou plus)</span><input id="pgCode" type="password" inputmode="numeric" autocomplete="current-password" placeholder="••••••"></label>
       <div class="row" style="margin-top:12px"><button class="btn primary" id="pgLogin">Se connecter</button><button class="btn" id="pgSignup">Créer le profil</button></div>
       <p class="small" id="pgMsg" style="min-height:1.4em;margin:10px 0 0"></p>
@@ -34,10 +37,14 @@ function profileGate(){
     const busy = b => g.querySelectorAll("button").forEach(x => x.disabled = b);
     async function go(isNew){
       const n = name.value.trim(), c = code.value;
-      if (!profileSlug(n)) { msg.textContent = "Écris ton prénom."; return; }
+      if (profileSlug(n).length < 2) { msg.textContent = "Écris un pseudo d'au moins 2 lettres ou chiffres."; return; }
       if (c.length < 6) { msg.textContent = "Le code doit faire au moins 6 caractères."; return; }
       busy(true); msg.textContent = isNew ? "Création du profil..." : "Connexion...";
       try {
+        if (isNew) {
+          const t = await pseudoTaken(n);
+          if (t === true) { msg.textContent = `Le pseudo « ${n} » est déjà pris : choisis-en un autre (ou connecte-toi si c'est le tien).`; avail.textContent = ""; busy(false); name.focus(); name.select(); return; }
+        }
         let r;
         for (let i = 0; i < PROFILE_DOMAINS.length; i++) {
           r = isNew
@@ -54,6 +61,16 @@ function profileGate(){
         g.remove(); resolve({user: r.data.user, isNew});
       } catch(e) { msg.textContent = sbErr(e); busy(false); }
     }
+    const avail = g.querySelector("#pgAvail"); let at = null;
+    name.addEventListener("input", () => {
+      clearTimeout(at); avail.textContent = ""; avail.className = "small muted";
+      const n = name.value.trim(); if (profileSlug(n).length < 2) return;
+      at = setTimeout(async () => {
+        const t = await pseudoTaken(n); if (name.value.trim() !== n || t === null) return;
+        avail.textContent = t ? "Ce pseudo existe déjà : connecte-toi avec son code, ou choisis-en un autre pour créer un profil." : "Pseudo libre : tu peux créer ton profil.";
+        avail.className = "small " + (t ? "muted" : "ok-t");
+      }, 450);
+    });
     g.querySelector("#pgLogin").onclick = () => go(false);
     g.querySelector("#pgSignup").onclick = () => go(true);
     code.addEventListener("keydown", e => { if (e.key === "Enter") go(false); });
