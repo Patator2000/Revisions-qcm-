@@ -29,7 +29,7 @@ const ANAT_PARTS = {
   P2: "Partie 2 - Les TD",
   P3: "Partie 3 - Les CM"
 };
-// [partie, thème, énoncé, réponse (1 = VRAI, 0 = FAUX), explication]
+// [partie, thème, énoncé, réponse (1 = VRAI, 0 = FAUX), explication, image facultative]
 const ANAT_Q = [
 // ===================== PARTIE 1 : QCM =====================
 // --- QCM 1
@@ -583,5 +583,18 @@ const ANAT_Q = [
 ["P3","C9","La hernie discale est une saillie du nucleus à travers une fissure de l'anneau ; elle est plus fréquente au niveau lombaire.",1,"Elle peut comprimer une racine nerveuse (sciatique)."],
 ["P3","C9","En flexion, la gelée du nucleus est repoussée vers les fissures postérieures de l'anneau.",1,"La hernie peut comprimer le ligament longitudinal postérieur (innervé) ou une racine."],
 ["P3","C9","Pour soulever une charge, il faut respecter les courbures vertébrales, fléchir les hanches et garder les membres supérieurs verticaux.",1,"Comme l'haltérophile, sans porte-à-faux."],
-["P3","C9","Entretenir la mobilité de la hanche (étirements des fessiers, ischio-jambiers, psoas...) aide à fléchir le tronc sans perdre ses courbures.",1,"Recommandation de prévention du CM9."]
+["P3","C9","Entretenir la mobilité de la hanche (étirements des fessiers, ischio-jambiers, psoas...) aide à fléchir le tronc sans perdre ses courbures.",1,"Recommandation de prévention du CM9."],
+["P3","C9","Schéma : le n°1 représente le nucleus du disque intervertébral.",1,"Le nucleus est une sphère de gelée (90 % d'eau chez le sujet jeune), au centre et légèrement en arrière du corps vertébral.","img/anat/c9_vertebre.webp"],
+["P3","C9","Schéma : le n°2 représente l'arc vertébral.",0,"Le n°2 est le corps vertébral, la partie antérieure pleine de la vertèbre (demi-cylindre).","img/anat/c9_vertebre.webp"],
+["P3","C9","Schéma : le n°3 est le foramen vertébral ; empilés, ces orifices forment le canal vertébral.",1,"Le canal vertébral entoure et protège la moelle épinière.","img/anat/c9_vertebre.webp"],
+["P3","C9","Schéma : le n°4, recouvert de cartilage, est un processus transverse.",0,"C'est un processus articulaire : ses surfaces articulaires sont recouvertes de cartilage.","img/anat/c9_vertebre.webp"],
+["P3","C9","Schéma : le n°1 représente l'anneau fibreux, fait d'une dizaine de couches de fibres.",1,"Les fibres d'une couche sont obliques dans un sens, celles de la couche suivante dans l'autre ; les fibres périphériques sont verticales.","img/anat/c9_disque.webp"],
+["P3","C9","Schéma : le n°2 est situé à la périphérie du disque intervertébral.",0,"Le n°2 est le nucleus, au centre du disque (légèrement en arrière), entouré par l'anneau.","img/anat/c9_disque.webp"],
+["P3","C9","Schéma (vue postérieure) : le n°1 relie deux processus transverses, c'est un ligament intertransversaire.",1,"Les ligaments qui relient les processus transverses sont les ligaments intertransversaires.","img/anat/c9_ligaments.webp"],
+["P3","C9","Schéma : le nerf n°2 (vert) est le nerf sciatique.",1,"Le n°1 (rouge) est le nerf fémoral, le n°2 (vert) le nerf sciatique, qui sort par l'orifice antérieur des trous sacrés.","img/anat/c9_nerfs.webp"],
+["P3","C9","Schéma : le nerf n°1 innerve la partie postérieure de la cuisse.",0,"Le n°1 est le nerf fémoral : il innerve la partie antérieure de la cuisse. C'est le sciatique (n°2) qui innerve la partie postérieure.","img/anat/c9_nerfs.webp"],
+["P3","C9","Schéma : dans cette position de soulevé, le dos est plat et les courbures vertébrales sont respectées.",1,"Sacrum, thorax et tête restent alignés sur un bassin bien placé, comme en haltérophilie.","img/anat/c9_dos_plat.webp"],
+["P3","C9","Schéma : dans cette position de soulevé, le dos est rond et les courbures ne sont pas respectées.",1,"La colonne s'enroule : les disques sont pincés en avant et les fibres postérieures de l'anneau très sollicitées.","img/anat/c9_dos_rond.webp"],
+["P3","C9","Schéma : debout, courbures respectées, la charge se répartit sur toute la surface des disques.",1,"Avec des courbures respectées, la compression reste axiale et répartie par le nucleus sur toutes les fibres de l'anneau.","img/anat/c9_charge.webp"],
+["P3","C9","Schéma : la gelée du nucleus, sortie par une déchirure de l'anneau en arrière, comprime un nerf rachidien.",1,"Le nerf rachidien sort par le foramen intervertébral, juste en arrière du disque : une hernie discale postéro-latérale peut le comprimer.","img/anat/c9_hernie.webp"]
 ];

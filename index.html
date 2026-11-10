@@ -373,6 +373,8 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 .pg-card label{display:block;margin-top:12px}
 .pg-card input{display:block;width:100%;margin-top:4px;font:inherit;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
 .simcard{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;border-color:var(--physio)}
+.qimg{display:block;max-width:100%;max-height:44vh;margin:12px auto 4px;border-radius:12px;object-fit:contain}
+.err .qimg{max-height:180px;margin:8px 0}
 </style>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2032%2032%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22lg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%234f7cff%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2314b88a%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath%20d%3D%22M16.00%201.50%20L28.56%208.75%20L28.56%2023.25%20L16.00%2030.50%20L3.44%2023.25%20L3.44%208.75Z%22%20fill%3D%22url%28%23lg%29%22%20stroke%3D%22url%28%23lg%29%22%20stroke-width%3D%223%22%20stroke-linejoin%3D%22round%22/%3E%3Cpath%20d%3D%22M5.5%2017.2h4.6l2.2-5.6%203.6%2010%202.6-7.2%201.6%202.8h6.4%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222.3%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E">
 </head>
@@ -471,6 +473,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
     <div class="qhead"><span id="qnum"></span><span class="row" style="gap:8px"><button class="btn ghost small" id="pauseBtn" type="button">Pause</button><span class="clock hidden" id="clock"></span><span class="qtag" id="qtheme"></span></span></div>
     <div class="bar"><i id="prog"></i></div>
     <div class="qtext" id="qtext"></div>
+    <img class="qimg hidden" id="qimg" alt="Schéma de la question">
     <div class="answers" id="answers"></div>
     <div class="luck" id="luckRow"><button id="luckBtn" type="button">Je réponds au pif</button><span class="small muted" id="luckNote"></span></div>
     <div class="hist" id="hist"></div>
@@ -539,7 +542,7 @@ const ANAT_PARTS = {
   P2: "Partie 2 - Les TD",
   P3: "Partie 3 - Les CM"
 };
-// [partie, thème, énoncé, réponse (1 = VRAI, 0 = FAUX), explication]
+// [partie, thème, énoncé, réponse (1 = VRAI, 0 = FAUX), explication, image facultative]
 const ANAT_Q = [
 // ===================== PARTIE 1 : QCM =====================
 // --- QCM 1
@@ -1093,7 +1096,20 @@ const ANAT_Q = [
 ["P3","C9","La hernie discale est une saillie du nucleus à travers une fissure de l'anneau ; elle est plus fréquente au niveau lombaire.",1,"Elle peut comprimer une racine nerveuse (sciatique)."],
 ["P3","C9","En flexion, la gelée du nucleus est repoussée vers les fissures postérieures de l'anneau.",1,"La hernie peut comprimer le ligament longitudinal postérieur (innervé) ou une racine."],
 ["P3","C9","Pour soulever une charge, il faut respecter les courbures vertébrales, fléchir les hanches et garder les membres supérieurs verticaux.",1,"Comme l'haltérophile, sans porte-à-faux."],
-["P3","C9","Entretenir la mobilité de la hanche (étirements des fessiers, ischio-jambiers, psoas...) aide à fléchir le tronc sans perdre ses courbures.",1,"Recommandation de prévention du CM9."]
+["P3","C9","Entretenir la mobilité de la hanche (étirements des fessiers, ischio-jambiers, psoas...) aide à fléchir le tronc sans perdre ses courbures.",1,"Recommandation de prévention du CM9."],
+["P3","C9","Schéma : le n°1 représente le nucleus du disque intervertébral.",1,"Le nucleus est une sphère de gelée (90 % d'eau chez le sujet jeune), au centre et légèrement en arrière du corps vertébral.","img/anat/c9_vertebre.webp"],
+["P3","C9","Schéma : le n°2 représente l'arc vertébral.",0,"Le n°2 est le corps vertébral, la partie antérieure pleine de la vertèbre (demi-cylindre).","img/anat/c9_vertebre.webp"],
+["P3","C9","Schéma : le n°3 est le foramen vertébral ; empilés, ces orifices forment le canal vertébral.",1,"Le canal vertébral entoure et protège la moelle épinière.","img/anat/c9_vertebre.webp"],
+["P3","C9","Schéma : le n°4, recouvert de cartilage, est un processus transverse.",0,"C'est un processus articulaire : ses surfaces articulaires sont recouvertes de cartilage.","img/anat/c9_vertebre.webp"],
+["P3","C9","Schéma : le n°1 représente l'anneau fibreux, fait d'une dizaine de couches de fibres.",1,"Les fibres d'une couche sont obliques dans un sens, celles de la couche suivante dans l'autre ; les fibres périphériques sont verticales.","img/anat/c9_disque.webp"],
+["P3","C9","Schéma : le n°2 est situé à la périphérie du disque intervertébral.",0,"Le n°2 est le nucleus, au centre du disque (légèrement en arrière), entouré par l'anneau.","img/anat/c9_disque.webp"],
+["P3","C9","Schéma (vue postérieure) : le n°1 relie deux processus transverses, c'est un ligament intertransversaire.",1,"Les ligaments qui relient les processus transverses sont les ligaments intertransversaires.","img/anat/c9_ligaments.webp"],
+["P3","C9","Schéma : le nerf n°2 (vert) est le nerf sciatique.",1,"Le n°1 (rouge) est le nerf fémoral, le n°2 (vert) le nerf sciatique, qui sort par l'orifice antérieur des trous sacrés.","img/anat/c9_nerfs.webp"],
+["P3","C9","Schéma : le nerf n°1 innerve la partie postérieure de la cuisse.",0,"Le n°1 est le nerf fémoral : il innerve la partie antérieure de la cuisse. C'est le sciatique (n°2) qui innerve la partie postérieure.","img/anat/c9_nerfs.webp"],
+["P3","C9","Schéma : dans cette position de soulevé, le dos est plat et les courbures vertébrales sont respectées.",1,"Sacrum, thorax et tête restent alignés sur un bassin bien placé, comme en haltérophilie.","img/anat/c9_dos_plat.webp"],
+["P3","C9","Schéma : dans cette position de soulevé, le dos est rond et les courbures ne sont pas respectées.",1,"La colonne s'enroule : les disques sont pincés en avant et les fibres postérieures de l'anneau très sollicitées.","img/anat/c9_dos_rond.webp"],
+["P3","C9","Schéma : debout, courbures respectées, la charge se répartit sur toute la surface des disques.",1,"Avec des courbures respectées, la compression reste axiale et répartie par le nucleus sur toutes les fibres de l'anneau.","img/anat/c9_charge.webp"],
+["P3","C9","Schéma : la gelée du nucleus, sortie par une déchirure de l'anneau en arrière, comprime un nerf rachidien.",1,"Le nerf rachidien sort par le foramen intervertébral, juste en arrière du disque : une hernie discale postéro-latérale peut le comprimer.","img/anat/c9_hernie.webp"]
 ];
 
 const PHYSIO_THEMES = {
@@ -1663,6 +1679,7 @@ for (const id in SUBJECTS) {
   S.TARGETS = S.TARGETS || []; S.RATE = S.RATE || {vf: 30, qcm: 60};
 }
 // Question Kinésis+ pas encore chargée : [partie, thème, {lock: clé}] (voir tools/contenu.js)
+function qImg(q){ const v = fmt === "vf" ? q[5] : fmt === "qcm" ? q[6] : null; return typeof v === "string" && /^img\//.test(v) ? v : ""; }
 function qLocked(q){ return !!q && q[2] !== null && typeof q[2] === "object" && !Array.isArray(q[2]); }
 function hkey(s){ let h = 5381; for (let i=0;i<s.length;i++) h = ((h<<5) + h + s.charCodeAt(i)) >>> 0; return "q" + h.toString(36); }
 
@@ -2028,6 +2045,7 @@ function render(){
   $("qtheme").textContent = S.THEMES[q[1]];
   $("prog").style.width = ((cur+1)/deck.length*100) + "%";
   $("qtext").textContent = q[2];
+  { const im = $("qimg"), src = qImg(q); im.classList.toggle("hidden", !src); if (src) im.src = src; else im.removeAttribute("src"); }
   $("askBox").innerHTML = ""; $("fb").innerHTML = "";
   if (fmt === "vf") renderVF(q); else if (fmt === "qcm") renderMCQ(q); else renderOpen(q);
   // bouton au pif (pas pour les questions ouvertes)
@@ -2299,7 +2317,7 @@ function finish(timeUp){
     if (fmt === "vf") body = `<div class="small">Ta réponse : ${LABEL[a]}${luck[i] && a===q[3] ? " (juste, au pif)" : ""}. <b>Réponse correcte : ${LABEL[q[3]]}</b></div><div class="small muted">${esc(q[4])}</div>`;
     else if (fmt === "qcm") body = `<ul class="small plist">${q[3].map((t,j) => `<li class="${q[4].includes(j) ? "r" : ""}${a.sel.includes(j) ? " c" : ""}">${LET[j]}. ${esc(t)}${q[4].includes(j) ? " ✓" : ""}${a.sel.includes(j) ? " (cochée)" : ""}</li>`).join("")}</ul><div class="small">${a.nsp ? "Ne sait pas." : `Points : ${fr(mcqScore(q,a.sel))}.`} <b>Bonnes réponses : ${q[4].map(j => LET[j]).join(", ")}</b>${luck[i] ? " (au pif)" : ""}</div><div class="small muted">${esc(q[5])}</div>`;
     else body = `<div class="small muted">Éléments attendus :</div><ul class="small kp">${q[3].map(x => `<li>${esc(x)}</li>`).join("")}</ul>`;
-    return `<div class="err"><span class="tag">${S.THEMES[q[1]]}</span><div class="q">${esc(q[2])}</div>${body}<button class="btn ghost small" data-ask="${qi}">Poser une question sur ce point</button><div data-askbox="${qi}"></div></div>`;
+    return `<div class="err"><span class="tag">${S.THEMES[q[1]]}</span><div class="q">${esc(q[2])}</div>${qImg(q) ? `<img class="qimg" src="${qImg(q)}" alt="Schéma">` : ""}${body}<button class="btn ghost small" data-ask="${qi}">Poser une question sur ce point</button><div data-askbox="${qi}"></div></div>`;
   }).join("") : `<div class="empty">Rien à revoir. Bravo !</div>`;
   $("errors").querySelectorAll("[data-ask]").forEach(b => b.onclick = () => { b.remove(); renderAsk($("errors").querySelector(`[data-askbox="${b.dataset.ask}"]`), +b.dataset.ask); });
   const redo = review.map(i => deck[i]);

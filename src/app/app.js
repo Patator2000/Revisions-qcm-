@@ -45,6 +45,7 @@ for (const id in SUBJECTS) {
   S.TARGETS = S.TARGETS || []; S.RATE = S.RATE || {vf: 30, qcm: 60};
 }
 // Question Kinésis+ pas encore chargée : [partie, thème, {lock: clé}] (voir tools/contenu.js)
+function qImg(q){ const v = fmt === "vf" ? q[5] : fmt === "qcm" ? q[6] : null; return typeof v === "string" && /^img\//.test(v) ? v : ""; }
 function qLocked(q){ return !!q && q[2] !== null && typeof q[2] === "object" && !Array.isArray(q[2]); }
 function hkey(s){ let h = 5381; for (let i=0;i<s.length;i++) h = ((h<<5) + h + s.charCodeAt(i)) >>> 0; return "q" + h.toString(36); }
 
@@ -410,6 +411,7 @@ function render(){
   $("qtheme").textContent = S.THEMES[q[1]];
   $("prog").style.width = ((cur+1)/deck.length*100) + "%";
   $("qtext").textContent = q[2];
+  { const im = $("qimg"), src = qImg(q); im.classList.toggle("hidden", !src); if (src) im.src = src; else im.removeAttribute("src"); }
   $("askBox").innerHTML = ""; $("fb").innerHTML = "";
   if (fmt === "vf") renderVF(q); else if (fmt === "qcm") renderMCQ(q); else renderOpen(q);
   // bouton au pif (pas pour les questions ouvertes)
@@ -681,7 +683,7 @@ function finish(timeUp){
     if (fmt === "vf") body = `<div class="small">Ta réponse : ${LABEL[a]}${luck[i] && a===q[3] ? " (juste, au pif)" : ""}. <b>Réponse correcte : ${LABEL[q[3]]}</b></div><div class="small muted">${esc(q[4])}</div>`;
     else if (fmt === "qcm") body = `<ul class="small plist">${q[3].map((t,j) => `<li class="${q[4].includes(j) ? "r" : ""}${a.sel.includes(j) ? " c" : ""}">${LET[j]}. ${esc(t)}${q[4].includes(j) ? " ✓" : ""}${a.sel.includes(j) ? " (cochée)" : ""}</li>`).join("")}</ul><div class="small">${a.nsp ? "Ne sait pas." : `Points : ${fr(mcqScore(q,a.sel))}.`} <b>Bonnes réponses : ${q[4].map(j => LET[j]).join(", ")}</b>${luck[i] ? " (au pif)" : ""}</div><div class="small muted">${esc(q[5])}</div>`;
     else body = `<div class="small muted">Éléments attendus :</div><ul class="small kp">${q[3].map(x => `<li>${esc(x)}</li>`).join("")}</ul>`;
-    return `<div class="err"><span class="tag">${S.THEMES[q[1]]}</span><div class="q">${esc(q[2])}</div>${body}<button class="btn ghost small" data-ask="${qi}">Poser une question sur ce point</button><div data-askbox="${qi}"></div></div>`;
+    return `<div class="err"><span class="tag">${S.THEMES[q[1]]}</span><div class="q">${esc(q[2])}</div>${qImg(q) ? `<img class="qimg" src="${qImg(q)}" alt="Schéma">` : ""}${body}<button class="btn ghost small" data-ask="${qi}">Poser une question sur ce point</button><div data-askbox="${qi}"></div></div>`;
   }).join("") : `<div class="empty">Rien à revoir. Bravo !</div>`;
   $("errors").querySelectorAll("[data-ask]").forEach(b => b.onclick = () => { b.remove(); renderAsk($("errors").querySelector(`[data-askbox="${b.dataset.ask}"]`), +b.dataset.ask); });
   const redo = review.map(i => deck[i]);
