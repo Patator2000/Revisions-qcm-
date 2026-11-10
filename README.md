@@ -38,6 +38,7 @@ src/
   data/                 banques de questions (anatomie, physiologie)
 supabase/schema.sql     tables, sécurité et automatismes de la base
 supabase/classement_abonnement.sql   classement et abonnement
+supabase/admin.sql       compte admin (signalements), fonction is_admin()
 supabase/contenu_payant.sql   questions Kinésis+ (cours 3 et suivants), essai de 7 jours
 tools/contenu.js        sépare les questions gratuites (cours 1-2) et Kinésis+
 supabase/functions/     fonctions serveur Stripe (non déployées)
@@ -57,7 +58,7 @@ docs/                   logo, guide de l'abonnement (abonnement.md)
 Projet Supabase **Revisions-qcm-**. Tables protégées pour que chaque profil n'accède qu'à ses propres données :
 
 - `progress` : la progression de chaque profil, par matière ;
-- `reports` : les erreurs signalées dans les questions, avec un suivi (`nouveau`, `corrigé`, `rejeté`) ;
+- `reports` : les erreurs signalées dans les questions, avec un suivi (`nouveau`, `corrigé`, `rejeté`) ; seul le compte admin les voit toutes (menu du profil, « Signalements à traiter ») ;
 - `profiles` : le choix d'apparaître ou non dans le classement ;
 - `subscriptions` : l'abonnement Kinésis+ (préparé, voir [`docs/abonnement.md`](docs/abonnement.md)) ;
 - `premium_content` : les questions des cours 3 et suivants, lisibles seulement par les abonnés et les profils en essai.

@@ -72,6 +72,9 @@ async function supaStart(live, anonLocals){
     window.PROFILE_CLAUDE = (SB_USER.user_metadata && SB_USER.user_metadata.claude_chat) || "";
     if (typeof premiumCheck === "function") premiumCheck(true);
     if (typeof premiumLoad === "function") setTimeout(premiumLoad, 0);
+    // compte admin (gestion du site) : vérifié côté serveur
+    window.PROFILE_ADMIN = false;
+    SB.rpc("is_admin").then(r => { window.PROFILE_ADMIN = r.data === true; if (window.PROFILE_ADMIN) adminCount(); try { renderReports(); } catch(e) {} }, () => {});
     SB.from("profiles").select("classement").eq("user_id", SB_USER.id).maybeSingle().then(r => { window.PROFILE_RANKED = !(r.data && r.data.classement === false); }, () => {});
     let rows = {}, offline = false;
     const q = await SB.from("progress").select("subject,mem,sess,updated_at").eq("user_id", SB_USER.id);
@@ -217,6 +220,7 @@ function profileMenuOpen(){
       ${typeof premiumOn === "function" && premiumOn() ? `<button class="pm-item" data-a="premium">Kinésis+ ${PREMIUM.etat === true ? '<span class="pm-ok">actif</span>' : premiumTrialLeft() ? '<span class="pm-ok prem">essai : ' + premiumTrialLeft() + ' j</span>' : '<span class="pm-ok prem">' + PREMIUM.prix + ' / mois</span>'}</button>` : ""}
       <button class="pm-item" data-a="claude">Conversation Claude${claudeChat() ? ' <span class="pm-ok">réglée</span>' : ""}</button>
       <button class="pm-item" data-a="rank">Apparaître dans le classement <span class="pm-sw${window.PROFILE_RANKED === false ? "" : " on"}"></span></button>
+      ${window.PROFILE_ADMIN ? `<div class="pm-sec"><div class="pm-title">Administration</div><button class="pm-item" data-a="reports">Signalements à traiter <span class="pm-ok${ADMIN.nouveaux ? " prem" : ""}">${ADMIN.nouveaux === null ? "..." : ADMIN.nouveaux}</span></button><div class="small muted pm-adm-out"></div></div>` : ""}
       <button class="pm-item" data-a="sync">Enregistrer maintenant</button>
       <button class="pm-item" data-a="switch">Changer de profil</button>
       <button class="pm-item danger" data-a="out">Se déconnecter</button>`;
@@ -236,6 +240,7 @@ function profileMenuOpen(){
     if (a === "sync") { x.textContent = "Enregistrement..."; try { await Promise.all(Object.values(SUBJECTS).filter(s => s.ref).map(s => flush(s))); x.textContent = "Enregistré ✓"; } catch(e) { x.textContent = "Échec, réessaie"; } }
     if (a === "switch" || a === "out") { x.textContent = "Déconnexion..."; profileLeave(); }
     if (a === "claude") { profileClaudeForm(m); return; }
+    if (a === "reports") { adminCopyReports(m); return; }
     if (a === "premium") { profileMenuClose(); if (PREMIUM.etat === true) premiumManage(); else premiumOffer(); return; }
     if (a === "rank") {
       const on = window.PROFILE_RANKED === false; // nouvel état
@@ -290,3 +295,21 @@ setSave = function(){
   const l = $("saveLong");
   if (l && online) l.textContent = `Profil ${window.PROFILE_NAME} : ta progression est enregistrée en ligne et te suit sur tous tes appareils.`;
 };
+
+// ================= Administration (compte admin seulement) =================
+const ADMIN = {nouveaux: null};
+async function adminCount(){
+  if (!window.PROFILE_ADMIN || !SB) return;
+  const r = await SB.from("reports").select("id", {count: "exact", head: true}).eq("status", "nouveau");
+  if (!r.error) ADMIN.nouveaux = r.count || 0;
+}
+async function adminCopyReports(menu){
+  const out = menu.querySelector(".pm-adm-out"); out.textContent = "Chargement...";
+  const r = await SB.from("reports").select("id, created_at, data").eq("status", "nouveau").order("created_at");
+  if (r.error) { out.textContent = "Impossible de charger les signalements."; return; }
+  ADMIN.nouveaux = r.data.length;
+  if (!r.data.length) { out.textContent = "Aucun signalement en attente."; return; }
+  const txt = "Traite ces signalements Kinésis :\n\n" + r.data.map((x, i) => { const d = x.data || {}; return `${i+1}. [${d.matiere} - ${d.format} - ${d.theme}] ${d.question}\n   Problème : ${d.type}${d.commentaire ? " - " + d.commentaire : ""}\n   (id ${x.id})`; }).join("\n\n");
+  const ok = await copyText(txt);
+  out.textContent = ok ? `${r.data.length} signalement${r.data.length > 1 ? "s" : ""} copié${r.data.length > 1 ? "s" : ""} : colle-les dans ta conversation avec Claude.` : "La copie a échoué.";
+}

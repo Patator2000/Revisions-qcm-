@@ -29,14 +29,17 @@ function openReport(qi, id){
     let online = false;
     if (DB) { try { await DB.collection("reports").add(r); online = true; } catch(e) { online = false; } }
     lsAddReport(r);
-    box.innerHTML = `<p class="small ok-t">Merci, signalement enregistré${online ? "" : " dans ce navigateur"}. ${online ? "Demande-moi dans la conversation de « traiter les signalements » pour que je corrige." : "Utilise « Copier mes signalements » sur la page de la matière pour me les envoyer."}</p>`;
+    const msg = window.PROFILE_ADMIN
+      ? (online ? "Signalement enregistré. Il apparaît dans « Signalements à traiter » (menu du profil)." : "Signalement gardé dans ce navigateur : utilise « Copier mes signalements » sur la page de la matière.")
+      : (online ? "Merci, ton signalement a bien été envoyé. La question sera vérifiée et corrigée si besoin." : (DB ? "Merci ! Pas de connexion pour l'instant : ton signalement n'a pas pu être envoyé, réessaie plus tard." : "Merci ! Connecte-toi à un profil pour que ton signalement soit envoyé."));
+    box.innerHTML = `<p class="small ok-t">${msg}</p>`;
     reportOpenFor = id;
     renderReports();
   };
 }
 function renderReports(){
   const n = lsReports().length, row = $("reportsRow"); if (!row) return;
-  row.classList.toggle("hidden", !n);
+  row.classList.toggle("hidden", !n || !window.PROFILE_ADMIN);
   $("reportsCount").textContent = `${n} signalement${n>1?"s":""} envoyé${n>1?"s":""} depuis ce navigateur.`;
 }
 $("reportsCopy").onclick = async () => {
