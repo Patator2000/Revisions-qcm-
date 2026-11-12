@@ -100,7 +100,7 @@ const ANAT_Q = [
 // --- QCM 4
 ["P1","Q4","Le plateau tibial est la face supérieure de l'épiphyse supérieure du tibia.",1,"Épais plateau osseux portant les glènes médiale et latérale."],
 ["P1","Q4","Le plan du plateau tibial est légèrement oblique en bas et en arrière.",1,"CM4."],
-["P1","Q4","La trochlée du fémur se trouve à l'avant de l'épiphyse inférieure.",1,"Corrigé officiel du QCM 4 : VRAI. Le CM4 décrit l'extrémité (épiphyse) inférieure du fémur ainsi : en avant, la trochlée (ou surface patellaire), une poulie où glisse la patella ; en arrière, les deux condyles séparés par la fosse intercondylaire. Astuce : la patella est devant le genou, donc sa surface d'appui (la trochlée) aussi."],
+["P1","Q4","La trochlée du fémur se trouve à l'avant de l'épiphyse inférieure.",1,"En avant : la trochlée (surface patellaire). En arrière : les deux condyles."],
 ["P1","Q4","Les condyles fémoraux sont situés à l'avant de l'épiphyse inférieure du fémur.",0,"Les condyles sont en arrière, séparés par la fosse intercondylaire ; la trochlée est en avant."],
 ["P1","Q4","L'épicondyle latéral se situe sur l'épiphyse inférieure du fémur.",1,"Les épicondyles sont les gros tubercules sur les faces sous-cutanées des condyles, où s'insèrent les ligaments latéraux du genou."],
 ["P1","Q4","La face antérieure de la patella est convexe vers l'avant et sous-cutanée.",1,"CM4."],
