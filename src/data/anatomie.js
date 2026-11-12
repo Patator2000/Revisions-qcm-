@@ -653,5 +653,14 @@ const ANAT_Q = [
 ["P2","T5","Schéma : le n°3 est le bourrelet.",0,"Le n°3 est le cartilage de la tête fémorale ; le bourrelet est le n°5.","img/anat/t5_hanche.webp"],
 ["P2","T5","Schéma : le n°4 est le cotyle (acetabulum) de l'os coxal.",1,"Légende : 1 bassin, 2 tête du fémur, 3 cartilage, 4 cotyle, 5 bourrelet.","img/anat/t5_hanche.webp"],
 ["P2","T8","Schéma : le n°4 montre une rupture du tendon d'Achille.",1,"1 normal, 2 tendinite, 3 tendinite chronique (micro-déchirures), 4 rupture.","img/anat/t8_achille.webp"],
-["P2","T8","Schéma : le n°1 montre une tendinite.",0,"Le n°1 est un tendon normal ; la tendinite est le n°2.","img/anat/t8_achille.webp"]
+["P2","T8","Schéma : le n°1 montre une tendinite.",0,"Le n°1 est un tendon normal ; la tendinite est le n°2.","img/anat/t8_achille.webp"],
+["P2","T6","Schéma (vue postérieure du bassin) : le n°1 est le piriforme.",1,"Le plus haut des pelvi-trochantériens : il naît de la face antérieure du sacrum et se termine sur la face supérieure du grand trochanter.","img/anat/t6_pelvi.webp"],
+["P2","T6","Schéma : le n°2 est le jumeau supérieur.",1,"Les deux jumeaux (n°2 en haut, n°4 en bas) encadrent le tendon de l'obturateur interne.","img/anat/t6_pelvi.webp"],
+["P2","T6","Schéma : le n°4 est le jumeau supérieur.",0,"Le n°4 est le jumeau inférieur ; le jumeau supérieur est le n°2.","img/anat/t6_pelvi.webp"],
+["P2","T6","Schéma : le n°3 est l'obturateur interne.",0,"Le n°3 (côté gauche, vue profonde) est l'obturateur externe ; l'obturateur interne est le n°6.","img/anat/t6_pelvi.webp"],
+["P2","T6","Schéma : le n°6, entre les deux jumeaux, est l'obturateur interne.",1,"Il naît de la face interne du pourtour du foramen obturé et passe entre l'épine sciatique et la tubérosité ischiatique.","img/anat/t6_pelvi.webp"],
+["P2","T6","Schéma : le n°5 est le carré fémoral.",1,"Le plus bas : il naît de la tubérosité ischiatique et se termine sur la face postéro-médiale du grand trochanter.","img/anat/t6_pelvi.webp"],
+["P2","T6","Schéma : le n°5 naît de l'épine sciatique.",0,"Le carré fémoral (n°5) naît de la tubérosité ischiatique.","img/anat/t6_pelvi.webp"],
+["P2","T6","Schéma : les muscles n°1, n°3, n°5 et n°6 ont tous pour fonction principale la rotation latérale de la hanche.",1,"Piriforme, obturateurs interne et externe, carré fémoral : rotation latérale de la cuisse sur le bassin (CM6).","img/anat/t6_pelvi.webp"],
+["P2","T6","Schéma : de haut en bas, on trouve piriforme, jumeau supérieur, obturateur interne, jumeau inférieur, carré fémoral.",1,"C'est l'ordre du côté droit du schéma (n°1, n°2, n°6, n°4, n°5).","img/anat/t6_pelvi.webp"]
 ];
