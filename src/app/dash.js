@@ -121,7 +121,7 @@ function dashWeek(D){
     const g = cur !== undefined && prev !== undefined ? cur - prev : null;
     const lvl = g === null ? 0 : g <= 0 ? (a ? 1 : 0) : g < 5 ? 2 : g < 15 ? 3 : 4;
     const [y, mo, dd] = d.split("-").map(Number), wd = new Date(y, mo-1, dd).toLocaleDateString("fr-FR", {weekday: "short"}).replace(".", "");
-    return `<div class="dw-day l${lvl}${d === today ? " today" : ""}" title="${dashFmtDay(d)} : ${a || 0} réponse${a > 1 ? "s" : ""}"><span>${d === today ? "auj." : wd}</span><b>${g === null ? "·" : (g > 0 ? "+" : "") + g}</b></div>`;
+    return `<div class="dw-day l${lvl}${d === today ? " today" : ""}" data-tip="<b>${dashFmtDay(d)}</b><br>${g === null ? "pas de suivi ce jour-là" : (g > 0 ? "+" : "") + g + " question" + (Math.abs(g) > 1 ? "s" : "") + " maîtrisée" + (Math.abs(g) > 1 ? "s" : "")}<br><span>${a || 0} réponse${a > 1 ? "s" : ""}</span>"><span>${d === today ? "auj." : wd}</span><b>${g === null ? "·" : (g > 0 ? "+" : "") + g}</b></div>`;
   }).join("");
   return `<div class="dash-week-h"><span>Questions maîtrisées gagnées chaque jour</span></div><div class="dash-week">${cells}</div>`;
 }
@@ -130,22 +130,22 @@ function dashGoal(D){
   const next = steps.find(s => s > pct + 1e-9) || 100, prev = [0, ...steps].filter(s => s < next).pop();
   const need = Math.max(0, Math.ceil(next / 100 * D.total) - D.m), fill = (pct - prev) / (next - prev) * 100;
   return `<div class="dash-goal"><div class="dash-goal-h"><span>Prochain palier : <b>${next} %</b></span><span>${need ? `plus que <b>${need}</b> question${need > 1 ? "s" : ""} à maîtriser` : "atteint !"}</span></div>
-    <div class="dash-goal-bar"><i style="width:${Math.max(2, Math.min(100, fill))}%"></i></div></div>`;
+    <div class="dash-goal-bar" data-tip="<b>${D.m} maîtrisées</b> sur ${D.total}<br>palier de ${next} % : ${Math.ceil(next / 100 * D.total)} questions"><i style="width:${Math.max(2, Math.min(100, fill))}%"></i></div></div>`;
 }
 function dashBars(D){
   const days = dashSince(D, 30), vals = days.map(d => D.act[d] || {a:0, c:0}), mx = Math.max(5, ...vals.map(v => v.a));
   const bars = vals.map((v, i) => {
-    const hT = v.a / mx * 100, hC = v.c / mx * 100, tip = `${dashFmtDay(days[i])} : ${v.a} réponse${v.a > 1 ? "s" : ""}, ${v.c} juste${v.c > 1 ? "s" : ""}`;
-    return `<div class="dash-bar" title="${tip}"><i class="ko" style="height:${hT}%"></i><i class="ok" style="height:${hC}%"></i></div>`;
+    const hT = v.a / mx * 100, hC = v.c / mx * 100, f = v.a - v.c, tip = v.a ? `<b>${dashFmtDay(days[i])}</b> · ${v.a} réponse${v.a > 1 ? "s" : ""}<br><i class=t-ok></i>${v.c} juste${v.c > 1 ? "s" : ""} (${Math.round(v.c / v.a * 100)} %)<br><i class=t-ko></i>${f} fausse${f > 1 ? "s" : ""}` : `<b>${dashFmtDay(days[i])}</b><br>aucune réponse`;
+    return `<div class="dash-bar" data-tip="${tip}"><i class="ko" style="height:${hT}%"></i><i class="ok" style="height:${hC}%"></i></div>`;
   }).join("");
   return `<div class="dash-bars">${bars}</div><div class="dash-axis"><span>${days.length > 1 ? dashFmtDay(days[0]) : ""}</span><span>max ${mx} / jour</span><span>aujourd'hui</span></div>`;
 }
 function dashDonut(D){
   const R = 42, C = 2 * Math.PI * R, segs = [["m","Maîtrisées"],["p","En cours"],["w","À revoir"],["u","Jamais vues"]];
-  let off = 0; const arcs = segs.map(([k]) => { const v = D[k] / (D.total || 1) * C; const s = `<circle r="${R}" cx="55" cy="55" fill="none" stroke="${DASH_COL[k]}" stroke-width="13" stroke-dasharray="${v} ${C - v}" stroke-dashoffset="${-off}" transform="rotate(-90 55 55)"/>`; off += v; return s; }).join("");
-  const leg = segs.map(([k, l]) => `<div class="dash-leg"><i style="background:${DASH_COL[k]}"></i><span>${l}</span><b>${D[k]}</b></div>`).join("");
+  let off = 0; const arcs = segs.map(([k]) => { const v = D[k] / (D.total || 1) * C; const pc = Math.round(D[k] / (D.total || 1) * 100), s = `<circle data-tip="<b>${segs.find(z => z[0] === k)[1]}</b><br>${D[k]} question${D[k] > 1 ? "s" : ""} · ${pc} %" r="${R}" cx="55" cy="55" fill="none" stroke="${DASH_COL[k]}" stroke-width="13" stroke-dasharray="${v} ${C - v}" stroke-dashoffset="${-off}" transform="rotate(-90 55 55)"/>`; off += v; return s; }).join("");
+  const leg = segs.map(([k, l]) => `<div class="dash-leg" data-tip="<b>${l}</b><br>${D[k]} question${D[k] > 1 ? "s" : ""} sur ${D.total} · ${Math.round(D[k] / (D.total || 1) * 100)} %"><i style="background:${DASH_COL[k]}"></i><span>${l}</span><b>${D[k]}</b></div>`).join("");
   const subs = D.subj.map(({x, sm, gain}) => {
-    const t = sm.total || 1, seg = k => `<i style="width:${sm[k] / t * 100}%;background:${DASH_COL[k]}"></i>`;
+    const t = sm.total || 1, lab = {m: "maîtrisées", p: "en cours", w: "à revoir"}, seg = k => `<i data-tip="<b>${x.name}</b><br>${sm[k]} ${lab[k]} sur ${sm.total} · ${Math.round(sm[k] / t * 100)} %" style="width:${sm[k] / t * 100}%;background:${DASH_COL[k]}"></i>`;
     return `<div class="dash-subj"><div class="ds-h"><span>${x.name}</span><span>${gain > 0 ? `<em class="dash-delta up">▲ +${gain} cette semaine</em>` : `<em class="ds-muted">${Math.round(sm.m / t * 100)} % maîtrisé</em>`}</span></div><div class="ds-bar">${seg("m")}${seg("p")}${seg("w")}</div></div>`;
   }).join("");
   const wkGain = D.subj.reduce((a, z) => a + Math.max(0, z.gain), 0);
@@ -155,8 +155,9 @@ function dashDonut(D){
     !need ? "Palier de " + next + " % atteint, bravo !" : eta ? `À ce rythme, ${next} % dans environ <b>${eta} jour${eta > 1 ? "s" : ""}</b>` : "Lance une série pour démarrer ta progression"}</span></div></div>`;
   return pace + `<div class="dash-rep"><div class="dash-donut"><svg viewBox="0 0 110 110">${arcs}</svg><div class="dash-donut-c"><b>${D.total ? Math.round(D.m / D.total * 100) : 0}<small> %</small></b><span>maîtrisé</span></div></div><div class="dash-legs">${leg}</div></div>${subs}`;
 }
-function dashSpark(arr, col){
+function dashSpark(arr, col, tips){
   if (arr.length < 2) return "";
+  if (tips) { const mx0 = Math.max(1, ...arr); return `<div class="dash-sparkw" data-ys='${JSON.stringify(arr.map(v => Math.round((1 - (3 + v / mx0 * 22) / 28) * 1000) / 10))}' data-tips='${JSON.stringify(tips).replace(/'/g, "&#39;")}'>${dashSpark(arr, col)}<i class="dash-dot hov"></i></div>`; }
   const mx = Math.max(1, ...arr), W = 100, H = 28, P = arr.map((v, i) => [i / (arr.length - 1) * W, H - 3 - v / mx * (H - 6)]);
   return `<svg class="dash-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><path d="${smoothPath(P)}" fill="none" stroke="${col}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`;
 }
@@ -182,7 +183,7 @@ function renderDash(){
   const fmtP = v => (Math.round(v * 10) / 10).toFixed(v < 10 && v % 1 ? 1 : 0).replace(".", ",");
   const weak = D.weak.length ? D.weak.map(z => {
     const col = z.x.id === "anat" ? "anat" : "physio", nm = String(z.x.THEMES[z.t] || z.t).replace(/</g, "&lt;");
-    return `<button class="dash-weak" data-s="${z.x.id}" data-t="${z.t}" style="--c:var(--${col})"><span class="dw-name"><i></i>${nm}</span><span class="dw-bar"><b style="width:${Math.round(z.r * 100)}%"></b></span><span class="dw-pct">${Math.round(z.r * 100)} %</span></button>`;
+    return `<button class="dash-weak" data-tip="<b>${nm.replace(/"/g, "&quot;")}</b><br>${z.g} bonne${z.g > 1 ? "s" : ""} réponse${z.g > 1 ? "s" : ""} sur ${z.tr} essais (${Math.round(z.r * 100)} %)<br><span>clique pour réviser ce thème</span>" data-s="${z.x.id}" data-t="${z.t}" style="--c:var(--${col})"><span class="dw-name"><i></i>${nm}</span><span class="dw-bar"><b style="width:${Math.round(z.r * 100)}%"></b></span><span class="dw-pct">${Math.round(z.r * 100)} %</span></button>`;
   }).join("") : `<p class="small muted" style="margin:6px 0 0">Réponds à quelques séries : les thèmes où tu te trompes le plus apparaîtront ici (au moins 3 réponses par thème).</p>`;
   el.innerHTML = `
   <div class="dash-card span8 dash-hero">
@@ -201,13 +202,13 @@ function renderDash(){
     <div class="dash-k">Taux de réussite</div>
     <div class="dash-mid">${rate === null ? "-" : fmtP(rate) + "<small> %</small>"}</div>
     <div class="dash-sub">${rateT === null ? "pas encore de réponse aujourd'hui" : "aujourd'hui " + Math.round(rateT) + " %"} ${rate !== null && rateT !== null ? dashDelta(rateT - rate, " pts") : ""}</div>
-    ${days14.length > 1 ? dashSpark(spR, "var(--accent)") + `<div class="dash-axis"><span>${dashFmtDay(days14[0])}</span><span>aujourd'hui</span></div>` : ""}
+    ${days14.length > 1 ? dashSpark(spR, "var(--accent)", days14.map(d => { const e = D.act[d]; return `<b>${dashFmtDay(d)}</b><br>${e && e.a ? Math.round(e.c / e.a * 100) + " % de réussite<br><span>" + e.c + " justes sur " + e.a + "</span>" : "aucune réponse"}`; })) + `<div class="dash-axis"><span>${dashFmtDay(days14[0])}</span><span>aujourd'hui</span></div>` : ""}
   </div>
   <div class="dash-card ${window.SUPA_URL ? "span4" : "span6"} dash-kpi">
     <div class="dash-k">Aujourd'hui</div>
     <div class="dash-mid">${D.today.a}<small> réponse${D.today.a > 1 ? "s" : ""}</small></div>
     <div class="dash-sub">moyenne 7 j : ${fmtP(D.avg7)} ${D.avg7 > 0 ? dashDelta((D.today.a - D.avg7) / D.avg7 * 100, " %") : ""}</div>
-    ${days14.length > 1 ? dashSpark(spA, "var(--ok)") + `<div class="dash-axis"><span>${dashFmtDay(days14[0])}</span><span>aujourd'hui</span></div>` : ""}
+    ${days14.length > 1 ? dashSpark(spA, "var(--ok)", days14.map(d => { const e = D.act[d]; return `<b>${dashFmtDay(d)}</b><br>${e && e.a ? e.a + " réponse" + (e.a > 1 ? "s" : "") : "aucune réponse"}`; })) + `<div class="dash-axis"><span>${dashFmtDay(days14[0])}</span><span>aujourd'hui</span></div>` : ""}
   </div>
   ${window.SUPA_URL ? `<div class="dash-card span4 dash-rank" id="dashRank">
     <div class="dash-k">Classement <span class="rk-tabs"><button data-p="semaine" class="${rankPer === "semaine" ? "on" : ""}">Semaine</button><button data-p="general" class="${rankPer === "general" ? "on" : ""}">Général</button></span></div>
@@ -221,7 +222,7 @@ function renderDash(){
     <div class="dash-k">Points faibles</div>
     ${weak}
   </div>`;
-  dashPlotHover(el);
+  dashPlotHover(el); dashTips(el);
   if (window.SUPA_URL) {
     el.querySelectorAll(".rk-tabs button").forEach(b => b.onclick = () => { rankPer = b.dataset.p; el.querySelectorAll(".rk-tabs button").forEach(x => x.classList.toggle("on", x === b)); rankLoad(true); });
     rankLoad(false);
@@ -281,3 +282,31 @@ function rankDraw(rows){
   box.innerHTML = h;
 }
 if (typeof escHtml !== "function") var escHtml = t => String(t == null ? "" : t).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+// ================= Infobulles des graphiques (souris et doigt) =================
+function dashTips(root){
+  let tip = document.getElementById("dtip");
+  if (!tip) { tip = document.createElement("div"); tip.id = "dtip"; tip.className = "dtip"; document.body.appendChild(tip); }
+  let hideT = null;
+  const place = (x, y) => { const w = tip.offsetWidth, h = tip.offsetHeight;
+    let L = x - w / 2, T = y - h - 14; L = Math.max(6, Math.min(innerWidth - w - 6, L)); if (T < 6) T = y + 18;
+    tip.style.left = L + "px"; tip.style.top = T + "px"; };
+  const show = (html, x, y) => { tip.innerHTML = html; tip.style.display = "block"; place(x, y); };
+  const hide = () => { tip.style.display = "none"; root.querySelectorAll(".dash-sparkw .hov").forEach(d => d.style.display = "none"); };
+  const at = (e, el) => {
+    const pt = e.touches ? e.touches[0] : e;
+    if (el.classList.contains("dash-sparkw")) {
+      const tips = JSON.parse(el.dataset.tips || "[]"), r = el.getBoundingClientRect();
+      const i = Math.max(0, Math.min(tips.length - 1, Math.round((pt.clientX - r.left) / r.width * (tips.length - 1))));
+      const dot = el.querySelector(".hov"); const ys = JSON.parse(el.dataset.ys || "[]"), sv = el.querySelector("svg").getBoundingClientRect();
+      dot.style.cssText = `display:block;left:${i / (tips.length - 1) * 100}%;top:${sv.top - r.top + (ys[i] || 50) / 100 * sv.height}px`;
+      return show(tips[i], pt.clientX, r.top + 10);
+    }
+    show(el.dataset.tip, pt.clientX, pt.clientY);
+  };
+  const find = t => t && t.closest ? t.closest("[data-tip], .dash-sparkw") : null;
+  root.addEventListener("mousemove", e => { const el = find(e.target); if (el && root.contains(el)) at(e, el); else hide(); });
+  root.addEventListener("mouseleave", hide);
+  root.addEventListener("touchstart", e => { const el = find(e.target); if (!el) return hide(); at(e, el); clearTimeout(hideT); hideT = setTimeout(hide, 2500); }, {passive: true});
+  root.addEventListener("touchmove", e => { const el = find(e.target); if (el) at(e, el); }, {passive: true});
+}
