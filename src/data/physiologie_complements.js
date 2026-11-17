@@ -1,4 +1,4 @@
-// ===== Lot 2 : CM4 Fonction musculaire, CM5 Bioénergétique, CM6 Bioénergétique appliquée, TD2 à TD10
+// ===== Lot 2 : CM4 Fonction musculaire, CM 7-8 Bioénergétique, CM 9-10 Bioénergétique appliquée, TD2 à TD10
 (function(){
   const order = [
     ["T1", PHYSIO_THEMES.T1],
@@ -13,8 +13,8 @@
     ["T10","TD10 - VO2max, QR et récupération"],
     ["C1", PHYSIO_THEMES.C1], ["C2", PHYSIO_THEMES.C2], ["C3", PHYSIO_THEMES.C3], ["C4", PHYSIO_THEMES.C4],
     ["C5","CM4 - Fonction musculaire"],
-    ["C6","CM5 - Bioénergétique de l'exercice"],
-    ["C7","CM6 - Bioénergétique appliquée à l'exercice"]
+    ["C6","CM 7-8 - Bioénergétique de l'exercice"],
+    ["C7","CM 9-10 - Bioénergétique appliquée à l'exercice"]
   ];
   for (const k of Object.keys(PHYSIO_THEMES)) delete PHYSIO_THEMES[k];
   for (const [k,v] of order) PHYSIO_THEMES[k] = v;
@@ -89,11 +89,11 @@ PHYSIO_Q.push(
 ["P3","C5","La typologie musculaire est le seul facteur qui détermine la performance.",0,"La fonction cardio-vasculaire, la taille des muscles, etc. interviennent aussi."],
 ["P3","C5","Une contraction isométrique se fait sans mouvement.",1,"Ex. : pousser un objet trop lourd."],
 ["P3","C5","La descente d'une pente sollicite des contractions excentriques.",1,"Le muscle se contracte en s'allongeant."],
-// ---------- TD7 / CM5
+// ---------- TD7 / CM 7-8
 ["P2","T7","L'énergie de l'ATP est stockée dans les liaisons entre les groupements phosphate.",1,"Elle est libérée par hydrolyse : ATP + H2O donne ADP + Pi."],
 ["P2","T7","Les réserves d'ATP musculaires suffisent à maintenir un effort maximal pendant plusieurs minutes.",0,"Elles ne durent que quelques secondes ; l'ATP doit être resynthétisé en permanence."],
 ["P2","T7","La phosphocréatine, stockée dans le muscle, sert à resynthétiser très rapidement l'ATP grâce à la créatine kinase.",1,"PCr + ADP donne ATP + créatine."],
-["P3","C6","1 kcal vaut environ 4,185 kJ.",1,"CM5."],
+["P3","C6","1 kcal vaut environ 4,185 kJ.",1,"CM 7-8."],
 ["P3","C6","L'hydrolyse d'une mole d'ATP libère environ 30,5 kJ.",1,"ATP + H2O donne ADP + Pi."],
 ["P3","C6","L'ATP peut être apporté aux muscles par le sang.",0,"Il ne peut être fourni ni par le sang ni par d'autres tissus : il est resynthétisé en continu dans la cellule (réserve d'environ 85 g)."],
 ["P3","C6","La concentration de phosphocréatine est environ 3 à 5 fois celle de l'ATP.",1,"C'est un réservoir de phosphates."],
@@ -119,7 +119,7 @@ PHYSIO_Q.push(
 ["P3","C6","Les réserves de glycogène musculaire sont plus importantes que celles du glycogène hépatique.",1,"Environ 250 g dans les muscles contre 110 g dans le foie (et 12 g de glucose sanguin)."],
 ["P3","C6","Un triglycéride est scindé en un glycérol et trois acides gras libres.",1,"Le glycérol rejoint la voie du pyruvate, les acides gras la bêta-oxydation."],
 ["P3","C6","Les acides aminés entrent directement dans le cycle de Krebs sans transformation.",0,"Ils doivent d'abord perdre leur azote par TRANSAMINATION (acide cétonique)."],
-// ---------- TD10 / CM6
+// ---------- TD10 / CM 9-10
 ["P2","T10","La VO2max relative s'exprime en ml/min/kg.",1,"La VO2max absolue s'exprime en l/min."],
 ["P2","T10","On peut maintenir un effort à VO2max pendant plus d'une heure.",0,"Non : à VO2max, l'effort ne dure que quelques minutes ; le lactate s'accumule."],
 ["P2","T10","Chez les athlètes entraînés, le seuil lactique est décalé vers la droite (vers un plus haut % de VO2max).",1,"Ils tolèrent une intensité plus élevée avant que le lactate s'accumule."],
@@ -136,7 +136,7 @@ PHYSIO_Q.push(
 ["P3","C7","Le métabolisme de base augmente avec l'âge.",0,"Il DIMINUE avec l'âge ; il augmente avec la masse maigre, la température et le stress."],
 ["P3","C7","La dépense énergétique de certains athlètes très entraînés peut dépasser 10 000 kcal par jour.",1,"Contre 1800 à 3000 kcal pour une activité normale."],
 ["P3","C7","La VO2max est la meilleure mesure de l'aptitude aérobie et de l'endurance cardio-respiratoire.",1,"Elle se traduit par un plateau de VO2 malgré l'augmentation de l'intensité."],
-["P3","C7","Après 25 à 30 ans, la VO2max des sujets inactifs diminue d'environ 1 % par an.",1,"CM6."],
+["P3","C7","Après 25 à 30 ans, la VO2max des sujets inactifs diminue d'environ 1 % par an.",1,"CM 9-10."],
 ["P3","C7","La VO2max la plus élevée mesurée chez un homme est d'environ 74 ml/min/kg.",0,"Environ 94 ml/min/kg (skieur de fond norvégien) ; 74 chez une femme (skieuse russe)."],
 ["P3","C7","Le métabolisme anaérobie alactique atteint sa puissance maximale en moins d'une seconde.",1,"Ses réserves s'épuisent en moins de 10 s lors d'un sprint."],
 ["P3","C7","L'acidose liée à l'accumulation d'H+ inhibe la glycolyse en agissant sur la phosphofructokinase (PFK).",1,"Elle limite le métabolisme anaérobie lactique."],
@@ -189,28 +189,28 @@ PHYSIO_MCQ.push(
 ["P3","C5","Typologie et performance :",["Les coureurs de fond ont une prédominance de fibres ST","Les sprinters ont une prédominance de fibres FT","Une même personne a en général la même typologie aux membres supérieurs et inférieurs","La typologie n'est pas le seul facteur de performance","Le soléaire est riche en fibres FTb"],[0,1,2,3],"Le soléaire est presque entièrement ST."],
 ["P3","C5","Modes de recrutement :",["À faible fréquence, seuls les petits motoneurones (fibres ST) sont recrutés","Le recrutement asynchrone permet à certaines UM de se relâcher et de resynthétiser leur ATP","Quand la fréquence des PA augmente, de plus en plus d'UM sont recrutées","Le recrutement dépend du seuil d'excitabilité et de la vitesse de conduction des motoneurones","Toutes les UM sont recrutées en même temps dans un muscle faiblement actif"],[0,1,2,3],"CM4."],
 ["P3","C5","Types de contraction :",["Isométrique : pas de mouvement","Concentrique : le muscle se raccourcit","Excentrique : le muscle s'allonge en se contractant","Isotonique = anisométrique","Descendre une pente : contraction concentrique des extenseurs du genou"],[0,1,2,3],"La descente sollicite des contractions excentriques."],
-// ---------- TD7 / CM5
+// ---------- TD7 / CM 7-8
 ["P3","C6","À propos de l'ATP :",["Son hydrolyse libère environ 30,5 kJ/mol","C'est la monnaie énergétique de toutes les formes de travail biologique","Sa réserve dans l'organisme est d'environ 85 g","Il peut être apporté par le sang","Sa dégradation est immédiate et anaérobie"],[0,1,2,4],"Il est resynthétisé en continu dans la cellule."],
 ["P3","C6","La phosphocréatine (PCr) :",["Est un réservoir de phosphates","Sa concentration est 3 à 5 fois celle de l'ATP","Cède son phosphate à l'ADP grâce à la créatine kinase","Fournit l'ATP rapidement, sans O2","Est stockée dans le foie uniquement"],[0,1,2,3],"Elle est stockée dans le muscle."],
 ["P2","T7","Les voies de production d'ATP dans la cellule sont :",["Le système ATP-PCr (anaérobie alactique)","La glycolyse anaérobie (anaérobie lactique)","L'oxydation des glucides (aérobie)","L'oxydation des lipides (aérobie)","La transamination seule, sans cycle de Krebs"],[0,1,2,3],"Les acides aminés transaminés passent par le cycle de Krebs."],
 ["P2","T7","Concernant les filières aérobies (TD7) :",["Elles nécessitent de l'oxygène","Elles peuvent oxyder glucides, lipides et protéines","L'O2 intervient à la fin de la chaîne respiratoire","Elles se déroulent dans la mitochondrie","Elles atteignent leur puissance maximale instantanément"],[0,1,2,3],"Leur inertie est grande (3 à 30 min)."],
-// ---------- TD8 / CM5 glucides
-["P3","C6","À propos de la glycolyse :",["Elle se déroule dans le cytoplasme","Elle est anaérobie","Elle consomme 2 ATP et en produit 4","Elle transforme un glucose en 2 pyruvates","Elle a lieu dans la mitochondrie"],[0,1,2,3],"CM5."],
-["P3","C6","Le pyruvate issu de la glycolyse peut :",["Être transformé en lactate si l'oxydation n'est pas possible","Entrer dans la mitochondrie et former de l'acétyl-CoA","Rejoindre ensuite le cycle de Krebs","Former un NADH + H+ lors de sa transformation en acétyl-CoA","Être directement transformé en acides gras dans le muscle pendant l'effort"],[0,1,2,3],"CM5."],
+// ---------- TD8 / CM 7-8 glucides
+["P3","C6","À propos de la glycolyse :",["Elle se déroule dans le cytoplasme","Elle est anaérobie","Elle consomme 2 ATP et en produit 4","Elle transforme un glucose en 2 pyruvates","Elle a lieu dans la mitochondrie"],[0,1,2,3],"CM 7-8."],
+["P3","C6","Le pyruvate issu de la glycolyse peut :",["Être transformé en lactate si l'oxydation n'est pas possible","Entrer dans la mitochondrie et former de l'acétyl-CoA","Rejoindre ensuite le cycle de Krebs","Former un NADH + H+ lors de sa transformation en acétyl-CoA","Être directement transformé en acides gras dans le muscle pendant l'effort"],[0,1,2,3],"CM 7-8."],
 ["P3","C6","À propos du lactate :",["Il se forme surtout à l'effort intense","Il diffuse du muscle vers le sang","Il peut être retransformé en glucose par le foie","Le cycle de Cori relie muscle et foie","C'est un déchet sans utilité"],[0,1,2,3],"Ce n'est pas un déchet : c'est une source d'énergie."],
 ["P3","C6","Conditions de l'oxydation cellulaire :",["Des transporteurs d'électrons","Suffisamment d'O2","Assez d'enzymes","L'O2 comme dernier accepteur d'électrons, qui forme de l'eau","L'absence totale de mitochondries"],[0,1,2,3],"Elle se déroule dans les mitochondries."],
 ["P3","C6","Bilan d'un tour de cycle de Krebs :",["1 ATP","3 NADH + H+","1 FADH2","12 ATP au total après la chaîne respiratoire","36 ATP par tour"],[0,1,2,3],"3 NADH x 3 + 1 FADH2 x 2 + 1 = 12."],
-["P3","C6","Dégradation complète du glucose :",["C6H12O6 + 6 O2 donne 6 CO2 + 6 H2O + 2880 kJ","Environ 94 ATP en théorie","Environ 36 ATP en réalité","Environ 38 % de l'énergie est transférée à l'ADP, le reste devient chaleur","100 % de l'énergie sert à former de l'ATP"],[0,1,2,3],"CM5."],
+["P3","C6","Dégradation complète du glucose :",["C6H12O6 + 6 O2 donne 6 CO2 + 6 H2O + 2880 kJ","Environ 94 ATP en théorie","Environ 36 ATP en réalité","Environ 38 % de l'énergie est transférée à l'ADP, le reste devient chaleur","100 % de l'énergie sert à former de l'ATP"],[0,1,2,3],"CM 7-8."],
 ["P2","T8","Calcul des 36 ATP d'un glucose :",["Glycolyse : + 2 ATP","2 NADH de la glycolyse : + 6 ATP, moins 2 ATP pour leur transport","2 pyruvates en acétyl-CoA : + 6 ATP","2 cycles de Krebs : + 24 ATP","1 seul cycle de Krebs par glucose"],[0,1,2,3],"Un glucose donne 2 pyruvates, donc 2 tours de cycle."],
 ["P2","T8","Filières anaérobies et exercice (TD8) :",["Elles resynthétisent l'ATP très vite","Elles durent peu de temps","Elles sont déterminantes au 100 m","Elles sont déterminantes en haltérophilie ou pour un saut","Elles sont la filière principale du marathon"],[0,1,2,3],"Le marathon repose sur l'aérobie."],
-// ---------- TD9 / CM5 lipides
-["P3","C6","Réserves énergétiques (CM5) :",["Glycogène hépatique : environ 110 g","Glycogène musculaire : environ 250 g","Glucose sanguin : environ 12 g","Lipides sous-cutanés : environ 7800 g","Les glucides sont la plus grande réserve d'énergie"],[0,1,2,3],"Les lipides sont la plus grande réserve."],
+// ---------- TD9 / CM 7-8 lipides
+["P3","C6","Réserves énergétiques (CM 7-8) :",["Glycogène hépatique : environ 110 g","Glycogène musculaire : environ 250 g","Glucose sanguin : environ 12 g","Lipides sous-cutanés : environ 7800 g","Les glucides sont la plus grande réserve d'énergie"],[0,1,2,3],"Les lipides sont la plus grande réserve."],
 ["P3","C6","Utilisation des lipides :",["Un triglycéride donne 1 glycérol et 3 acides gras","Le glycérol rejoint la voie du pyruvate","Les acides gras subissent la bêta-oxydation en acétyl-CoA","Un triglycéride (acides gras à 18 C) fournit environ 463 ATP","Leur oxydation est possible sans O2"],[0,1,2,3],"Impossible sans O2."],
 ["P3","C6","Les protéines comme source d'énergie :",["Les acides aminés doivent être transformés","La transamination enlève leur azote","On obtient un acide cétonique","L'acide cétonique peut entrer dans le cycle de Krebs","Ce sont les substrats principaux de l'exercice"],[0,1,2,3],"Ils restent des substrats secondaires."],
 ["P2","T9","Intensité de l'exercice et filières (TD9) :",["À faible intensité, la filière aérobie prédomine","À haute intensité, la contribution anaérobie augmente","Les glucides peuvent être utilisés en aérobie et en anaérobie","Les lipides sont utilisés en aérobie","Les lipides sont la source principale lors d'un sprint"],[0,1,2,3],"Le sprint repose sur ATP-PCr et la glycolyse."],
 ["P2","T9","Fatigue selon le type d'exercice (courbe d'Oswald) :",["Effort très bref : épuisement de l'ATP-PCr","Effort de 30 s à 2 min : acidose liée au lactate","Effort long : épuisement du glycogène","Un 100 m dépend surtout de l'anaérobie alactique","Un 400 m dépend uniquement de l'aérobie"],[0,1,2,3],"Le 400 m est très lactique."],
-// ---------- TD10 / CM6
-["P3","C7","Le coût énergétique dépend :",["De la distance parcourue","Du poids de la personne","De la durée de l'exercice","De la vitesse","Uniquement de la VO2max"],[0,1,2,3],"CM6."],
+// ---------- TD10 / CM 9-10
+["P3","C7","Le coût énergétique dépend :",["De la distance parcourue","Du poids de la personne","De la durée de l'exercice","De la vitesse","Uniquement de la VO2max"],[0,1,2,3],"CM 9-10."],
 ["P3","C7","À propos du quotient respiratoire :",["QR = VCO2 / VO2","Il vaut 1 pour les glucides","Il vaut environ 0,7 pour les lipides","Un QR entre 0,7 et 1 traduit un mélange de substrats","Il vaut 0,7 pour les glucides"],[0,1,2,3],"Il se mesure par calorimétrie indirecte."],
 ["P2","T10","Valeurs de QR (TD10) :",["Glucose (C6H12O6) : QR = 1","Palmitate (C16H32O2) : QR ≈ 0,70","Trioléine (C57H104O6) : QR ≈ 0,71","Un QR supérieur à 1 peut s'observer lors d'un effort intense (hyperventilation, tamponnement)","Un QR de 0,85 indique une utilisation exclusive des glucides"],[0,1,2,3],"0,85 = mélange glucides et lipides."],
 ["P3","C7","Le métabolisme de base :",["Se mesure au repos, allongé","Après au moins 8 h de sommeil et 12 h de jeûne","Varie de 1200 à 2400 kcal par jour","Est plus élevé chez l'homme (masse maigre)","Augmente avec l'âge"],[0,1,2,3],"Il diminue avec l'âge."],
