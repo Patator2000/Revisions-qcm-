@@ -324,8 +324,11 @@ function weightedOrder(list){ return list.map(i => ({i, k: -Math.log(1 - Math.ra
 $("start").onclick = () => {
   let list = selected();
   const lim = opts.count ? Math.min(list.length, opts.count) : list.length;
-  if (opts.weighted) { list = weightedOrder(list).slice(0, lim); if (!opts.shuffle) list.sort((a,b) => a-b); else shuffle(list); }
-  else { if (opts.shuffle || lim < list.length) shuffle(list); list = list.slice(0, lim); if (!opts.shuffle) list.sort((a,b) => a-b); }
+  // on remplit la série d'abord avec les QCM d'entraînement, puis les TD, puis les CM ; l'ordre affiché reste mélangé
+  const its = items(), byPart = {};
+  for (const i of list) { const pt = (its[i] && its[i][0]) || "P9"; (byPart[pt] = byPart[pt] || []).push(i); }
+  list = Object.keys(byPart).sort().flatMap(pt => opts.weighted ? weightedOrder(byPart[pt]) : shuffle(byPart[pt])).slice(0, lim);
+  if (opts.shuffle) shuffle(list); else list.sort((a,b) => a-b);
   sim = null;
   start(list, (fmt !== "open" && opts.mode === "exam") ? list.length * S.RATE[fmt] : null);
 };
