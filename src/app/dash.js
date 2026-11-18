@@ -207,7 +207,7 @@ function renderDash(){
   <div class="dash-card ${window.SUPA_URL ? "span4" : "span6"} dash-kpi">
     <div class="dash-k">Aujourd'hui</div>
     <div class="dash-mid">${D.today.a}<small> réponse${D.today.a > 1 ? "s" : ""}</small></div>
-    <div class="dash-sub">moyenne 7 j : ${fmtP(D.avg7)} ${D.avg7 > 0 ? dashDelta((D.today.a - D.avg7) / D.avg7 * 100, " %") : ""}</div>
+    <div class="dash-sub">moyenne 7 j : ${fmtP(D.avg7)} ${D.avg7 >= 5 ? dashDelta(Math.max(-100, Math.min(300, (D.today.a - D.avg7) / D.avg7 * 100)), " %") : D.today.a ? dashDelta(Math.round(D.today.a - D.avg7), " de plus") : ""}</div>
     ${days14.length > 1 ? dashSpark(spA, "var(--ok)", days14.map(d => { const e = D.act[d]; return `<b>${dashFmtDay(d)}</b><br>${e && e.a ? e.a + " réponse" + (e.a > 1 ? "s" : "") : "aucune réponse"}`; })) + `<div class="dash-axis"><span>${dashFmtDay(days14[0])}</span><span>aujourd'hui</span></div>` : ""}
   </div>
   ${window.SUPA_URL ? `<div class="dash-card span4 dash-rank" id="dashRank">
