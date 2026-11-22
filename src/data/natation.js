@@ -89,3 +89,75 @@ const NAT_MCQ = [
 ["H","H4","L'eau libre en compétition :",["L'orientation fait partie de la stratégie","Nager dans le sillage d'un autre (drafting) est un élément de stratégie","L'arrivée se fait à la plaque","Les contacts sont fréquents et peuvent mener à des disqualifications","Tout contact est impossible car chacun a son couloir"],[0,1,2,3],"Ex. : disqualification d'une Française à Rio 2016 pour gêne en zone d'arrivée."],
 ["H","H4","Le plongeon synchronisé chinois :",["La Chine domine le plongeon","Surtout en synchronisé","Des gabarits proches facilitent la synchronisation des rotations","Et des entrées dans l'eau","La Chine n'a jamais gagné en plongeon"],[0,1,2,3],"Hégémonie chinoise, notamment en synchronisé."]
 ];
+
+// ===================== Fiche de cours : l'histoire de la natation =====================
+// Reprend le cours, dans l'ordre chronologique. [repère, texte]
+const NAT_COURS = {
+  titre: "Le cours : l'histoire de la natation",
+  intro: "La pratique sportive de la natation n'a qu'environ 150 ans, mais l'homme nage depuis la Préhistoire. Lis la frise une fois en entier, puis passe aux QCM d'histoire.",
+  themes: ["H1","H2","H3","H4"],
+  parties: [
+    {titre: "Des origines aux finalités de la nage", reperes: [
+      ["-5000", "Peintures rupestres montrant des nageurs : les plus anciennes traces."],
+      ["Égypte antique", "Un hiéroglyphe désigne l'action de nager."],
+      ["-1000 à -600", "Traces chez les Babyloniens (vers -1000) et les Assyriens (-800 à -600)."],
+      ["Antiquité", "Étrusques (vers -800), Grecs (vers -300), Romains (vers -50) : on nage, et les thermes deviennent des lieux de pratique."],
+      ["800 et Moyen Âge", "Les Vikings, puis les Japonais au Moyen Âge."],
+      ["Finalités", "Au fil des siècles, on nage pour des raisons militaires, sécuritaires, ludiques, hygiéniques, thérapeutiques, et seulement ensuite sportives."],
+      ["1794", "Une loi prévoit d'apprendre à nager à l'école, si possible : finalité sécuritaire."],
+      ["Début du XIXe siècle", "Essor des bains de mer, surtout pour l'hygiène."]
+    ]},
+    {titre: "La sportivisation (1837 - 1939)", reperes: [
+      ["1837", "Grande-Bretagne : création de la NSS (National Swimming Society), avec des maîtres de nage et des nageurs professionnels."],
+      ["1846", "Premiers championnats nationaux."],
+      ["1873", "Premier club français, au Havre."],
+      ["1875", "Première traversée de la Manche : environ 32 km en 21 h 45."],
+      ["1896", "Premiers JO modernes : on nage en mer."],
+      ["1899", "Premiers championnats de France."],
+      ["1900", "JO de Paris : les épreuves se nagent dans la Seine."],
+      ["1904", "JO aux États-Unis, dans un lac artificiel ; ajout du plongeon (10 m). Le journal L'Auto organise aussi des épreuves."],
+      ["1908", "Création de la FINA, Fédération Internationale de Natation Amateur."],
+      ["1920", "Création de la FFNS en France (qui devient la FFN en 1939)."],
+      ["1922", "Le 100 m nage libre passe sous la minute : 58\"6."],
+      ["1926 - 1927", "Premiers championnats d'Europe (1926), puis fondation de la LEN (1927)."]
+    ]},
+    {titre: "Les grandes dates olympiques", reperes: [
+      ["1936 - Berlin", "Le papillon apparaît, d'abord comme une façon de nager la brasse."],
+      ["1952 - Helsinki", "Jean Boiteux, premier champion olympique français de natation, sur 400 m nage libre."],
+      ["1953", "La FINA impose les coudes dans l'eau en brasse : le papillon devient une nage à part, ce qui permettra le 4 nages."],
+      ["1956 - Melbourne", "L'Australie domine les États-Unis."],
+      ["1960 - Rome", "Premiers JO en direct à la télévision ; pire résultat français, aucun titre."],
+      ["1962", "Dawn Fraser, première femme sous la minute au 100 m nage libre."],
+      ["1964 - Tokyo", "Apparition du virage culbute."],
+      ["1968 - Mexico", "Jeux à environ 2300 m d'altitude (entraînement adapté), plaques de touche au millième, 11 courses de plus."],
+      ["1972 - Munich", "Mark Spitz : 7 titres avec records du monde. Année record (28 records du monde, 39 d'Europe). Départage au centième : en dessous, c'est l'ex-aequo."],
+      ["1973", "Premiers championnats du monde."],
+      ["1988 - Séoul", "Le 50 m nage libre entre au programme, hommes et femmes ; époque des longues coulées."],
+      ["1998", "Première championne du monde française."],
+      ["2000 - Sydney", "Arrivée des demi-finales et début des combinaisons."],
+      ["2004 - Athènes", "Michael Phelps : 6 titres et 2 bronzes. La France gagne 6 médailles, notamment grâce à Laure Manaudou."],
+      ["2008 - Pékin", "Phelps : 8 titres et 7 records du monde. Alain Bernard champion olympique du 100 m nage libre."],
+      ["2012 - Londres", "La France remporte 4 titres."]
+    ]},
+    {titre: "De la FINA à World Aquatics", reperes: [
+      ["1908", "FINA : Fédération Internationale de Natation Amateur. L'amateurisme garantissait l'accès aux JO, selon l'idéal de Coubertin."],
+      ["2000", "Le mot « Amateur » disparaît : le professionnalisme est accepté (tournant symbolique de la Dream Team aux JO de 1992)."],
+      ["2023", "La FINA devient World Aquatics : un nom anglais, universel, qui couvre tous les sports aquatiques."],
+      ["Aujourd'hui", "World Aquatics s'appuie sur des fédérations continentales (championnats d'Europe, Jeux pan-pacifiques...)."]
+    ]},
+    {titre: "L'ère des combinaisons (1999 - 2009)", reperes: [
+      ["1999 - 2009", "Les combinaisons sont libéralisées : course technologique entre grandes marques, modèles à plus de 600 €."],
+      ["Polyuréthane", "Combinaisons intégrales : plus de flottabilité, meilleure glisse, explosion des records."],
+      ["2009 - Rome", "Mondiaux : 43 records du monde en une semaine."],
+      ["2010", "Interdiction des combinaisons. Les records restent homologués (choix pragmatique). 2010 est une année « blanche » en records, puis les nageurs les battent peu à peu sans aide technologique."]
+    ]},
+    {titre: "Les disciplines et Paris 2024", reperes: [
+      ["Natation course et eau libre", "Performances chronométrées, en piscine ou en milieu naturel. En eau libre : orientation, ravitaillement, crawl quasi exclusif."],
+      ["Water-polo", "Sport collectif de combat interpénétré, 4 périodes de 8 minutes, domination historique des nations européennes."],
+      ["Plongeon et high diving", "Plongeons choisis dans un répertoire à coefficient de difficulté, exécution jugée. High diving : environ 27 m (hommes) et 20 m (femmes)."],
+      ["Natation artistique", "Synchronisation, technique, chorégraphie, expression ; apnées ; duo mixte possible ; musique sous l'eau ; portés sans appui au fond grâce au rétropédalage."],
+      ["Hors World Aquatics", "Le sauvetage sportif et la nage avec palmes."],
+      ["Paris 2024", "Natation course : duel États-Unis / Australie, Léon Marchand et Summer McIntosh. Eau libre : drafting, arrivée à la plaque. Water-polo : finale hommes Serbie / Croatie, l'Espagne championne chez les femmes face à l'Australie. Plongeon : hégémonie chinoise, surtout en synchronisé."]
+    ]}
+  ]
+};

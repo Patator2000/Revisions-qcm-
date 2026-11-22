@@ -40,7 +40,7 @@ const SUBJECTS = {
     F: {vf: NAT_Q, qcm: NAT_MCQ, open: []}, THEMES: NAT_THEMES, PARTS: NAT_PARTS,
     FOCUS: [], doc: "qcm-natation", ls: "qcm-natation-progress-v1",
     RATE: {vf: 30, qcm: 60}, QCM: {ok: 0.4, ko: 0.2}, BAREME: "barème des évals (+0,4 par proposition juste cochée, -0,2 par fausse)",
-    FMT_LABEL: {qcm: "QCM (A à E)"},
+    FMT_LABEL: {qcm: "QCM (A à E)"}, COURS: NAT_COURS,
     FMT_HELP: {qcm: "Comme aux évals : propositions A à E, une ou plusieurs justes. +0,4 par proposition juste cochée, -0,2 par proposition fausse cochée."},
     TARGETS: [
       {id:"regles", label:"Éval règlement", desc:"tout le règlement", fmt:"qcm", themes:["R1","R2","R3","R4"], sim:{n:30, sec:1800}},
@@ -226,6 +226,7 @@ function renderSubject(){
   $("s-title").textContent = S.name;
   $("s-lead").textContent = S.desc;
   $("examInfo").textContent = S.exam || ""; $("examInfo").classList.toggle("hidden", !S.exam);
+  renderCours();
   // formats
   const fl = fmtList(S);
   $("fmtCard").classList.toggle("hidden", fl.length < 2);
@@ -273,6 +274,20 @@ function renderSubject(){
 }
 function targetThemes(t){ const all = Object.keys(S.THEMES); return t.themes === "all" ? all : t.themes.filter(x => all.includes(x)); }
 function daysTo(d){ const t = new Date(d + "T08:00:00"), n = new Date(); return Math.ceil((t - n) / 86400000); }
+// Fiche de cours (natation : l'histoire), à lire avant les QCM
+function renderCours(){
+  const C = S.COURS, card = $("coursCard");
+  card.classList.toggle("hidden", !C); if (!C) return;
+  if (card.dataset.s === S.id) return; card.dataset.s = S.id; card.open = false;
+  $("coursTitle").textContent = C.titre;
+  $("coursBody").innerHTML = `<p class="cours-intro">${esc(C.intro)}</p>` + C.parties.map(p => `<h3>${esc(p.titre)}</h3><ul class="frise">${p.reperes.map(r => `<li><b>${esc(r[0])}</b>${esc(r[1])}</li>`).join("")}</ul>`).join("")
+    + `<button class="btn primary cours-go" id="coursGo">M'entraîner sur les QCM d'histoire</button>`;
+  $("coursGo").onclick = () => {
+    const t = S.TARGETS.find(x => x.themes && x.themes.join() === C.themes.join());
+    S.target = t ? t.id : null; S.sel = new Set(C.themes); if (S.F.qcm.length) fmt = S.fmt = "qcm";
+    card.open = false; renderSubject(); $("start").scrollIntoView({behavior: "smooth", block: "center"});
+  };
+}
 function renderTargets(){
   const card = $("targetCard");
   card.classList.toggle("hidden", !S.TARGETS.length);
