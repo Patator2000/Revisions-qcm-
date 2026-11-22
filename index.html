@@ -2663,7 +2663,7 @@ function openReport(qi, id){
     if (DB) { try { await DB.collection("reports").add(r); online = true; } catch(e) { online = false; } }
     lsAddReport(r);
     const msg = window.PROFILE_ADMIN
-      ? (online ? "Signalement enregistré. Il apparaît dans « Signalements à traiter » (menu du profil)." : "Signalement gardé dans ce navigateur : utilise « Copier mes signalements » sur la page de la matière.")
+      ? (online ? "Signalement enregistré. Il apparaît dans « Signalements à traiter » (menu du profil)." : "Pas de connexion : signalement gardé dans ce navigateur, il n'a pas pu être envoyé.")
       : (online ? "Merci, ton signalement a bien été envoyé. La question sera vérifiée et corrigée si besoin." : (DB ? "Merci ! Pas de connexion pour l'instant : ton signalement n'a pas pu être envoyé, réessaie plus tard." : "Merci ! Connecte-toi à un profil pour que ton signalement soit envoyé."));
     box.innerHTML = `<p class="small ok-t">${msg}</p>`;
     reportOpenFor = id;
@@ -2673,7 +2673,7 @@ function openReport(qi, id){
 function renderReports(){
   const mine = () => lsReports().filter(r => !S || r.matiere === S.name); // seulement ceux de la matière ouverte
   const n = mine().length, row = $("reportsRow"); if (!row) return;
-  row.classList.toggle("hidden", !n || !window.PROFILE_ADMIN);
+  row.classList.add("hidden"); // les signalements se gèrent seulement depuis le menu du profil (admin)
   $("reportsCount").textContent = `${n} signalement${n>1?"s":""} envoyé${n>1?"s":""} depuis ce navigateur.`;
 }
 $("reportsCopy").onclick = async () => {
