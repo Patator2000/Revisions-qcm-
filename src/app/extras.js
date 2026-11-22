@@ -22,7 +22,7 @@ function openReport(qi, id){
   box.querySelector(".rp-msg").addEventListener("keydown", e => e.stopPropagation());
   box.querySelector(".rp-cancel").onclick = () => { reportOpenFor = null; renderReportLink(); };
   box.querySelector(".rp-send").onclick = async () => {
-    const r = {matiere: S.name, format: FMT_LABEL[fmt], theme: S.THEMES[q[1]], cle: keys()[qi], question: q[2],
+    const r = {matiere: S.name, format: fmtName(fmt), theme: S.THEMES[q[1]], cle: keys()[qi], question: q[2],
       type: box.querySelector(".rp-type").value, commentaire: box.querySelector(".rp-msg").value.trim().slice(0, 2000),
       date: new Date().toISOString(), statut: "nouveau"};
     const btn = box.querySelector(".rp-send"); btn.disabled = true;

@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| **Questions** | Vrai / Faux en anatomie (avec schémas) et en natation (règlement et histoire) ; en physiologie, Vrai / Faux, QCM type CT (5 propositions, une ou plusieurs justes) et questions ouvertes type CP |
+| **Questions** | Vrai / Faux en anatomie (avec schémas) ; QCM A à E en natation (règlement et histoire, barème +0,4 / -0,2) ; en physiologie, Vrai / Faux, QCM type CT (5 propositions, une ou plusieurs justes) et questions ouvertes type CP |
 | **Examens** | Simulations chronométrées : CCI 1, 2, 3 et 2e chance (40 questions en 25 min, 100 en 45 min), CT de physiologie (60 QCM en 1 h, barème officiel), évaluations de natation (règlement et histoire séparés) |
 | **Progression** | Profil en ligne (prénom + code) qui suit sur téléphone et ordinateur ; tableau de bord avec maîtrise globale, palier suivant, gains de chaque jour, activité sur 30 jours et points faibles |
 | **Classement** | Classement entre profils (réponses de la semaine ou questions maîtrisées), prénom seulement, possibilité de ne pas y apparaître |

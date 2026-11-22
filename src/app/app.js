@@ -37,12 +37,14 @@ const SUBJECTS = {
   },
   natation: {
     name: "Natation", desc: "Le règlement (FFN, juges, départs, nages) et l'histoire de la natation, des origines à Paris 2024",
-    F: {vf: NAT_Q, qcm: [], open: []}, THEMES: NAT_THEMES, PARTS: NAT_PARTS,
+    F: {vf: NAT_Q, qcm: NAT_MCQ, open: []}, THEMES: NAT_THEMES, PARTS: NAT_PARTS,
     FOCUS: [], doc: "qcm-natation", ls: "qcm-natation-progress-v1",
-    RATE: {vf: 30, qcm: 60}, BAREME: "1 point par bonne réponse",
+    RATE: {vf: 30, qcm: 60}, QCM: {ok: 0.4, ko: 0.2}, BAREME: "barème des évals (+0,4 par proposition juste cochée, -0,2 par fausse)",
+    FMT_LABEL: {qcm: "QCM (A à E)"},
+    FMT_HELP: {qcm: "Comme aux évals : propositions A à E, une ou plusieurs justes. +0,4 par proposition juste cochée, -0,2 par proposition fausse cochée."},
     TARGETS: [
-      {id:"regles", label:"Éval règlement", desc:"tout le règlement", themes:["R1","R2","R3","R4"], sim:{n:30, sec:900}},
-      {id:"histoire", label:"Éval histoire", desc:"l'histoire de la natation, des origines à Paris 2024", themes:["H1","H2","H3","H4"], sim:{n:30, sec:900}}
+      {id:"regles", label:"Éval règlement", desc:"tout le règlement", fmt:"qcm", themes:["R1","R2","R3","R4"], sim:{n:30, sec:1800}},
+      {id:"histoire", label:"Éval histoire", desc:"l'histoire de la natation, des origines à Paris 2024", fmt:"qcm", themes:["H1","H2","H3","H4"], sim:{n:30, sec:1800}}
     ],
     exam: "Deux évaluations séparées : l'une sur le règlement, l'autre sur l'histoire de la natation."
   }
@@ -53,7 +55,7 @@ for (const id in SUBJECTS) {
   S.id = id; S.FOCUSSET = new Set(S.FOCUS);
   S.K = {}; for (const f in S.F) S.K[f] = S.F[f].map(q => qLocked(q) ? q[2].lock : (f === "vf" ? "" : PREFIX[f]) + hkey(q[2]));
   S.mem = {}; S.ref = null; S.saving = false; S.dirty = false; S.timer = null;
-  S.sel = new Set(Object.keys(S.THEMES)); S.fmt = "vf"; S.target = null; S.sess = null;
+  S.sel = new Set(Object.keys(S.THEMES)); S.fmt = ["vf","qcm","open"].find(f => S.F[f] && S.F[f].length) || "vf"; S.target = null; S.sess = null;
   S.TARGETS = S.TARGETS || []; S.RATE = S.RATE || {vf: 30, qcm: 60};
 }
 // Question Kinésis+ pas encore chargée : [partie, thème, {lock: clé}] (voir tools/contenu.js)
@@ -87,7 +89,7 @@ function resultOf(i){
     if (a.nsp) return "nsp";
     if (!a.sel.length) return null;
     const s = mcqScore(q, a.sel);
-    return s >= 0.999 ? "ok" : s <= 0 ? "ko" : "partial";
+    return s >= mcqMax(q) - 0.001 ? "ok" : s <= 0 ? "ko" : "partial";
   }
   return a.self || null;
 }
@@ -112,8 +114,12 @@ function summary(Sx, f){
   for (const ff of (f ? [f] : fmtList(Sx))) for (const k of Sx.K[ff]) { total++; const l = levelK(Sx,k); if (l===null) u++; else if (l>=4) m++; else if (l>=2) p++; else w++; }
   return {m,p,w,u,total};
 }
-function mcqScore(q, sel){ const n = q[4].length; let s = 0; for (const j of sel) s += q[4].includes(j) ? 1/n : -0.33; return s; }
-function mcqPositive(q, sel){ const n = q[4].length; return sel.filter(j => q[4].includes(j)).length / n; }
+// Barème QCM : par défaut celui du CT de physio (question sur 1 point, -0,33 par proposition fausse) ;
+// une matière peut avoir le sien (S.QCM = {ok, ko} : points par proposition juste / fausse cochée)
+function mcqScore(q, sel){ const n = q[4].length, B = S && S.QCM; let s = 0; for (const j of sel) s += q[4].includes(j) ? (B ? B.ok : 1/n) : (B ? -B.ko : -0.33); return Math.round(s * 1000) / 1000; }
+function mcqPositive(q, sel){ const n = q[4].length, B = S && S.QCM; const c = sel.filter(j => q[4].includes(j)).length; return B ? c * B.ok : c / n; }
+function mcqMax(q){ const B = S && S.QCM; return B ? q[4].length * B.ok : 1; }
+function fmtName(f, x){ x = x || S; return (x && x.FMT_LABEL && x.FMT_LABEL[f]) || FMT_LABEL[f]; }
 const fr = (x, d=2) => (Math.round(x*100)/100).toFixed(d).replace(".", ",").replace(/,00$/, "").replace(/(,\d)0$/, "$1");
 
 // ================= Sauvegarde =================
@@ -183,7 +189,7 @@ function renderView(){
   const c = $("crumb");
   const parts = [`<button data-go="home">Matières</button>`];
   if (view !== "home" && S) parts.push(`<span class="sep">/</span>`, view === "subject" ? `<span class="here">${S.name}</span>` : `<button data-go="subject">${S.name}</button>`);
-  if (view === "quiz") parts.push(`<span class="sep">/</span><span class="here">${sim ? sim.label : FMT_LABEL[fmt]}</span>`);
+  if (view === "quiz") parts.push(`<span class="sep">/</span><span class="here">${sim ? sim.label : fmtName(fmt)}</span>`);
   if (view === "result") parts.push(`<span class="sep">/</span><span class="here">Bilan</span>`);
   c.innerHTML = parts.join("");
   c.querySelectorAll("[data-go]").forEach(b => b.onclick = () => {
@@ -200,7 +206,7 @@ function renderHome(){
   $("subjects").innerHTML = Object.values(SUBJECTS).map(x => {
     const on = fmtList(x).length > 0, col = x.id;
     const sm = summary(x), pct = on ? Math.round(sm.m / sm.total * 100) : 0;
-    const fl = fmtList(x).map(f => FMT_LABEL[f]).join(" · ");
+    const fl = fmtList(x).map(f => fmtName(f, x)).join(" · ");
     return `<button class="subj ${on ? "" : "off"}" data-s="${x.id}" style="--c:var(--${col});--cs:var(--${col}-soft)">
       <div class="ico">${ICONS[x.id]}</div>
       <h3>${x.name}</h3><p>${x.desc}</p>
@@ -223,9 +229,9 @@ function renderSubject(){
   // formats
   const fl = fmtList(S);
   $("fmtCard").classList.toggle("hidden", fl.length < 2);
-  $("segFmt").innerHTML = fl.map(f => `<button data-v="${f}" class="${f===fmt?"on":""}">${FMT_LABEL[f]}</button>`).join("");
+  $("segFmt").innerHTML = fl.map(f => `<button data-v="${f}" class="${f===fmt?"on":""}">${fmtName(f)}</button>`).join("");
   $("segFmt").querySelectorAll("button").forEach(b => b.onclick = () => { fmt = S.fmt = b.dataset.v; renderSubject(); });
-  $("fmtHelp").textContent = FMT_HELP[fmt];
+  $("fmtHelp").textContent = (S.FMT_HELP && S.FMT_HELP[fmt]) || FMT_HELP[fmt];
   renderTargets();
   const cfg = simConfig();
   $("simCard").classList.toggle("hidden", !cfg);
@@ -235,7 +241,7 @@ function renderSubject(){
   $("setMode").classList.toggle("hidden", fmt === "open");
   // progression
   const sm = summary(S, fmt);
-  $("statsTitle").textContent = "Ta progression" + (fl.length > 1 ? " : " + FMT_LABEL[fmt] : "");
+  $("statsTitle").textContent = "Ta progression" + (fl.length > 1 ? " : " + fmtName(fmt) : "");
   $("stats").innerHTML = `<div class="stat m"><b>${sm.m}</b><span>maîtrisées</span></div><div class="stat p"><b>${sm.p}</b><span>en cours</span></div><div class="stat w"><b>${sm.w}</b><span>à revoir</span></div><div class="stat"><b>${sm.u}</b><span>jamais vues</span></div>`;
   // thèmes
   const Q = items();
@@ -307,7 +313,7 @@ function renderSessCard(){
   if (!s) return;
   const done = s.answers.filter(x => x !== null).length;
   const when = new Date(s.at).toLocaleString("fr-FR", {weekday:"long", hour:"2-digit", minute:"2-digit"});
-  $("sessTxt").textContent = `${s.label || FMT_LABEL[s.fmt]} : ${done} réponse${done>1?"s":""} sur ${s.keys.length}${s.left != null ? `, ${Math.ceil(s.left/60)} min restantes` : ""} (mise en pause ${when}).`;
+  $("sessTxt").textContent = `${s.label || fmtName(s.fmt)} : ${done} réponse${done>1?"s":""} sur ${s.keys.length}${s.left != null ? `, ${Math.ceil(s.left/60)} min restantes` : ""} (mise en pause ${when}).`;
 }
 function selected(){ const Q = items(); return Q.map((q,i) => i).filter(i => S.sel.has(Q[i][1]) && !qLocked(Q[i])); }
 function updCount(){
@@ -411,7 +417,7 @@ $("sessDrop").onclick = () => { clearSession(); renderSubject(); };
 let resetArmed = false;
 $("reset").onclick = () => {
   const rb = $("reset"), lbl = rb.lastChild;
-  if (!resetArmed) { resetArmed = true; rb.classList.add("armed"); lbl.textContent = "Confirmer l'effacement"; $("resetMsg").textContent = `Toute ta progression en ${S.name} (${FMT_LABEL[fmt]}) sera effacée.`; setTimeout(() => { resetArmed = false; rb.classList.remove("armed"); lbl.textContent = "Remettre à zéro"; $("resetMsg").textContent = ""; }, 4000); return; }
+  if (!resetArmed) { resetArmed = true; rb.classList.add("armed"); lbl.textContent = "Confirmer l'effacement"; $("resetMsg").textContent = `Toute ta progression en ${S.name} (${fmtName(fmt)}) sera effacée.`; setTimeout(() => { resetArmed = false; rb.classList.remove("armed"); lbl.textContent = "Remettre à zéro"; $("resetMsg").textContent = ""; }, 4000); return; }
   resetArmed = false; rb.classList.remove("armed"); lbl.textContent = "Remettre à zéro"; for (const k of keys()) delete S.mem[k]; scheduleSave(S); renderSubject(); $("resetMsg").textContent = "Progression remise à zéro.";
 };
 
@@ -666,14 +672,15 @@ function updGrid(){
 // ================= Bilan =================
 function finish(timeUp){
   stopTimer(); voiceStop(); setPaused(false); clearSession();
-  const per = {}, review = []; let g=0,k=0,n=0,p=0,part=0,blank=0, pts=0, ptsPos=0;
+  const per = {}, review = []; let g=0,k=0,n=0,p=0,part=0,blank=0, pts=0, ptsPos=0, mxAll=0, mxAns=0;
   deck.forEach((qi,i) => {
-    const q = items()[qi], a = answers[i];
+    const q = items()[qi], a = answers[i], mx = fmt === "qcm" ? mcqMax(q) : 1;
+    mxAll += mx;
     let r = resultOf(i);
     if (fmt === "qcm" && r !== null && r !== "nsp" && !examMode() && !a.done) r = null; // non validée
     if (r === null) { blank++; return; }
-    const t = per[q[1]] || (per[q[1]] = {g:0,k:0,n:0,p:0,part:0,pts:0,c:0});
-    t.c++;
+    const t = per[q[1]] || (per[q[1]] = {g:0,k:0,n:0,p:0,part:0,pts:0,c:0,mx:0});
+    t.c++; t.mx += mx; mxAns += mx;
     if (r === "nsp") { n++; t.n++; review.push(i); }
     else if (r === "ok") { g++; t.g++; if (luck[i]) { p++; t.p++; review.push(i); } }
     else if (r === "partial") { part++; t.part++; review.push(i); }
@@ -682,10 +689,10 @@ function finish(timeUp){
     if (fmt === "qcm" && !a.nsp) { const v = mcqScore(q, a.sel); pts += v; t.pts += v; ptsPos += mcqPositive(q, a.sel); }
     if (fmt === "open") { const v = r === "ok" ? 1 : r === "partial" ? 0.5 : 0; pts += v; t.pts += v; }
   });
-  const tot = sim ? deck.length : deck.length - blank;
-  $("score").textContent = tot ? `${fr(pts)} / ${tot}` : "Aucune réponse";
+  const tot = sim ? mxAll : mxAns;
+  $("score").textContent = tot ? `${fr(pts)} / ${fr(tot)}` : "Aucune réponse";
   $("score20").textContent = tot ? `soit ${fr(Math.max(pts,0)/tot*20,1)} / 20` + (fmt === "qcm" ? ` (sans points négatifs : ${fr(ptsPos/tot*20,1)} / 20)` : "") : "";
-  const blankTxt = !blank ? "" : sim ? ` ${blank} question${blank>1?"s":""} sans réponse : 0 point chacune, comme au CT (ta progression sur ces questions ne change pas).`
+  const blankTxt = !blank ? "" : sim ? ` ${blank} question${blank>1?"s":""} sans réponse : 0 point chacune, comme à l'examen (ta progression sur ces questions ne change pas).`
     : ` ${blank} question${blank>1?"s":""} sans réponse, pas comptée${blank>1?"s":""} : elle${blank>1?"s":""} reste${blank>1?"nt":""} comme jamais vue${blank>1?"s":""}.`;
   $("scoreDetail").textContent = (timeUp ? "Temps écoulé ! " : "") + (fmt === "open"
     ? `${g} sue${g>1?"s":""}, ${part} à moitié, ${k} pas sue${k>1?"s":""} (auto-évaluation ou note de Claude).`
@@ -695,7 +702,7 @@ function finish(timeUp){
   $("byTheme").innerHTML = Object.keys(S.THEMES).filter(t => per[t]).map(t => {
     const r = per[t];
     return fmt === "open" ? `<tr><td>${S.THEMES[t]}</td><td class="n">${r.g}</td><td class="n">${r.part}</td><td class="n">${r.k}</td><td class="n">${fr(r.pts)} / ${r.c}</td></tr>`
-      : `<tr><td>${S.THEMES[t]}</td><td class="n">${r.g}</td><td class="n">${r.p}</td>${fmt === "qcm" ? `<td class="n">${r.part}</td>` : ""}<td class="n">${r.k}</td><td class="n">${r.n}</td><td class="n">${fr(r.pts)} / ${r.c}</td></tr>`;
+      : `<tr><td>${S.THEMES[t]}</td><td class="n">${r.g}</td><td class="n">${r.p}</td>${fmt === "qcm" ? `<td class="n">${r.part}</td>` : ""}<td class="n">${r.k}</td><td class="n">${r.n}</td><td class="n">${fr(r.pts)} / ${fr(r.mx)}</td></tr>`;
   }).join("");
   $("errors").innerHTML = review.length ? review.map(i => {
     const qi = deck[i], q = items()[qi], a = answers[i];
