@@ -1752,7 +1752,6 @@ const NAT_THEMES = {
   R2: "Règlement 2 - Juges, séries et départ",
   R3: "Règlement 3 - La course, le matériel et le bassin",
   R4: "Règlement 4 - Les nages et le 4 nages",
-  R5: "Règlement 5 - Analyser la performance",
   H1: "Histoire 1 - Des origines à la sportivisation",
   H2: "Histoire 2 - Les grandes dates olympiques",
   H3: "Histoire 3 - De la FINA à World Aquatics, les combinaisons",
@@ -1835,26 +1834,6 @@ const NAT_Q = [
 ["R","R4","L'ordre du relais 4 nages est le même que celui du 4 nages individuel.",0,"Relais : dos, brasse, papillon, nage libre (D-B-P-NL), car le dos part dans l'eau."],
 ["R","R4","Dans le 4 nages, chaque virage de changement de nage suit la règle d'arrivée de la nage que l'on termine.",1,"Ex. : à la fin du papillon, on touche à deux mains."],
 ["R","R4","Aux JO, le 4 nages individuel se nage sur 200 et 400 m.",1,"200 et 400 m 4 nages, hommes et femmes ; relais 4 nages hommes, femmes et mixtes."],
-// ===================== R5 - Analyser la performance =====================
-["R","R5","Analyser une performance en natation, c'est dépasser le simple temps final pour comprendre comment il a été obtenu.",1,"La natation est chronométrée : on analyse les informations temporelles (temps de passage) et gestuelles (cycles)."],
-["R","R5","Sur un 200 m, passer en 1'00\"00 aux 100 m puis nager le second 100 m en 59\"00 est un negative split.",1,"Negative split : la seconde moitié de course est plus rapide que la première."],
-["R","R5","Le pourcentage de la première moitié se calcule ainsi : (temps du premier 50 / temps total) x 100.",1,"Par exemple 48 % / 52 % sur un 100 m."],
-["R","R5","Sur un 100 m crawl équilibré, la répartition typique est d'environ 48 % pour le premier 50 et 52 % pour le second.",1,"Repères du cours : dos 48,5/51,5, crawl 48/52, brasse 47/53, papillon 46,8/53,2."],
-["R","R5","De toutes les nages, c'est en papillon que le premier 50 m d'un 100 m représente la plus petite part du temps.",1,"Papillon 46,8 % / 53,2 % : on y perd le plus de vitesse en fin de course."],
-["R","R5","Un 50 m nagé en 25 s correspond à une vitesse moyenne de 2 m/s.",1,"Vitesse moyenne = distance / temps = 50 / 25 = 2,00 m/s."],
-["R","R5","En crawl, 60 coups de bras correspondent à 60 cycles.",0,"Un cycle = un coup de bras droit + un coup de bras gauche : 60 coups de bras = 30 cycles."],
-["R","R5","Un 50 m nagé en 35 s avec 30 cycles donne une fréquence d'environ 51,7 cycles par minute.",1,"35 s = 0,58 min (base 60) ; 30 / 0,58 = environ 51,7 cycles/min."],
-["R","R5","La fréquence gestuelle typique est plus élevée en dos qu'en papillon.",0,"Repères : papillon 55-56, crawl 52-53, brasse 50, dos 46-47 cycles/min. Le dos est la plus lente."],
-["R","R5","L'amplitude moyenne est la distance parcourue par cycle : distance / nombre de cycles.",1,"Ex. : 50 m en 30 cycles = 1,67 m par cycle."],
-["R","R5","De toutes les nages, c'est en crawl que l'amplitude par cycle est la plus grande.",1,"Repères : NL 2,1-2,2 m, dos 2-2,1 m, papillon 1,8-1,9 m, brasse 1,7 m par cycle."],
-["R","R5","L'indice de nage se calcule en multipliant la vitesse moyenne par l'amplitude moyenne.",1,"Il reflète le niveau de pratique : aller vite avec peu de cycles."],
-["R","R5","L'indice de nage d'un bon nageur est plus élevé en brasse qu'en crawl.",0,"Repères : NL 4-4,5, dos 3,5-4, papillon 3,2-3,8, brasse 2,6-3. La brasse a l'indice le plus bas."],
-["R","R5","Sur un 4 nages, la brasse est la partie qui prend le plus de temps.",1,"Répartition sur un 200 4 nages : papillon 22 %, dos 25 %, brasse 29 %, NL 24 %."],
-["R","R5","Sur un 100 m 4 nages, la partie papillon représente environ 20 % du temps total.",1,"Sur 4 x 25 m : papillon 20 %, dos 25 %, brasse 30 %, NL 25 %."],
-["R","R5","Pour comparer des performances sur des distances différentes (50 m et 1500 m), on peut calculer l'écart en pourcentage par rapport à un étalon comme le record du monde.",1,"La contextualisation des temps passe par des pourcentages d'écart."],
-["R","R5","La table de cotation FFN attribue jusqu'à 1000 points pour comparer des performances entre épreuves et entre sexes.",1,"Référentiel de points FFN (1000 points)."],
-["R","R5","Fréquence et amplitude sont deux indicateurs indépendants qu'on n'a pas besoin d'étudier ensemble.",0,"C'est un couple : la vitesse dépend des deux, on cherche le meilleur compromis."],
-["R","R5","Une baisse de vitesse précoce dans les temps de passage révèle souvent un manque d'aérobie ou un départ trop rapide.",1,"L'analyse des temps de passage montre si l'allure est adaptée à la filière énergétique."],
 // ===================== H1 - Origines et sportivisation =====================
 ["H","H1","La natation est pratiquée comme sport depuis environ 150 ans, mais les activités aquatiques existent depuis la Préhistoire.",1,"Peintures rupestres vers -5000 ; la pratique sportive est bien plus récente."],
 ["H","H1","Des peintures rupestres montrant des nageurs datent d'environ 5000 ans avant notre ère.",1,"Premières traces de nage : la Préhistoire."],
@@ -1960,12 +1939,12 @@ const SUBJECTS = {
     exam: "CT : QCM de 60 questions en 1 h (60 % de la note). CP : écrit d'1 h aux TD7, questions ouvertes (40 %)."
   },
   natation: {
-    name: "Natation", desc: "Le règlement (FFN, juges, départs, nages, analyse de la performance) et l'histoire de la natation, des origines à Paris 2024",
+    name: "Natation", desc: "Le règlement (FFN, juges, départs, nages) et l'histoire de la natation, des origines à Paris 2024",
     F: {vf: NAT_Q, qcm: [], open: []}, THEMES: NAT_THEMES, PARTS: NAT_PARTS,
     FOCUS: [], doc: "qcm-natation", ls: "qcm-natation-progress-v1",
     RATE: {vf: 30, qcm: 60}, BAREME: "1 point par bonne réponse",
     TARGETS: [
-      {id:"regles", label:"Éval règlement", desc:"tout le règlement et l'analyse de la performance", themes:["R1","R2","R3","R4","R5"], sim:{n:30, sec:900}},
+      {id:"regles", label:"Éval règlement", desc:"tout le règlement", themes:["R1","R2","R3","R4"], sim:{n:30, sec:900}},
       {id:"histoire", label:"Éval histoire", desc:"l'histoire de la natation, des origines à Paris 2024", themes:["H1","H2","H3","H4"], sim:{n:30, sec:900}}
     ],
     exam: "Deux évaluations séparées : l'une sur le règlement, l'autre sur l'histoire de la natation."

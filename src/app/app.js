@@ -36,12 +36,12 @@ const SUBJECTS = {
     exam: "CT : QCM de 60 questions en 1 h (60 % de la note). CP : écrit d'1 h aux TD7, questions ouvertes (40 %)."
   },
   natation: {
-    name: "Natation", desc: "Le règlement (FFN, juges, départs, nages, analyse de la performance) et l'histoire de la natation, des origines à Paris 2024",
+    name: "Natation", desc: "Le règlement (FFN, juges, départs, nages) et l'histoire de la natation, des origines à Paris 2024",
     F: {vf: NAT_Q, qcm: [], open: []}, THEMES: NAT_THEMES, PARTS: NAT_PARTS,
     FOCUS: [], doc: "qcm-natation", ls: "qcm-natation-progress-v1",
     RATE: {vf: 30, qcm: 60}, BAREME: "1 point par bonne réponse",
     TARGETS: [
-      {id:"regles", label:"Éval règlement", desc:"tout le règlement et l'analyse de la performance", themes:["R1","R2","R3","R4","R5"], sim:{n:30, sec:900}},
+      {id:"regles", label:"Éval règlement", desc:"tout le règlement", themes:["R1","R2","R3","R4"], sim:{n:30, sec:900}},
       {id:"histoire", label:"Éval histoire", desc:"l'histoire de la natation, des origines à Paris 2024", themes:["H1","H2","H3","H4"], sim:{n:30, sec:900}}
     ],
     exam: "Deux évaluations séparées : l'une sur le règlement, l'autre sur l'histoire de la natation."
