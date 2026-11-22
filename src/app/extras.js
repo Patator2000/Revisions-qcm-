@@ -38,12 +38,13 @@ function openReport(qi, id){
   };
 }
 function renderReports(){
-  const n = lsReports().length, row = $("reportsRow"); if (!row) return;
+  const mine = () => lsReports().filter(r => !S || r.matiere === S.name); // seulement ceux de la matière ouverte
+  const n = mine().length, row = $("reportsRow"); if (!row) return;
   row.classList.toggle("hidden", !n || !window.PROFILE_ADMIN);
   $("reportsCount").textContent = `${n} signalement${n>1?"s":""} envoyé${n>1?"s":""} depuis ce navigateur.`;
 }
 $("reportsCopy").onclick = async () => {
-  const txt = lsReports().map((r,i) => `${i+1}. [${r.matiere} - ${r.format} - ${r.theme}] ${r.question}\n   Problème : ${r.type}${r.commentaire ? " - " + r.commentaire : ""}`).join("\n\n");
+  const txt = lsReports().filter(r => !S || r.matiere === S.name).map((r,i) => `${i+1}. [${r.matiere} - ${r.format} - ${r.theme}] ${r.question}\n   Problème : ${r.type}${r.commentaire ? " - " + r.commentaire : ""}`).join("\n\n");
   try { await navigator.clipboard.writeText(txt); $("reportsMsg").textContent = "Copié : colle-le dans la conversation."; }
   catch(e) { $("reportsDump").value = txt; $("reportsDump").classList.remove("hidden"); $("reportsDump").select(); $("reportsMsg").textContent = "Sélectionne le texte et copie-le."; }
 };
