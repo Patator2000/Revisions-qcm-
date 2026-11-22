@@ -182,7 +182,7 @@ function renderDash(){
   const days14 = dashSince(D, 14), spA = days14.map(d => (D.act[d] && D.act[d].a) || 0), spR = days14.map(d => D.act[d] && D.act[d].a ? D.act[d].c / D.act[d].a * 100 : 0);
   const fmtP = v => (Math.round(v * 10) / 10).toFixed(v < 10 && v % 1 ? 1 : 0).replace(".", ",");
   const weak = D.weak.length ? D.weak.map(z => {
-    const col = z.x.id === "anat" ? "anat" : "physio", nm = String(z.x.THEMES[z.t] || z.t).replace(/</g, "&lt;");
+    const col = z.x.id, nm = String(z.x.THEMES[z.t] || z.t).replace(/</g, "&lt;");
     return `<button class="dash-weak" data-tip="<b>${nm.replace(/"/g, "&quot;")}</b><br>${z.g} bonne${z.g > 1 ? "s" : ""} réponse${z.g > 1 ? "s" : ""} sur ${z.tr} essais (${Math.round(z.r * 100)} %)<br><span>clique pour réviser ce thème</span>" data-s="${z.x.id}" data-t="${z.t}" style="--c:var(--${col})"><span class="dw-name"><i></i>${nm}</span><span class="dw-bar"><b style="width:${Math.round(z.r * 100)}%"></b></span><span class="dw-pct">${Math.round(z.r * 100)} %</span></button>`;
   }).join("") : `<p class="small muted" style="margin:6px 0 0">Réponds à quelques séries : les thèmes où tu te trompes le plus apparaîtront ici (au moins 3 réponses par thème).</p>`;
   el.innerHTML = `

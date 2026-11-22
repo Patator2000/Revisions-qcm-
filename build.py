@@ -26,6 +26,7 @@ if TEST_ACTIF:
 GRATUIT = {"anat": ["Q1", "Q2", "T1", "T2", "C1", "C2"], "physio": ["T1", "T2", "C1", "C2"]}
 
 DATA = ["anatomie.js", "physiologie.js", "physiologie_examen.js", "physiologie_examen_2.js", "physiologie_complements.js"]
+DATA_LIBRE = ["natation.js"]  # matières entièrement gratuites, jamais découpées pour Kinésis+
 
 
 def read(p):
@@ -57,7 +58,7 @@ if "--contenu" in sys.argv:
     print(f"{len(paid)} questions Kinésis+ -> build/contenu_payant_1..{len(parts)}.sql")
 
 # 1) assemblage commun
-data = "\n".join(read("data/" + f) for f in DATA)
+data = "\n".join(read("data/" + f) for f in DATA + DATA_LIBRE)
 app = (read("app/app.js")
        .replace("/*EXTRAS*/", read("app/extras.js") + "\n" + read("app/dash.js"))
        .replace("/*ASK*/", read("app/ask.js")))
@@ -71,7 +72,7 @@ check("claude", full)
 # 3) site GitHub Pages : profils Supabase, voix Vosk sur l'appareil
 if ABONNEMENT_ACTIF:
     # seules les questions des cours 1-2 restent dans la page ; les autres sont des emplacements verrouillés
-    full = read("template.html").replace("/*__DATA__*/", split_content()["js"]).replace("/*__APP__*/", app)
+    full = read("template.html").replace("/*__DATA__*/", split_content()["js"] + "\n" + "\n".join(read("data/" + f) for f in DATA_LIBRE)).replace("/*__APP__*/", app)
 site = full.replace('<meta name="viewport"', '<meta name="theme-color" content="#2f5fd0">\n<meta name="viewport"', 1)
 site = site.replace('<details class="sync">', '<details class="sync" hidden>', 1)
 site = site.replace(

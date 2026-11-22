@@ -3,7 +3,7 @@
 </p>
 
 <h1 align="center">Kinésis</h1>
-<p align="center"><b>Révisions L1 STAPS</b> · anatomie (Partie A) et physiologie de l'exercice</p>
+<p align="center"><b>Révisions L1 STAPS</b> · anatomie (Partie A), physiologie de l'exercice et natation</p>
 <p align="center"><a href="https://patator2000.github.io/Revisions-qcm-/"><b>Ouvrir le site</b></a></p>
 
 ---
@@ -12,8 +12,8 @@
 
 | | |
 |---|---|
-| **Questions** | 504 Vrai / Faux en anatomie ; en physiologie, Vrai / Faux, QCM type CT (5 propositions, une ou plusieurs justes) et questions ouvertes type CP |
-| **Examens** | Simulations chronométrées : CCI 1, 2, 3 et 2e chance (40 questions en 25 min, 100 en 45 min), CT de physiologie (60 QCM en 1 h, barème officiel) |
+| **Questions** | Vrai / Faux en anatomie (avec schémas) et en natation (règlement et histoire) ; en physiologie, Vrai / Faux, QCM type CT (5 propositions, une ou plusieurs justes) et questions ouvertes type CP |
+| **Examens** | Simulations chronométrées : CCI 1, 2, 3 et 2e chance (40 questions en 25 min, 100 en 45 min), CT de physiologie (60 QCM en 1 h, barème officiel), évaluations de natation (règlement et histoire séparés) |
 | **Progression** | Profil en ligne (prénom + code) qui suit sur téléphone et ordinateur ; tableau de bord avec maîtrise globale, palier suivant, gains de chaque jour, activité sur 30 jours et points faibles |
 | **Classement** | Classement entre profils (réponses de la semaine ou questions maîtrisées), prénom seulement, possibilité de ne pas y apparaître |
 | **Apprentissage** | Priorité aux questions mal maîtrisées, bouton « Je réponds au pif », reprise d'une série après un rechargement, signalement d'erreurs |
@@ -35,7 +35,7 @@ src/
     profils.js          profils en ligne (Supabase), synchronisation et menu du profil
     abonnement.js       abonnement Kinésis+ (préparé, désactivé)
     voix.js             reconnaissance vocale Vosk
-  data/                 banques de questions (anatomie, physiologie)
+  data/                 banques de questions (anatomie, physiologie, natation)
 supabase/schema.sql     tables, sécurité et automatismes de la base
 supabase/classement_abonnement.sql   classement et abonnement
 supabase/admin.sql       compte admin (signalements), fonction is_admin()

@@ -1,5 +1,6 @@
 // ================= Matières =================
 const ICONS = {
+  natation: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="16.5" cy="6" r="1.8"/><path d="M4 11.5l4.5-3 3.5 2.5 3-1.5"/><path d="M2 16c1.5 1 3 1 4.5 0s3-1 4.5 0 3 1 4.5 0 3-1 4.5 0"/><path d="M2 20c1.5 1 3 1 4.5 0s3-1 4.5 0 3 1 4.5 0 3-1 4.5 0"/></svg>',
   anat: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 10c.7-.7 1.69 0 2.5 0a2.5 2.5 0 1 0 0-5 .5.5 0 0 1-.5-.5 2.5 2.5 0 1 0-5 0c0 .81.7 1.8 0 2.5l-7 7c-.7.7-1.69 0-2.5 0a2.5 2.5 0 0 0 0 5c.28 0 .5.22.5.5a2.5 2.5 0 1 0 5 0c0-.81-.7-1.8 0-2.5Z"/></svg>',
   physio: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7.60 10.60 L11.67 12.95 L11.67 17.65 L7.60 20.00 L3.53 17.65 L3.53 12.95Z M11.67 12.95 L15.74 10.60 L19.81 12.95 L19.81 17.65 L15.74 20.00 L11.67 17.65 M4.75 16.95 L4.75 13.65 M10.45 16.95 L7.60 18.59 M15.74 12.01 L18.59 13.66 M18.59 16.95 L15.74 18.59 M15.74 10.60 L15.74 7.30"/><circle cx="15.74" cy="5.60" r="1.7"/></svg>'
 };
@@ -33,6 +34,17 @@ const SUBJECTS = {
       {id:"cp", label:"CP (écrit)", desc:"questions ouvertes sur tout ce qui a été vu jusqu'au CP", fmt:"open", themes:"all"}
     ],
     exam: "CT : QCM de 60 questions en 1 h (60 % de la note). CP : écrit d'1 h aux TD7, questions ouvertes (40 %)."
+  },
+  natation: {
+    name: "Natation", desc: "Le règlement (FFN, juges, départs, nages, analyse de la performance) et l'histoire de la natation, des origines à Paris 2024",
+    F: {vf: NAT_Q, qcm: [], open: []}, THEMES: NAT_THEMES, PARTS: NAT_PARTS,
+    FOCUS: [], doc: "qcm-natation", ls: "qcm-natation-progress-v1",
+    RATE: {vf: 30, qcm: 60}, BAREME: "1 point par bonne réponse",
+    TARGETS: [
+      {id:"regles", label:"Éval règlement", desc:"tout le règlement et l'analyse de la performance", themes:["R1","R2","R3","R4","R5"], sim:{n:30, sec:900}},
+      {id:"histoire", label:"Éval histoire", desc:"l'histoire de la natation, des origines à Paris 2024", themes:["H1","H2","H3","H4"], sim:{n:30, sec:900}}
+    ],
+    exam: "Deux évaluations séparées : l'une sur le règlement, l'autre sur l'histoire de la natation."
   }
 };
 const PREFIX = {vf: "q", qcm: "m", open: "o"};
@@ -186,7 +198,7 @@ function renderView(){
 function renderHome(){
   try { renderDash(); } catch(e) { console.warn("dash", e); }
   $("subjects").innerHTML = Object.values(SUBJECTS).map(x => {
-    const on = fmtList(x).length > 0, col = x.id === "anat" ? "anat" : "physio";
+    const on = fmtList(x).length > 0, col = x.id;
     const sm = summary(x), pct = on ? Math.round(sm.m / sm.total * 100) : 0;
     const fl = fmtList(x).map(f => FMT_LABEL[f]).join(" · ");
     return `<button class="subj ${on ? "" : "off"}" data-s="${x.id}" style="--c:var(--${col});--cs:var(--${col}-soft)">
@@ -281,7 +293,7 @@ function simConfig(){
     const n = Math.min(t.sim.n, avail), sec = t.sim.sec ? Math.round(t.sim.sec * n / t.sim.n) : n * S.RATE[f];
     const known = !!t.sim.sec;
     return {label: "Simulation " + t.label, fmt: f, n, sec, themes: targetThemes(t),
-      txt: `${n} questions${n < t.sim.n ? ` (${avail} disponibles)` : ""} en ${Math.round(sec/60)} min, correction à la fin, barème ${S.id === "anat" ? "des CCI" : "du CT"}.`};
+      txt: `${n} questions${n < t.sim.n ? ` (${avail} disponibles)` : ""} en ${Math.round(sec/60)} min, correction à la fin, ${S.BAREME ? S.BAREME : "barème " + (S.id === "anat" ? "des CCI" : "du CT")}.`};
   }
   if (S.id === "physio" && fmt === "qcm") {
     const nq = S.F.qcm.length, n = Math.min(60, nq);
