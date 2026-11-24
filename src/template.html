@@ -4,18 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="Thomas">
-<title>Kinésis - Révisions L1 STAPS</title>
+<title>Kinésis</title>
 <style>
 :root{
   --bg:#f5f6f8;--surface:#ffffff;--surface2:#f0f2f5;--ink:#15181d;--muted:#667080;--line:#e2e5ea;
   --accent:#2f5fd0;--accent-soft:#e8eefc;--ok:#1b7f4b;--ok-soft:#e5f5ec;--ko:#c0352b;--ko-soft:#fcebea;--warn:#9a6a00;--warn-soft:#fdf4dc;
-  --anat:#2f5fd0;--anat-soft:#e8eefc;--physio:#0f8a7e;--physio-soft:#e1f4f1;--natation:#7a4fd6;--natation-soft:#f0eafc;
+  --anat:#2f5fd0;--anat-soft:#e8eefc;--physio:#0f8a7e;--physio-soft:#e1f4f1;--natation:#7a4fd6;--natation-soft:#f0eafc;--mails:#d9480f;--mails-soft:#fdeee6;
   --r:14px;--shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06);
 }
 @media (prefers-color-scheme:dark){:root{
   --bg:#111317;--surface:#1a1d23;--surface2:#22262d;--ink:#e9ebef;--muted:#99a1ad;--line:#2d323a;
   --accent:#7ea2ff;--accent-soft:#1f2a44;--ok:#5ccf8f;--ok-soft:#16301f;--ko:#ff8b80;--ko-soft:#3a1e1c;--warn:#e7c063;--warn-soft:#352c14;
-  --anat:#7ea2ff;--anat-soft:#1f2a44;--physio:#4fd1c0;--physio-soft:#143330;--natation:#b79cff;--natation-soft:#2a2044;--shadow:none}
+  --anat:#7ea2ff;--anat-soft:#1f2a44;--physio:#4fd1c0;--physio-soft:#143330;--natation:#b79cff;--natation-soft:#2a2044;--mails:#ff9a62;--mails-soft:#3a2417;--shadow:none}
   .btn.primary{color:#0b1220}}
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -244,13 +244,6 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 .pm-bar{position:relative;height:5px;border-radius:3px;background:var(--line);margin:2px 0 8px;overflow:hidden}.pm-bar i{position:absolute;left:0;top:0;bottom:0;background:color-mix(in srgb,var(--accent) 40%,transparent);border-radius:3px}.pm-bar i.ok{background:var(--ok)}
 .pm-item{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;font-size:14px;color:var(--ink);padding:9px 10px;border-radius:8px;cursor:pointer}
 .pm-sw{float:right;width:30px;height:17px;border-radius:999px;background:var(--line);position:relative;margin-top:2px;transition:background .15s}.pm-sw::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#fff;transition:left .15s}.pm-sw.on{background:var(--ok)}.pm-sw.on::after{left:15px}
-.prem-wrap{position:fixed;inset:0;z-index:60;background:rgba(10,15,30,.55);display:grid;place-items:center;padding:20px;backdrop-filter:blur(3px)}
-.prem-card{position:relative;background:var(--surface);border-radius:20px;padding:28px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)}
-.prem-card h2{margin:10px 0 8px}.prem-card ul{padding-left:20px;margin:14px 0 18px}.prem-card li{margin:5px 0}
-.prem-badge{display:inline-block;font-weight:800;font-size:.8rem;letter-spacing:.06em;color:#fff;background:linear-gradient(90deg,#4f7cff,#14b88a);padding:4px 10px;border-radius:999px}
-.prem-price b{font-size:1.8rem}.prem-price span{display:block;font-size:.8rem;color:var(--muted)}
-.prem-x{position:absolute;top:10px;right:14px;border:0;background:none;font-size:1.6rem;color:var(--muted);cursor:pointer}
-.pm-ok.prem{color:#fff;background:linear-gradient(90deg,#4f7cff,#14b88a)}
 .pm-ok{font-size:.75em;color:var(--ok);background:var(--ok-soft);padding:1px 7px;border-radius:999px;margin-left:6px}
 .pm-form{padding:8px}.pm-form p{margin:6px 0}.pm-form ol{margin:6px 0 10px;padding-left:18px}.pm-form input{width:100%;font:inherit;font-size:.85em;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
 .pm-item:hover{background:var(--accent-soft)}.pm-item.danger{color:var(--ko)}
@@ -337,18 +330,6 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 .ds-h em{font-style:normal}.ds-muted{color:var(--muted);font-weight:500;font-size:.8rem}
 .ds-bar{display:flex;height:10px;border-radius:10px;background:var(--surface2);overflow:hidden;gap:2px}.ds-bar i{display:block;height:100%}
 .dash-kpi{display:flex;flex-direction:column}.dash-kpi .dash-spark{height:auto;flex:1;min-height:44px;max-height:180px}
-.rk-tabs{display:inline-flex;background:var(--surface2);border-radius:999px;padding:2px;text-transform:none;letter-spacing:0}
-.rk-tabs button{border:0;background:none;font:inherit;font-size:.78rem;padding:3px 10px;border-radius:999px;color:var(--muted);cursor:pointer}
-.rk-tabs button.on{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
-.rk-list{margin-top:10px}
-.rk-row{display:grid;grid-template-columns:26px 1fr auto auto;gap:8px;align-items:center;padding:7px 6px;border-radius:9px;font-size:.88rem}
-.rk-row.me{background:color-mix(in srgb,var(--accent) 12%,transparent)}
-.rk-n{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:.75rem;font-weight:700;background:var(--surface2);color:var(--muted)}
-.rk-n.r1{background:linear-gradient(135deg,#f7c948,#e0a800);color:#fff}.rk-n.r2{background:linear-gradient(135deg,#cfd6df,#9aa5b1);color:#fff}.rk-n.r3{background:linear-gradient(135deg,#e2a26b,#b8693a);color:#fff}
-.rk-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rk-name em{font-style:normal;color:var(--muted);font-size:.85em}
-.rk-row b{font-variant-numeric:tabular-nums}.rk-u{font-size:.72rem;color:var(--muted)}
-.rk-gap{text-align:center;color:var(--muted);font-size:.8rem;line-height:1}
-.rk-foot{margin-top:8px}
 .dash-wait{color:var(--muted);text-align:center;padding:30px}
 @media (max-width:900px){.span8,.span4{grid-column:span 12}.dash-kpi.span4{grid-column:span 6}.span3{grid-column:span 6}}
 @media (max-width:560px){.span6{grid-column:span 12}.dash-week{gap:4px}.dw-day b{font-size:.9rem}}
@@ -391,12 +372,24 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 .frise li::before{content:"";position:absolute;left:-21px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--natation,var(--accent))}
 .frise b{display:block;font-size:.86em;color:var(--ink)}
 .cours-go{margin-top:12px}
+.mod-add{border-style:dashed;background:transparent;box-shadow:none}.mod-add .ico{font-size:1.8rem;font-weight:300;background:var(--surface2);color:var(--muted)}
+.mod-panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;margin:0 0 14px;box-shadow:var(--shadow)}
+.mod-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px}.mod-x{margin-left:auto;border:0;background:none;font-size:1.5rem;line-height:1;color:var(--muted);cursor:pointer}
+.mod-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.mod-ico{width:40px;height:40px;border-radius:10px;background:var(--cs);color:var(--c);display:grid;place-items:center;flex:none}
+.mod-txt{flex:1;min-width:0}.mod-txt b{display:block}.mod-txt span{display:block;font-size:.85em;color:var(--muted)}
+.mod-row .switch{margin-left:auto;flex:none}
+.home-empty{text-align:center;padding:28px}.home-empty p{margin:6px 0 14px}
+.subjects.compact{grid-template-columns:repeat(auto-fit,minmax(210px,1fr));margin-bottom:22px}
+.subjects.compact .subj{padding:16px}.subjects.compact .subj .ico{width:42px;height:42px;margin-bottom:10px}.subjects.compact .subj .ico svg{width:24px;height:24px}
+.subjects.compact .subj p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:.84em}
+.subjects.compact .subj .meter{margin-top:12px}
 </style>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2032%2032%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22lg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%234f7cff%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2314b88a%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath%20d%3D%22M16.00%201.50%20L28.56%208.75%20L28.56%2023.25%20L16.00%2030.50%20L3.44%2023.25%20L3.44%208.75Z%22%20fill%3D%22url%28%23lg%29%22%20stroke%3D%22url%28%23lg%29%22%20stroke-width%3D%223%22%20stroke-linejoin%3D%22round%22/%3E%3Cpath%20d%3D%22M5.5%2017.2h4.6l2.2-5.6%203.6%2010%202.6-7.2%201.6%202.8h6.4%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222.3%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E">
 </head>
 <body>
 <header class="top"><div class="in">
-  <button class="brand" id="brand" onclick="if(view==='quiz'){pauseTimer();saveSession();voiceStop();} if(S)flush(S); go('home')" title="Accueil" aria-label="Kinésis, retour à l'accueil"><svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f7cff"/><stop offset="1" stop-color="#14b88a"/></linearGradient></defs><path d="M16.00 1.50 L28.56 8.75 L28.56 23.25 L16.00 30.50 L3.44 23.25 L3.44 8.75Z" fill="url(#lg)" stroke="url(#lg)" stroke-width="3" stroke-linejoin="round"/><path d="M5.5 17.2h4.6l2.2-5.6 3.6 10 2.6-7.2 1.6 2.8h6.4" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="brand-txt"><span class="brand-name">Kinésis</span><span class="brand-tag">Révisions L1 STAPS</span></span></button>
+  <button class="brand" id="brand" onclick="if(view==='quiz'){pauseTimer();saveSession();voiceStop();} if(S)flush(S); go('home')" title="Accueil" aria-label="Kinésis, retour à l'accueil"><svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f7cff"/><stop offset="1" stop-color="#14b88a"/></linearGradient></defs><path d="M16.00 1.50 L28.56 8.75 L28.56 23.25 L16.00 30.50 L3.44 23.25 L3.44 8.75Z" fill="url(#lg)" stroke="url(#lg)" stroke-width="3" stroke-linejoin="round"/><path d="M5.5 17.2h4.6l2.2-5.6 3.6 10 2.6-7.2 1.6 2.8h6.4" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="brand-txt"><span class="brand-name">Kinésis</span><span class="brand-tag">Ton espace perso</span></span></button>
   <nav class="crumb" id="crumb"></nav>
   <div class="spacer"></div>
   <div class="save" id="save"><i></i><span>Chargement...</span></div>
@@ -406,10 +399,12 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 
 <!-- Accueil : choix de la matière -->
 <section id="v-home">
-  <h1>Révisions</h1>
+  <h1>Tableau de bord</h1>
+  <div class="card home-empty hidden" id="homeEmpty"><b>Ton tableau de bord est vide.</b><p class="small muted">Ajoute les modules dont tu as besoin : tes matières de révision, tes mails…</p><button class="btn primary" id="homeEmptyBtn">Ajouter un module</button></div>
+  <div id="modPanelBox"></div>
+  <div class="subjects compact" id="subjects"></div>
+  <h2 class="home-h2" id="dashH2">Révisions</h2>
   <div class="dash" id="dash"></div>
-  <h2 class="home-h2">Matières</h2>
-  <div class="subjects" id="subjects"></div>
   <details class="sync"><summary>Synchroniser avec l'autre version</summary>
     <p class="small muted" style="margin:6px 0 8px">Copie ta progression d'un côté, colle-la de l'autre (version en ligne et version micro). Les deux progressions sont fusionnées.</p>
     <div class="row"><button class="btn ghost small" id="syncCopy">Copier ma progression</button><button class="btn ghost small" id="syncOpen">Coller une progression</button><span class="small muted" id="syncMsg"></span></div>

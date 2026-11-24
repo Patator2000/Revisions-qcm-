@@ -187,7 +187,7 @@ function go(v){ view = v; renderView(); window.scrollTo(0,0); saveRoute(); }
 function renderView(){
   ["home","subject","quiz","result"].forEach(v => $("v-"+v).classList.toggle("hidden", v !== view));
   const c = $("crumb");
-  const parts = [`<button data-go="home">Matières</button>`];
+  const parts = [`<button data-go="home">Tableau de bord</button>`];
   if (view !== "home" && S) parts.push(`<span class="sep">/</span>`, view === "subject" ? `<span class="here">${S.name}</span>` : `<button data-go="subject">${S.name}</button>`);
   if (view === "quiz") parts.push(`<span class="sep">/</span><span class="here">${sim ? sim.label : fmtName(fmt)}</span>`);
   if (view === "result") parts.push(`<span class="sep">/</span><span class="here">Bilan</span>`);
@@ -203,7 +203,11 @@ function renderView(){
 // ================= Accueil =================
 function renderHome(){
   try { renderDash(); } catch(e) { console.warn("dash", e); }
-  $("subjects").innerHTML = Object.values(SUBJECTS).map(x => {
+  const mine = Object.values(SUBJECTS).filter(x => fmtList(x).length && modOn(x.id));
+  $("homeEmpty").classList.toggle("hidden", mine.length > 0 || modOn("mails"));
+  $("dash").classList.toggle("hidden", !mine.length); $("dashH2").classList.toggle("hidden", !mine.length);
+  $("modPanelBox").innerHTML = modPanelOpen ? modulesPanel() : ""; bindModulesPanel($("modPanelBox"));
+  $("subjects").innerHTML = mine.map(x => {
     const on = fmtList(x).length > 0, col = x.id;
     const sm = summary(x), pct = on ? Math.round(sm.m / sm.total * 100) : 0;
     const fl = fmtList(x).map(f => fmtName(f, x)).join(" · ");
@@ -214,8 +218,11 @@ function renderHome(){
       <div class="foot"><span>${sm.total} questions</span><span>${storeReady ? `${pct} % maîtrisé` : "..."}</span></div>
 ` : ""}
     </button>`;
-  }).join("");
-  $("subjects").querySelectorAll(".subj").forEach(b => b.onclick = () => {
+  }).join("") + (modOn("mails") ? mailsCard() : "")
+    + `<button class="subj mod-add" id="modAdd"><div class="ico">+</div><h3>${MODS && MODS.size ? "Gérer mes modules" : "Ajouter un module"}</h3><p>Révisions (anatomie, physiologie, natation), mails…</p></button>`;
+  $("modAdd").onclick = () => { modPanelOpen = !modPanelOpen; renderHome(); if (modPanelOpen) $("modPanelBox").scrollIntoView({behavior: "smooth", block: "center"}); };
+  $("homeEmptyBtn").onclick = () => { modPanelOpen = true; renderHome(); };
+  $("subjects").querySelectorAll(".subj[data-s]").forEach(b => b.onclick = () => {
     const x = SUBJECTS[b.dataset.s]; if (!fmtList(x).length) return;
     S = x; fmt = S.fmt; go("subject");
   });
