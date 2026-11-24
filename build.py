@@ -46,7 +46,6 @@ check("claude", full)
 site = full.replace('<meta name="viewport"', '<meta name="theme-color" content="#2f5fd0">\n<meta name="viewport"', 1)
 # appli installable (téléphone, ordinateur) : manifeste, icônes, service worker
 site = site.replace('<meta name="viewport"', '<link rel="manifest" href="manifest.webmanifest">\n<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">\n<meta name="apple-mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-title" content="Kinésis">\n<meta name="viewport"', 1)
-site = site.replace("</body>", '<script>if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));</script>\n</body>', 1)
 site = site.replace('<details class="sync">', '<details class="sync" hidden>', 1)
 site = site.replace(
     'const MIC_MSG = "Micro bloqué : claude.ai n\'autorise pas le micro dans ses pages publiées. Utilise la version « micro » à ouvrir dans Chrome, ou réponds au clavier (V, F, N, A à E, P, Entrée).";',
@@ -58,6 +57,8 @@ site = site[:j] + "\n" + cfg + site[j:]
 site = site.replace("<script>", '<script src="vendor/supabase.js"></script>\n<script>', 1)
 i = site.rindex("</script>")
 site = site[:i] + '\nwindow.VOICE_ENGINE = "vosk";\n' + read("app/voix.js") + "\n" + read("app/profils.js") + "\n" + site[i:]
+# enregistrement du service worker, après l'injection des scripts du site (il doit rester le dernier <script>)
+site = site.replace("</body>", '<script>if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));</script>\n</body>', 1)
 site = site.replace("(Chrome recommandé)", "(marche dans tous les navigateurs, Brave compris)")
 site = site.replace("voice:false, auto:true};", "voice:true, auto:true};").replace('<button class="switch" id="swVoice"', '<button class="switch on" id="swVoice"')
 assert "voice:true" in site

@@ -3346,8 +3346,7 @@ function svgImg(svg){
 
 renderView(); setSave(); initStore().then(restoreRoute, restoreRoute); initSample();
 
-</script>
-<script>if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+
 window.VOICE_ENGINE = "vosk";
 // ================= Reconnaissance vocale intégrée (Vosk, sur l'appareil) =================
 // Utilisée sur le site : marche dans tous les navigateurs (Brave compris), sans service extérieur.
@@ -3864,5 +3863,6 @@ async function adminCopyReports(menu){
 }
 
 </script>
+<script>if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));</script>
 </body>
 </html>
