@@ -21,7 +21,7 @@ const SUBJECTS = {
       {id:"cci1", label:"CCI 1", date:"2026-10-05", desc:"CM et TD 1 à 3", themes:["Q1","Q2","Q3","T1","T2","T3","C1","C2","C3"], sim:{n:40, sec:1500}},
       {id:"cci2", label:"CCI 2", date:"2026-11-02", desc:"CM et TD 1 à 6", themes:["Q1","Q2","Q3","Q4","Q5","Q6","T1","T2","T3","T4","T5","T6","C1","C2","C3","C4","C5","C6"], sim:{n:40, sec:1500}},
       {id:"cci3", label:"CCI 3", date:"2026-11-23", desc:"CM et TD 1 à 9", themes:"all", sim:{n:40, sec:1500}},
-      {id:"second", label:"CCI 2e chance", date:"2026-12-07", desc:"tout le programme de la Partie A, 100 questions en 45 min", themes:"all", sim:{n:100, sec:2700}}
+      {id:"second", label:"CCI 2e chance", date:"2026-12-07", desc:"tout le programme", themes:"all", sim:{n:100, sec:2700}}
     ]
   },
   physio: {
@@ -234,7 +234,7 @@ function renderHome(){
 function renderSubject(){
   $("s-title").textContent = S.name;
   $("s-lead").textContent = "";
-  $("examInfo").textContent = S.exam || ""; $("examInfo").classList.toggle("hidden", !S.exam);
+  $("examInfo").classList.add("hidden");
   renderCours();
   // formats
   const fl = fmtList(S);
@@ -313,7 +313,7 @@ function renderTargets(){
   if (!t) { $("targetInfo").textContent = ""; return; }
   let when = "";
   if (t.date) { const d = daysTo(t.date); when = d > 1 ? ` · dans ${d} jours` : d === 1 ? " · demain" : d === 0 ? " · cette semaine" : d > -7 ? " · cette semaine" : " · déjà passé"; }
-  $("targetInfo").textContent = `${t.label} : ${t.desc}${t.date ? " (semaine du " + new Date(t.date + "T08:00:00").toLocaleDateString("fr-FR", {day:"numeric", month:"long"}) + ")" : ""}${when}. ${targetThemes(t).length} thèmes sélectionnés.`;
+  $("targetInfo").textContent = `${t.desc}${when}`;
 }
 function simConfig(){
   const t = S.TARGETS.find(x => x.id === S.target && x.sim);
@@ -323,11 +323,11 @@ function simConfig(){
     const n = Math.min(t.sim.n, avail), sec = t.sim.sec ? Math.round(t.sim.sec * n / t.sim.n) : n * S.RATE[f];
     const known = !!t.sim.sec;
     return {label: "Simulation " + t.label, fmt: f, n, sec, themes: targetThemes(t),
-      txt: `${n} questions${n < t.sim.n ? ` (${avail} disponibles)` : ""} en ${Math.round(sec/60)} min, correction à la fin, ${S.BAREME ? S.BAREME : "barème " + (S.id === "anat" ? "des CCI" : "du CT")}.`};
+      txt: `${n} questions · ${Math.round(sec/60)} min`};
   }
   if (S.id === "physio" && fmt === "qcm") {
     const nq = S.F.qcm.length, n = Math.min(60, nq);
-    return {label: "Simulation du CT", fmt: "qcm", n, sec: n * 60, themes: Object.keys(S.THEMES), txt: `${n} questions tirées au hasard, ${n} minutes, correction à la fin.`};
+    return {label: "Simulation du CT", fmt: "qcm", n, sec: n * 60, themes: Object.keys(S.THEMES), txt: `${n} questions · ${n} min`};
   }
   return null;
 }
