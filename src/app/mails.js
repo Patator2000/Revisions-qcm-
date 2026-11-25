@@ -7,7 +7,7 @@ var OUTLOOK = {
   redirect: "https://patator2000.github.io/Revisions-qcm-/",
   app: null, account: null, msgs: null, err: "", loading: false, at: 0, open: false
 };
-const MAIL_RULES_DEFAULT = {
+var MAIL_RULES_DEFAULT = {
   senders: ["univ-lyon1.fr"],
   keywords: ["examen", "partiel", "CCI", "convocation", "urgent", "note", "rattrapage", "rendez-vous", "facture", "match", "entraînement"],
   importance: true, // les mails marqués « importance haute » par l'expéditeur
