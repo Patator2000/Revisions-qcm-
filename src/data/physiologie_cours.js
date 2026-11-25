@@ -6,6 +6,20 @@ const PHYSIO_COURS = {
   type: "fiches",
   chapitres: [
   {
+    id: "CP", titre: "Fiche CP · tout ce qu'il faut savoir écrire (CM 1-6, TD 1-6)", fmt: "open", sujets: true,
+    themes: ["C1", "T1", "C2", "T2", "C3", "T3", "C4", "C5", "T4", "T5", "T6"],
+    sections: [
+      {h: "Méthode pour l'écrit", pts: [
+        "Commence toujours par une **définition** précise du mot clé de la question (homéostasie, unité motrice, potentiel d'action...).",
+        "Donne les **chiffres** du cours : ils rapportent des points faciles (-70 mV, +30 mV, 120 m/s, 3 Na+ / 2 K+, 150 fibres par unité motrice, 50 % de fibres ST...).",
+        "Organise ta réponse : une idée par phrase, dans l'ordre logique (du plus petit au plus grand, ou étape par étape).",
+        "Fais un **schéma légendé** quand c'est possible : boucle de régulation, sarcomère, courbe du potentiel d'action, secousse et tétanos.",
+        "Quand on te demande de **comparer**, présente les deux côtés point par point (ou en tableau), et termine par un exemple.",
+        "Ci-dessous, chaque sujet type est suivi de tout ce qu'il faut écrire pour avoir le maximum : récite-le à voix haute ou par écrit, puis entraîne-toi sur les questions ouvertes."
+      ]}
+    ]
+  },
+  {
     id: "C1", titre: "CM 1-3 · Généralités et homéostasie", themes: ["C1", "T1"],
     sections: [
       {h: "Définitions", pts: [
@@ -306,3 +320,12 @@ const PHYSIO_COURS = {
   }
   ]
 };
+
+// Sujets d'écrit complémentaires pour le CP (couvrir tout le programme des CM 1-6)
+PHYSIO_OPEN.push(
+["P3","C2","Présentez les lipides : composition, propriétés, grandes familles et rôles.",["C, H, O avec un rapport H/O différent de 2 ; insolubles dans l'eau (hydrophobes), transportés dans le sang par des lipoprotéines (HDL, LDL)","Triglycérides : 1 glycérol + 3 acides gras ; tissu adipeux : réserve d'énergie, protection, isolation","Phospholipides : glycérol + 2 acides gras (queue apolaire) + phosphate et groupe azoté (tête polaire) ; forment la bicouche des membranes","Stéroïdes, dérivés du cholestérol : hormones sexuelles, cortisol, aldostérone, sels biliaires, vitamine D","Cholestérol : composant des membranes et point de départ des stéroïdes","Autres : éicosanoïdes (prostaglandines, leucotriènes), vitamines liposolubles A, E, K"]],
+["P3","C3","Décrivez la structure et les rôles de la membrane plasmique.",["Bicouche de phospholipides : têtes polaires vers l'eau, queues apolaires au centre ; protéines et cholestérol insérés","Délimite la cellule et la sépare du milieu extracellulaire","Perméabilité sélective : contrôle les échanges (transports passifs et actifs)","Sucres de surface : reconnaissance entre cellules et regroupement en tissus","Déclenchement de la réponse immunitaire","Porte les récepteurs des messagers (hormones, neurotransmetteurs) et les canaux ioniques des cellules excitables"]],
+["P3","C4","Présentez l'organisation du système nerveux et le rôle de ses principales parties.",["SNC : encéphale (cerveau, diencéphale, cervelet, tronc cérébral) et moelle épinière ; SNP : nerfs crâniens et rachidiens (43 paires)","Cortex : partie consciente (percevoir, réfléchir, commander les mouvements) ; thalamus : intégration sensorielle ; hypothalamus : homéostasie (PA, FC, ventilation, température)","Cervelet : coordination des contractions des muscles squelettiques ; tronc cérébral : jonction cerveau-moelle, centres du système nerveux autonome","Voies sensitives (afférentes) de la périphérie vers le SNC, avec 5 types de récepteurs : mécano-, thermo-, noci-, photo-, chémorécepteurs","Voies motrices (efférentes) du SNC vers la périphérie : somatique (volontaire, muscles squelettiques) et autonome (involontaire)","Autonome : sympathique et parasympathique, aux effets antagonistes"]],
+["P3","C5","Comparez les trois tissus musculaires et citez les fonctions et propriétés du muscle squelettique.",["Squelettique : strié, volontaire, contraction rapide et forte, très fatigable","Cardiaque : strié, involontaire","Lisse : non strié, involontaire, dans la paroi des organes viscéraux creux","Fonctions : mouvement, maintien de la posture, stabilisation des articulations, production de chaleur","Propriétés : excitabilité, contractilité, extensibilité, élasticité"]],
+["P3","C5","Présentez les types de contraction musculaire et les rôles des muscles autour d'un mouvement.",["Isométrique : contraction sans mouvement ni changement de longueur (ex. pousser un objet trop lourd)","Isotonique ou anisométrique : la longueur change","Concentrique : le muscle se raccourcit en produisant un travail","Excentrique : le muscle se contracte en s'allongeant (ex. extenseurs du genou dans une descente)","Agonistes : principaux responsables du mouvement ; antagonistes : s'y opposent et protègent l'articulation ; synergiques : aident les agonistes"]]
+);

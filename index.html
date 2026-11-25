@@ -390,6 +390,8 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 .fiche h3{margin:14px 0 6px;font-size:.95em}
 .fiche-l{margin:0 0 6px;padding-left:18px}.fiche-l li{margin:0 0 6px;line-height:1.5;font-size:.93em}
 .fiche .cours-go{margin:8px 0 14px}
+.fiche-q{margin:14px 0 6px;font-weight:600;font-size:.93em}
+.fiche-cp>summary{color:var(--cc,var(--accent))}
 .mod-add{border-style:dashed;background:transparent;box-shadow:none}.mod-add .ico{font-size:1.8rem;font-weight:300;background:var(--surface2);color:var(--muted)}
 .mod-panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;margin:0 0 14px;box-shadow:var(--shadow)}
 .mod-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px}.mod-x{margin-left:auto;border:0;background:none;font-size:1.5rem;line-height:1;color:var(--muted);cursor:pointer}
@@ -1800,6 +1802,20 @@ const PHYSIO_COURS = {
   type: "fiches",
   chapitres: [
   {
+    id: "CP", titre: "Fiche CP · tout ce qu'il faut savoir écrire (CM 1-6, TD 1-6)", fmt: "open", sujets: true,
+    themes: ["C1", "T1", "C2", "T2", "C3", "T3", "C4", "C5", "T4", "T5", "T6"],
+    sections: [
+      {h: "Méthode pour l'écrit", pts: [
+        "Commence toujours par une **définition** précise du mot clé de la question (homéostasie, unité motrice, potentiel d'action...).",
+        "Donne les **chiffres** du cours : ils rapportent des points faciles (-70 mV, +30 mV, 120 m/s, 3 Na+ / 2 K+, 150 fibres par unité motrice, 50 % de fibres ST...).",
+        "Organise ta réponse : une idée par phrase, dans l'ordre logique (du plus petit au plus grand, ou étape par étape).",
+        "Fais un **schéma légendé** quand c'est possible : boucle de régulation, sarcomère, courbe du potentiel d'action, secousse et tétanos.",
+        "Quand on te demande de **comparer**, présente les deux côtés point par point (ou en tableau), et termine par un exemple.",
+        "Ci-dessous, chaque sujet type est suivi de tout ce qu'il faut écrire pour avoir le maximum : récite-le à voix haute ou par écrit, puis entraîne-toi sur les questions ouvertes."
+      ]}
+    ]
+  },
+  {
     id: "C1", titre: "CM 1-3 · Généralités et homéostasie", themes: ["C1", "T1"],
     sections: [
       {h: "Définitions", pts: [
@@ -2101,6 +2117,15 @@ const PHYSIO_COURS = {
   ]
 };
 
+// Sujets d'écrit complémentaires pour le CP (couvrir tout le programme des CM 1-6)
+PHYSIO_OPEN.push(
+["P3","C2","Présentez les lipides : composition, propriétés, grandes familles et rôles.",["C, H, O avec un rapport H/O différent de 2 ; insolubles dans l'eau (hydrophobes), transportés dans le sang par des lipoprotéines (HDL, LDL)","Triglycérides : 1 glycérol + 3 acides gras ; tissu adipeux : réserve d'énergie, protection, isolation","Phospholipides : glycérol + 2 acides gras (queue apolaire) + phosphate et groupe azoté (tête polaire) ; forment la bicouche des membranes","Stéroïdes, dérivés du cholestérol : hormones sexuelles, cortisol, aldostérone, sels biliaires, vitamine D","Cholestérol : composant des membranes et point de départ des stéroïdes","Autres : éicosanoïdes (prostaglandines, leucotriènes), vitamines liposolubles A, E, K"]],
+["P3","C3","Décrivez la structure et les rôles de la membrane plasmique.",["Bicouche de phospholipides : têtes polaires vers l'eau, queues apolaires au centre ; protéines et cholestérol insérés","Délimite la cellule et la sépare du milieu extracellulaire","Perméabilité sélective : contrôle les échanges (transports passifs et actifs)","Sucres de surface : reconnaissance entre cellules et regroupement en tissus","Déclenchement de la réponse immunitaire","Porte les récepteurs des messagers (hormones, neurotransmetteurs) et les canaux ioniques des cellules excitables"]],
+["P3","C4","Présentez l'organisation du système nerveux et le rôle de ses principales parties.",["SNC : encéphale (cerveau, diencéphale, cervelet, tronc cérébral) et moelle épinière ; SNP : nerfs crâniens et rachidiens (43 paires)","Cortex : partie consciente (percevoir, réfléchir, commander les mouvements) ; thalamus : intégration sensorielle ; hypothalamus : homéostasie (PA, FC, ventilation, température)","Cervelet : coordination des contractions des muscles squelettiques ; tronc cérébral : jonction cerveau-moelle, centres du système nerveux autonome","Voies sensitives (afférentes) de la périphérie vers le SNC, avec 5 types de récepteurs : mécano-, thermo-, noci-, photo-, chémorécepteurs","Voies motrices (efférentes) du SNC vers la périphérie : somatique (volontaire, muscles squelettiques) et autonome (involontaire)","Autonome : sympathique et parasympathique, aux effets antagonistes"]],
+["P3","C5","Comparez les trois tissus musculaires et citez les fonctions et propriétés du muscle squelettique.",["Squelettique : strié, volontaire, contraction rapide et forte, très fatigable","Cardiaque : strié, involontaire","Lisse : non strié, involontaire, dans la paroi des organes viscéraux creux","Fonctions : mouvement, maintien de la posture, stabilisation des articulations, production de chaleur","Propriétés : excitabilité, contractilité, extensibilité, élasticité"]],
+["P3","C5","Présentez les types de contraction musculaire et les rôles des muscles autour d'un mouvement.",["Isométrique : contraction sans mouvement ni changement de longueur (ex. pousser un objet trop lourd)","Isotonique ou anisométrique : la longueur change","Concentrique : le muscle se raccourcit en produisant un travail","Excentrique : le muscle se contracte en s'allongeant (ex. extenseurs du genou dans une descente)","Agonistes : principaux responsables du mouvement ; antagonistes : s'y opposent et protègent l'articulation ; synergiques : aident les agonistes"]]
+);
+
 // ===================== NATATION (L1 STAPS) =====================
 // Deux parties évaluées séparément : le règlement et l'histoire.
 // Format des évals : QCM, propositions A à E, une ou plusieurs justes ;
@@ -2298,7 +2323,7 @@ const SUBJECTS = {
     RATE: {vf: 27, qcm: 60},
     TARGETS: [
       {id:"ct", label:"CT (QCM)", desc:"QCM sur tout le programme", fmt:"qcm", themes:"all", sim:{n:60, sec:3600}},
-      {id:"cp", label:"CP (écrit)", date:"2026-12-04", desc:"questions ouvertes", fmt:"open", themes:"all"}
+      {id:"cp", label:"CP (écrit)", date:"2026-12-04", desc:"CM 1 à 6 et TD 1 à 6, questions ouvertes", fmt:"open", themes:["T1","T2","T3","T4","T5","T6","C1","C2","C3","C4","C5"]}
     ],
     exam: "CT : QCM de 60 questions en 1 h (60 % de la note). CP : écrit d'1 h aux TD7, questions ouvertes (40 %)."
   },
@@ -2558,17 +2583,21 @@ function renderCours(){
   card.classList.toggle("hidden", !C); if (!C) return;
   if (card.dataset.s === S.id) return; card.dataset.s = S.id; card.open = false;
   $("coursTitle").textContent = C.titre; card.style.setProperty("--cc", `var(--${S.id})`);
-  const train = themes => {
-    const t = S.TARGETS.find(x => x.themes && x.themes.join && x.themes.join() === themes.join());
+  const train = (themes, f) => {
+    const t = S.TARGETS.find(x => x.themes && x.themes.join && [...x.themes].sort().join() === [...themes].sort().join() && (!f || x.fmt === f));
     S.target = t ? t.id : null; S.sel = new Set(themes.filter(x => S.THEMES[x]));
-    if (t && t.fmt) fmt = S.fmt = t.fmt; else if (C.type !== "fiches" && S.F.qcm.length) fmt = S.fmt = "qcm";
+    if (f && S.F[f] && S.F[f].length) fmt = S.fmt = f; else if (t && t.fmt) fmt = S.fmt = t.fmt; else if (C.type !== "fiches" && S.F.qcm.length) fmt = S.fmt = "qcm";
     card.open = false; renderSubject(); $("start").scrollIntoView({behavior: "smooth", block: "center"});
   };
   if (C.type === "fiches") {
-    $("coursBody").innerHTML = C.chapitres.map((ch, n) => `<details class="fiche"><summary>${esc(ch.titre)}</summary>
-      ${ch.sections.map(sec => `<h3>${esc(sec.h)}</h3><ul class="fiche-l">${sec.pts.map(p => `<li>${coursMd(p)}</li>`).join("")}</ul>`).join("")}
+    const sujets = ch => !ch.sujets ? "" : ch.themes.filter(t => S.THEMES[t]).map(t => {
+      const qs = (S.F.open || []).filter(q => q[1] === t); if (!qs.length) return "";
+      return `<h3>${esc(S.THEMES[t])}</h3>` + qs.map(q => `<p class="fiche-q">${esc(q[2])}</p><ul class="fiche-l">${q[3].map(p => `<li>${esc(p)}</li>`).join("")}</ul>`).join("");
+    }).join("");
+    $("coursBody").innerHTML = C.chapitres.map((ch, n) => `<details class="fiche${ch.sujets ? " fiche-cp" : ""}"><summary>${esc(ch.titre)}</summary>
+      ${ch.sections.map(sec => `<h3>${esc(sec.h)}</h3><ul class="fiche-l">${sec.pts.map(p => `<li>${coursMd(p)}</li>`).join("")}</ul>`).join("")}${sujets(ch)}
       <button class="btn primary small cours-go" data-ch="${n}">M'entraîner sur ce chapitre</button></details>`).join("");
-    $("coursBody").querySelectorAll("[data-ch]").forEach(b => b.onclick = () => train(C.chapitres[+b.dataset.ch].themes));
+    $("coursBody").querySelectorAll("[data-ch]").forEach(b => b.onclick = () => { const ch = C.chapitres[+b.dataset.ch]; train(ch.themes, ch.fmt); });
     return;
   }
   $("coursBody").innerHTML = `<p class="cours-intro">${esc(C.intro)}</p>` + C.parties.map(p => `<h3>${esc(p.titre)}</h3><ul class="frise">${p.reperes.map(r => `<li><b>${esc(r[0])}</b>${esc(r[1])}</li>`).join("")}</ul>`).join("")

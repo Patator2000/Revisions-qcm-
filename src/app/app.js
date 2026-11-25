@@ -31,7 +31,7 @@ const SUBJECTS = {
     RATE: {vf: 27, qcm: 60},
     TARGETS: [
       {id:"ct", label:"CT (QCM)", desc:"QCM sur tout le programme", fmt:"qcm", themes:"all", sim:{n:60, sec:3600}},
-      {id:"cp", label:"CP (écrit)", date:"2026-12-04", desc:"questions ouvertes", fmt:"open", themes:"all"}
+      {id:"cp", label:"CP (écrit)", date:"2026-12-04", desc:"CM 1 à 6 et TD 1 à 6, questions ouvertes", fmt:"open", themes:["T1","T2","T3","T4","T5","T6","C1","C2","C3","C4","C5"]}
     ],
     exam: "CT : QCM de 60 questions en 1 h (60 % de la note). CP : écrit d'1 h aux TD7, questions ouvertes (40 %)."
   },
@@ -291,17 +291,21 @@ function renderCours(){
   card.classList.toggle("hidden", !C); if (!C) return;
   if (card.dataset.s === S.id) return; card.dataset.s = S.id; card.open = false;
   $("coursTitle").textContent = C.titre; card.style.setProperty("--cc", `var(--${S.id})`);
-  const train = themes => {
-    const t = S.TARGETS.find(x => x.themes && x.themes.join && x.themes.join() === themes.join());
+  const train = (themes, f) => {
+    const t = S.TARGETS.find(x => x.themes && x.themes.join && [...x.themes].sort().join() === [...themes].sort().join() && (!f || x.fmt === f));
     S.target = t ? t.id : null; S.sel = new Set(themes.filter(x => S.THEMES[x]));
-    if (t && t.fmt) fmt = S.fmt = t.fmt; else if (C.type !== "fiches" && S.F.qcm.length) fmt = S.fmt = "qcm";
+    if (f && S.F[f] && S.F[f].length) fmt = S.fmt = f; else if (t && t.fmt) fmt = S.fmt = t.fmt; else if (C.type !== "fiches" && S.F.qcm.length) fmt = S.fmt = "qcm";
     card.open = false; renderSubject(); $("start").scrollIntoView({behavior: "smooth", block: "center"});
   };
   if (C.type === "fiches") {
-    $("coursBody").innerHTML = C.chapitres.map((ch, n) => `<details class="fiche"><summary>${esc(ch.titre)}</summary>
-      ${ch.sections.map(sec => `<h3>${esc(sec.h)}</h3><ul class="fiche-l">${sec.pts.map(p => `<li>${coursMd(p)}</li>`).join("")}</ul>`).join("")}
+    const sujets = ch => !ch.sujets ? "" : ch.themes.filter(t => S.THEMES[t]).map(t => {
+      const qs = (S.F.open || []).filter(q => q[1] === t); if (!qs.length) return "";
+      return `<h3>${esc(S.THEMES[t])}</h3>` + qs.map(q => `<p class="fiche-q">${esc(q[2])}</p><ul class="fiche-l">${q[3].map(p => `<li>${esc(p)}</li>`).join("")}</ul>`).join("");
+    }).join("");
+    $("coursBody").innerHTML = C.chapitres.map((ch, n) => `<details class="fiche${ch.sujets ? " fiche-cp" : ""}"><summary>${esc(ch.titre)}</summary>
+      ${ch.sections.map(sec => `<h3>${esc(sec.h)}</h3><ul class="fiche-l">${sec.pts.map(p => `<li>${coursMd(p)}</li>`).join("")}</ul>`).join("")}${sujets(ch)}
       <button class="btn primary small cours-go" data-ch="${n}">M'entraîner sur ce chapitre</button></details>`).join("");
-    $("coursBody").querySelectorAll("[data-ch]").forEach(b => b.onclick = () => train(C.chapitres[+b.dataset.ch].themes));
+    $("coursBody").querySelectorAll("[data-ch]").forEach(b => b.onclick = () => { const ch = C.chapitres[+b.dataset.ch]; train(ch.themes, ch.fmt); });
     return;
   }
   $("coursBody").innerHTML = `<p class="cours-intro">${esc(C.intro)}</p>` + C.parties.map(p => `<h3>${esc(p.titre)}</h3><ul class="frise">${p.reperes.map(r => `<li><b>${esc(r[0])}</b>${esc(r[1])}</li>`).join("")}</ul>`).join("")
