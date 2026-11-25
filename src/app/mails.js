@@ -154,7 +154,7 @@ function mailRulesHtml(r){
   </div>`;
 }
 function mailRender(){
-  const box = $("mailBox"); if (!box) return;
+  const box = $("mailBox"); if (!box || !OUTLOOK) return; // fichier pas encore exécuté
   const on = typeof modOn === "function" && modOn("mails");
   box.classList.toggle("hidden", !on); if (!on) return;
   $("mailBody").innerHTML = mailBoxHtml();
@@ -177,6 +177,7 @@ function mailRender(){
 }
 // Au chargement du tableau de bord : on relit la boîte au plus toutes les 5 minutes
 async function mailOnHome(){
+  if (!OUTLOOK) return;
   if (!(typeof modOn === "function" && modOn("mails"))) return mailRender();
   mailRender();
   if (!window.OUTLOOK_CLIENT_ID) return;
@@ -184,3 +185,5 @@ async function mailOnHome(){
   if (OUTLOOK.account && Date.now() - OUTLOOK.at > 5 * 60e3) mailFetch(false); else mailRender();
 }
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && typeof view !== "undefined" && view === "home") mailOnHome(); });
+// ce fichier est exécuté après le premier affichage : on remplit la boîte maintenant
+if (typeof view !== "undefined" && view === "home") mailOnHome();

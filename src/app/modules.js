@@ -42,7 +42,7 @@ function bindModulesPanel(root){
 let modPanelOpen = false;
 // Bloc « Mails » sur le tableau de bord (branché à Outlook à l'étape suivante)
 function mailsCard(){
-  const ok = typeof OUTLOOK !== "undefined" && OUTLOOK.account, n = ok && typeof mailImportant === "function" ? mailImportant().length : 0;
+  const ok = typeof OUTLOOK !== "undefined" && OUTLOOK && OUTLOOK.account, n = ok && typeof mailImportant === "function" ? mailImportant().length : 0;
   return `<button class="subj" data-mod-open="mails" style="--c:var(--mails);--cs:var(--mails-soft)">
     <div class="ico">${MODULE_EXTRA.mails.icon}</div>
     <h3>Mails</h3><p>${ok ? "Outlook connecté : les mails qui comptent sont dans ta boîte de notifications." : "Connecte ta boîte Outlook : les mails qui comptent s'afficheront dans ta boîte de notifications."}</p>
