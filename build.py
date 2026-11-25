@@ -16,7 +16,7 @@ SUPA_KEY = "sb_publishable_4A1YYev7-Qmgbl_aRV7CIQ_Gxq267_N"
 # Appli Kinésis inscrite chez Microsoft (identifiant public, pas un secret) : module Mails / Outlook
 OUTLOOK_CLIENT_ID = ""
 # Appli Kinésis inscrite chez Google (identifiant public, pas un secret) : module Mails / Gmail
-GOOGLE_CLIENT_ID = ""
+GOOGLE_CLIENT_ID = "97280931687-rim9s6jb7888s275hel37jqpnli96lr6.apps.googleusercontent.com"
 
 DATA = ["anatomie.js", "physiologie.js", "physiologie_examen.js", "physiologie_examen_2.js", "physiologie_complements.js"]
 DATA_LIBRE = ["natation.js"]
