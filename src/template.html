@@ -369,16 +369,22 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 .dtip span{opacity:.7}.dtip i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}.dtip i.t-ok{background:var(--ok)}.dtip i.t-ko{background:var(--ko)}
 .dash-sparkw{position:relative;cursor:crosshair}.dash-kpi .dash-sparkw{flex:1;display:flex;flex-direction:column;min-height:44px}.dash-sparkw .dash-spark{flex:1}
 [data-tip]{cursor:default}.dash-donut circle[data-tip]:hover{stroke-width:16}.ds-bar i[data-tip]:hover,.dash-leg[data-tip]:hover{filter:brightness(1.15)}
-.cours summary{cursor:pointer;display:flex;align-items:center;gap:10px;flex-wrap:wrap;list-style:none}.cours summary::-webkit-details-marker{display:none}
-.cours summary::after{content:"Ouvrir";margin-left:auto;font-size:.82em;color:var(--accent)}.cours[open] summary::after{content:"Fermer"}
+.cours>summary{cursor:pointer;display:flex;align-items:center;gap:10px;flex-wrap:wrap;list-style:none}.cours>summary::-webkit-details-marker{display:none}
+.cours>summary::after{content:"Ouvrir";margin-left:auto;font-size:.82em;color:var(--accent)}.cours[open]>summary::after{content:"Fermer"}
 .cours-intro{margin:14px 0 6px;color:var(--muted);font-size:.92em}
-.cours-ico{display:grid;place-items:center;color:var(--natation,var(--accent))}
-.cours h3{margin:22px 0 10px;font-size:1em;color:var(--natation,var(--accent))}
+.cours-ico{display:grid;place-items:center;color:var(--cc,var(--accent))}
+.cours h3{margin:22px 0 10px;font-size:1em;color:var(--cc,var(--accent))}
 .frise{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px solid var(--line)}
 .frise li{position:relative;padding:0 0 12px 14px;font-size:.93em;line-height:1.5}
-.frise li::before{content:"";position:absolute;left:-21px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--natation,var(--accent))}
+.frise li::before{content:"";position:absolute;left:-21px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--cc,var(--accent))}
 .frise b{display:block;font-size:.86em;color:var(--ink)}
 .cours-go{margin-top:12px}
+.fiche{border-top:1px solid var(--line);padding:2px 0}.fiche:first-child{border-top:0;margin-top:10px}
+.fiche>summary{cursor:pointer;padding:12px 0;font-weight:600;color:var(--ink);list-style:none;display:flex;align-items:center;gap:8px}.fiche>summary::-webkit-details-marker{display:none}
+.fiche>summary::before{content:"›";display:inline-block;width:12px;color:var(--muted);transition:transform .15s}.fiche[open]>summary::before{transform:rotate(90deg)}
+.fiche h3{margin:14px 0 6px;font-size:.95em}
+.fiche-l{margin:0 0 6px;padding-left:18px}.fiche-l li{margin:0 0 6px;line-height:1.5;font-size:.93em}
+.fiche .cours-go{margin:8px 0 14px}
 .mod-add{border-style:dashed;background:transparent;box-shadow:none}.mod-add .ico{font-size:1.8rem;font-weight:300;background:var(--surface2);color:var(--muted)}
 .mod-panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;margin:0 0 14px;box-shadow:var(--shadow)}
 .mod-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px}.mod-x{margin-left:auto;border:0;background:none;font-size:1.5rem;line-height:1;color:var(--muted);cursor:pointer}
@@ -454,7 +460,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
   <h1 id="s-title"></h1>
   <p class="lead hidden" id="s-lead"></p>
   <div class="exam-info hidden" id="examInfo"></div>
-  <details class="card cours hidden" id="coursCard"><summary><span class="cours-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.5C4.5 4 8 4 12 6c4-2 7.5-2 10-.5V19c-2.5-1.5-6-1.5-10 .5-4-2-7.5-2-10-.5Z"/><path d="M12 6v13.5"/></svg></span><b id="coursTitle"></b><span class="small muted">à lire avant les QCM</span></summary><div id="coursBody"></div></details>
+  <details class="card cours hidden" id="coursCard"><summary><span class="cours-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.5C4.5 4 8 4 12 6c4-2 7.5-2 10-.5V19c-2.5-1.5-6-1.5-10 .5-4-2-7.5-2-10-.5Z"/><path d="M12 6v13.5"/></svg></span><b id="coursTitle"></b></summary><div id="coursBody"></div></details>
   <div class="card simcard hidden" id="sessCard">
     <div><b>Série en pause</b><div class="small muted" id="sessTxt"></div></div>
     <div class="row"><button class="btn ghost small" id="sessDrop">Abandonner</button><button class="btn primary" id="sessResume">Reprendre</button></div>

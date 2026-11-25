@@ -26,7 +26,7 @@ const SUBJECTS = {
   },
   physio: {
     name: "Physiologie", desc: "Physiologie de l'exercice L1 : généralités, homéostasie, molécules, cellule, transport membranaire, système nerveux, fonction musculaire, bioénergétique",
-    F: {vf: PHYSIO_Q, qcm: PHYSIO_MCQ, open: PHYSIO_OPEN}, THEMES: PHYSIO_THEMES, PARTS: PHYSIO_PARTS,
+    F: {vf: PHYSIO_Q, qcm: PHYSIO_MCQ, open: PHYSIO_OPEN}, THEMES: PHYSIO_THEMES, PARTS: PHYSIO_PARTS, COURS: typeof PHYSIO_COURS !== "undefined" ? PHYSIO_COURS : null,
     FOCUS: [], doc: "qcm-physio-A", ls: "qcm-physio-A-progress-v1",
     RATE: {vf: 27, qcm: 60},
     TARGETS: [
@@ -285,18 +285,28 @@ function renderSubject(){
 function targetThemes(t){ const all = Object.keys(S.THEMES); return t.themes === "all" ? all : t.themes.filter(x => all.includes(x)); }
 function daysTo(d){ const t = new Date(d + "T08:00:00"), n = new Date(); return Math.ceil((t - n) / 86400000); }
 // Fiche de cours (natation : l'histoire), à lire avant les QCM
+function coursMd(t){ return esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>"); }
 function renderCours(){
   const C = S.COURS, card = $("coursCard");
   card.classList.toggle("hidden", !C); if (!C) return;
   if (card.dataset.s === S.id) return; card.dataset.s = S.id; card.open = false;
-  $("coursTitle").textContent = C.titre;
-  $("coursBody").innerHTML = `<p class="cours-intro">${esc(C.intro)}</p>` + C.parties.map(p => `<h3>${esc(p.titre)}</h3><ul class="frise">${p.reperes.map(r => `<li><b>${esc(r[0])}</b>${esc(r[1])}</li>`).join("")}</ul>`).join("")
-    + `<button class="btn primary cours-go" id="coursGo">M'entraîner sur les QCM d'histoire</button>`;
-  $("coursGo").onclick = () => {
-    const t = S.TARGETS.find(x => x.themes && x.themes.join() === C.themes.join());
-    S.target = t ? t.id : null; S.sel = new Set(C.themes); if (S.F.qcm.length) fmt = S.fmt = "qcm";
+  $("coursTitle").textContent = C.titre; card.style.setProperty("--cc", `var(--${S.id})`);
+  const train = themes => {
+    const t = S.TARGETS.find(x => x.themes && x.themes.join && x.themes.join() === themes.join());
+    S.target = t ? t.id : null; S.sel = new Set(themes.filter(x => S.THEMES[x]));
+    if (t && t.fmt) fmt = S.fmt = t.fmt; else if (C.type !== "fiches" && S.F.qcm.length) fmt = S.fmt = "qcm";
     card.open = false; renderSubject(); $("start").scrollIntoView({behavior: "smooth", block: "center"});
   };
+  if (C.type === "fiches") {
+    $("coursBody").innerHTML = C.chapitres.map((ch, n) => `<details class="fiche"><summary>${esc(ch.titre)}</summary>
+      ${ch.sections.map(sec => `<h3>${esc(sec.h)}</h3><ul class="fiche-l">${sec.pts.map(p => `<li>${coursMd(p)}</li>`).join("")}</ul>`).join("")}
+      <button class="btn primary small cours-go" data-ch="${n}">M'entraîner sur ce chapitre</button></details>`).join("");
+    $("coursBody").querySelectorAll("[data-ch]").forEach(b => b.onclick = () => train(C.chapitres[+b.dataset.ch].themes));
+    return;
+  }
+  $("coursBody").innerHTML = `<p class="cours-intro">${esc(C.intro)}</p>` + C.parties.map(p => `<h3>${esc(p.titre)}</h3><ul class="frise">${p.reperes.map(r => `<li><b>${esc(r[0])}</b>${esc(r[1])}</li>`).join("")}</ul>`).join("")
+    + `<button class="btn primary cours-go" id="coursGo">M'entraîner sur les QCM d'histoire</button>`;
+  $("coursGo").onclick = () => train(C.themes);
 }
 function renderTargets(){
   const card = $("targetCard");

@@ -18,7 +18,7 @@ OUTLOOK_CLIENT_ID = ""
 # Appli Kinésis inscrite chez Google (identifiant public, pas un secret) : module Mails / Gmail
 GOOGLE_CLIENT_ID = "97280931687-rim9s6jb7888s275hel37jqpnli96lr6.apps.googleusercontent.com"
 
-DATA = ["anatomie.js", "physiologie.js", "physiologie_examen.js", "physiologie_examen_2.js", "physiologie_complements.js"]
+DATA = ["anatomie.js", "physiologie.js", "physiologie_examen.js", "physiologie_examen_2.js", "physiologie_complements.js", "physiologie_cours.js"]
 DATA_LIBRE = ["natation.js"]
 
 
