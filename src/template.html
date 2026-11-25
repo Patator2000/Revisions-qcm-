@@ -268,7 +268,11 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 #v-home h1{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:18px}
 .dash-date{display:inline-block;font-size:.5em;font-weight:500;color:var(--muted)}.dash-date::first-letter{text-transform:uppercase}
 .settings .set .lbl>span{display:none}
-.plan{padding:16px 18px}.plan-t{font-weight:700;margin-bottom:4px}
+.plan{padding:16px 18px}.plan-t{font-weight:700}
+.plan-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.plan-goal{display:flex;align-items:center;gap:4px;font-size:.82em;color:var(--muted)}
+.plan-goal button{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:3px 10px;font:inherit;cursor:pointer}
+.plan-goal button.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .plan-row{display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}.plan-row:first-of-type{border-top:0}
 .plan-h{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}.plan-d{font-size:.82em;color:var(--muted)}
 .plan-bar{grid-column:1;height:8px;border-radius:8px;background:var(--cs, var(--surface2));overflow:hidden}.plan-bar i{display:block;height:100%;background:var(--c, var(--accent));border-radius:8px}

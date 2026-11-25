@@ -273,7 +273,11 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 #v-home h1{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:18px}
 .dash-date{display:inline-block;font-size:.5em;font-weight:500;color:var(--muted)}.dash-date::first-letter{text-transform:uppercase}
 .settings .set .lbl>span{display:none}
-.plan{padding:16px 18px}.plan-t{font-weight:700;margin-bottom:4px}
+.plan{padding:16px 18px}.plan-t{font-weight:700}
+.plan-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.plan-goal{display:flex;align-items:center;gap:4px;font-size:.82em;color:var(--muted)}
+.plan-goal button{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:3px 10px;font:inherit;cursor:pointer}
+.plan-goal button.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .plan-row{display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}.plan-row:first-of-type{border-top:0}
 .plan-h{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}.plan-d{font-size:.82em;color:var(--muted)}
 .plan-bar{grid-column:1;height:8px;border-radius:8px;background:var(--cs, var(--surface2));overflow:hidden}.plan-bar i{display:block;height:100%;background:var(--c, var(--accent));border-radius:8px}
@@ -3533,7 +3537,11 @@ function planRate(x){
   return {p: a >= 20 ? Math.min(0.99, Math.max(0.5, c / a)) : 0.8, real: a >= 20, raw: a ? c / a : null};
 }
 function planCost(k, p){ return k <= 0 ? 0 : p >= 0.999 ? k : (Math.pow(1 / p, k) - 1) / (1 - p); }
+// Niveau visé : part du programme à maîtriser le jour J (50, 80 ou 100 %), réglable sur la carte
+function planGoalKey(){ return "kinesis-plangoal-" + (typeof mailUserKey === "function" ? mailUserKey() : "local"); }
+function planGoal(){ try { const v = +localStorage.getItem(planGoalKey()); return [50, 80, 100].includes(v) ? v : 100; } catch(e) { return 100; } }
 function planData(){
+  const G = planGoal() / 100;
   const today = dayKey(), out = [];
   for (const x of Object.values(SUBJECTS)) {
     if (!fmtList(x).length || !modOn(x.id) || !x.TARGETS) continue;
@@ -3541,17 +3549,20 @@ function planData(){
       if (!t.date) continue;
       const d = daysTo(t.date); if (d < 0) continue;
       const all = Object.keys(x.THEMES), th = new Set(t.themes === "all" ? all : t.themes.filter(z => all.includes(z)));
-      let total = 0, m = 0, need = 0; const R = planRate(x);
+      let total = 0, m = 0; const R = planRate(x), costs = [];
       for (const f of fmtList(x)) x.F[f].forEach((q, i) => { // tous les formats : vrai/faux, QCM et questions ouvertes préparent tous à l'examen
         if (!th.has(q[1]) || qLocked(q)) return;
         total++; const l = levelK(x, x.K[f][i]);
-        if (l !== null && l >= 4) m++; else need += planCost(4 - (l || 0), R.p);
+        if (l !== null && l >= 4) m++; else costs.push(planCost(4 - (l || 0), R.p));
       });
       if (!total) continue;
+      // on vise les questions les plus proches de la maîtrise en premier : c'est le chemin le plus court vers l'objectif
+      const aim = Math.ceil(total * G), toDo = Math.max(0, aim - m);
+      const need = costs.sort((a, b) => a - b).slice(0, toDo).reduce((a, b) => a + b, 0);
       const h = (x.mem._h || {})[today] || {}, doneToday = h.a || 0;
       const days = Math.max(1, d - 1); // la veille : simulation
       const goal = need ? Math.ceil((need + doneToday) / days) : 0;
-      out.push({x, t, d, total, m, left: total - m, goal, doneToday, themes: [...th], R});
+      out.push({x, t, d, total, m, left: toDo, aim, goal, doneToday, themes: [...th], R});
     }
   }
   return out.sort((a, b) => a.d - b.d);
@@ -3561,22 +3572,25 @@ function planHtml(P){
   const day = d => new Date(d + "T08:00:00").toLocaleDateString("fr-FR", {weekday: "short", day: "numeric", month: "short"});
   const rows = P.map((p, n) => {
     const pct = Math.round(p.m / p.total * 100), todayPct = p.goal ? Math.min(100, Math.round(p.doneToday / p.goal * 100)) : 100;
-    const msg = !p.left ? "Tout est maîtrisé : garde le rythme avec une simulation."
+    const msg = !p.left ? "Objectif atteint : garde le rythme avec une simulation."
       : p.d <= 1 ? (p.d === 0 ? "C'est aujourd'hui." : "Demain : fais une simulation et revois tes erreurs.")
       : `${p.doneToday} / ${p.goal} réponses aujourd'hui`;
     return `<div class="plan-row" style="--c:var(--${p.x.id});--cs:var(--${p.x.id}-soft)">
       <div class="plan-h"><b>${esc(p.t.label)} ${esc(p.x.name.toLowerCase())}</b><span class="plan-d">${day(p.t.date)} · ${p.d === 0 ? "aujourd'hui" : "J-" + p.d}</span></div>
       <div class="plan-bar" title="Réponses du jour"><i style="width:${todayPct}%"></i></div>
-      <div class="plan-f"><span>${msg}</span><span>${p.left} à maîtriser · ${pct} %${p.R.real ? ` · ${Math.round(p.R.raw * 100)} % de réussite` : ""}</span></div>
+      <div class="plan-f"><span>${msg}</span><span>encore ${p.left} à maîtriser · ${pct} %${p.R.real ? ` · ${Math.round(p.R.raw * 100)} % de réussite` : ""}</span></div>
       <button class="btn small${todayPct >= 100 ? " ghost" : " primary"}" data-plan="${n}">${todayPct >= 100 && p.left ? "Continuer" : "Réviser"}</button>
     </div>`;
   }).join("");
-  return `<div class="card plan"><div class="plan-t">Objectif du jour</div>${rows}</div>`;
+  const g = planGoal();
+  return `<div class="card plan"><div class="plan-top"><span class="plan-t">Objectif du jour</span>
+    <span class="plan-goal">maîtriser ${[50, 80, 100].map(v => `<button class="${v === g ? "on" : ""}" data-goal="${v}">${v} %</button>`).join("")}</span></div>${rows}</div>`;
 }
 function renderPlan(){
   const box = $("plan"); if (!box) return;
   let P = []; try { P = planData(); } catch(e) { console.warn("plan", e); }
   box.innerHTML = planHtml(P);
+  box.querySelectorAll("[data-goal]").forEach(b => b.onclick = () => { try { localStorage.setItem(planGoalKey(), b.dataset.goal); } catch(e) {} renderPlan(); });
   box.querySelectorAll("[data-plan]").forEach(b => b.onclick = () => {
     const p = P[+b.dataset.plan]; S = p.x; S.target = p.t.id; S.sel = new Set(p.themes);
     if (p.t.fmt) fmt = S.fmt = p.t.fmt; else fmt = S.fmt;
