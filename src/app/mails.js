@@ -2,7 +2,7 @@
 // Connexion Microsoft dans le navigateur (MSAL, sans secret), lecture de la boîte de réception via Microsoft Graph,
 // tri par des règles simples (expéditeurs, mots-clés, importance haute), affichage dans une boîte de notifications.
 // Rien ne passe par un serveur à nous : le jeton Microsoft reste dans ce navigateur.
-const OUTLOOK = {
+var OUTLOOK = {
   scopes: ["User.Read", "Mail.Read"],
   redirect: "https://patator2000.github.io/Revisions-qcm-/",
   app: null, account: null, msgs: null, err: "", loading: false, at: 0, open: false
@@ -13,7 +13,7 @@ const MAIL_RULES_DEFAULT = {
   importance: true, // les mails marqués « importance haute » par l'expéditeur
   days: 7
 };
-let MAIL_RULES = null;
+var MAIL_RULES = null;
 function mailUserKey(){ return (typeof SB_USER !== "undefined" && SB_USER ? SB_USER.id : "local"); }
 function mailRulesLoad(){
   if (MAIL_RULES) return MAIL_RULES;
