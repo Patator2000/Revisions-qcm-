@@ -3971,7 +3971,9 @@ function mailHiddenBy(m, r){
   const t = mailType(m), kw = mailKeyword(m, r);
   return (r.hidden || []).find(h => {
     h = String(h).toLowerCase().trim(); if (!h) return false;
-    // un mail avec un mot-clé important passe toujours, sauf si tu as masqué son adresse précise
+    // texte choisi par toi (cherché dans tout le mail, signature comprise) : il gagne, comme une adresse précise
+    if (h.startsWith("texte:")) { const w = h.slice(6).trim(); return (m.texts || []).includes(w) || ((m.subject || "") + " " + (m.bodyPreview || "")).toLowerCase().includes(w); }
+    // un mail avec un mot-clé important passe toujours, sauf si tu as masqué son adresse ou un texte précis
     if (h.startsWith("catégorie:")) return !kw && t.cat && h.slice(10) === t.cat;
     if (h.startsWith("liste:")) return !kw && t.listId && h.slice(6) === t.listId;
     if (h.startsWith("objet:")) return !kw && mailWordIn(h.slice(6).trim(), (m.subject || "").toLowerCase());
@@ -3984,6 +3986,7 @@ function mailHide(entry){
   if (!h.includes(entry)) h.push(entry);
   mailRulesSave(Object.assign({}, r, {hidden: h}));
   MAIL_UI.hide = null; mailRender();
+  if (/^texte:/.test(entry)) mailRefreshAll(false);
 }
 // Tous les mails de la période, sauf ceux marqués « Vu » et les types masqués ; les importants gardent leur raison
 function mailList(){
@@ -4149,6 +4152,13 @@ async function gmFetch(interactive){
             webLink: "https://mail.google.com/mail/?authuser=" + encodeURIComponent(GMAIL.email) + "#all/" + g.threadId});
         });
       }
+      const texts = (mailRulesLoad().hidden || []).filter(x => /^texte:/i.test(x)).map(x => x.slice(6).trim().toLowerCase()).filter(Boolean);
+      for (const w of texts) {
+        const q2 = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=100&q=" + encodeURIComponent("in:inbox newer_than:" + days + "d \"" + w.replace(/"/g, "") + "\""), H);
+        if (!q2.ok) continue;
+        const hit = new Set(((await q2.json()).messages || []).map(x => "g:" + x.id));
+        out.forEach(m => { if (hit.has(m.id)) (m.texts = m.texts || []).push(w); });
+      }
       GMAIL.msgs = out; GMAIL.at = Date.now(); GMAIL.err = "";
     }
   } catch(e) { GMAIL.err = gmErrText(e); }
@@ -4203,9 +4213,9 @@ function mailHideHtml(m){
     <p class="small muted">Ne plus jamais afficher :</p>
     <div class="mail-hideopts">${opts.map(([v, l]) => `<button class="btn ghost small" data-hidev="${esc(v)}">${l}</button>`).join("")}
       <button class="btn ghost small" data-hidecancel>Annuler</button></div>
-    <div class="mail-hideword"><span class="small">ou les mails dont l'objet contient le mot</span>
-      <input id="mhWord" placeholder="conférence" autocomplete="off"><button class="btn ghost small" id="mhWordOk">Masquer</button></div>
-    <p class="small muted">Les mails qui contiennent un de tes mots-clés importants (${esc(kw)}, blocage, fermeture...) restent toujours affichés. Tu pourras revenir en arrière dans « Mes règles ».</p>
+    <div class="mail-hideword"><span class="small">ou les mails qui contiennent (objet, texte ou signature)</span>
+      <input id="mhWord" placeholder="mission handicap" autocomplete="off"><button class="btn ghost small" id="mhWordOk">Masquer</button></div>
+    <p class="small muted">Une liste, un domaine ou une catégorie masqués laissent passer les mails qui contiennent un de tes mots-clés importants (${esc(kw)}, blocage, fermeture...). Une adresse ou un texte précis les masquent toujours. Tu pourras revenir en arrière dans « Mes règles ».</p>
   </div>`;
 }
 function mailRulesHtml(r){
@@ -4214,7 +4224,7 @@ function mailRulesHtml(r){
       <textarea id="mrSenders" rows="3">${esc((r.senders || []).join("\n"))}</textarea></label>
     <label class="small"><b>Mots-clés</b> <span class="muted">(dans l'objet ou le début du mail ; un par ligne)</span>
       <textarea id="mrKeys" rows="4">${esc((r.keywords || []).join("\n"))}</textarea></label>
-    <label class="small"><b>Mails masqués</b> <span class="muted">(une par ligne : une adresse, @domaine, liste:nom, objet:mot ou catégorie:promotions ; efface une ligne pour revoir ces mails)</span>
+    <label class="small"><b>Mails masqués</b> <span class="muted">(une par ligne : une adresse, @domaine, liste:nom, texte:mots, objet:mot ou catégorie:promotions ; efface une ligne pour revoir ces mails)</span>
       <textarea id="mrHidden" rows="3">${esc((r.hidden || []).join("\n"))}</textarea></label>
     <div class="set"><div class="lbl"><b>Mails marqués « importance haute »</b><span>Ceux que l'expéditeur a signalés comme importants.</span></div><button class="switch${r.importance ? " on" : ""}" id="mrImp"></button></div>
     <label class="small"><b>Période</b> <select id="mrDays">${[1, 3, 7, 14, 30].map(d => `<option value="${d}"${d === r.days ? " selected" : ""}>${d} jour${d > 1 ? "s" : ""}</option>`).join("")}</select></label>
@@ -4246,7 +4256,7 @@ function mailRender(){
   $("mailBody").querySelectorAll("[data-seen]").forEach(b => b.onclick = () => { mailSeenAdd(b.dataset.seen); mailRender(); });
   $("mailBody").querySelectorAll("[data-hide]").forEach(b => b.onclick = () => { MAIL_UI.hide = MAIL_UI.hide === b.dataset.hide ? null : b.dataset.hide; mailRender(); });
   $("mailBody").querySelectorAll("[data-hidev]").forEach(b => b.onclick = () => mailHide(b.dataset.hidev));
-  if (q("mhWordOk")) { const go = () => { const w = q("mhWord").value.trim(); if (w) mailHide("objet:" + w.toLowerCase()); }; q("mhWordOk").onclick = go; q("mhWord").onkeydown = e => { if (e.key === "Enter") go(); }; }
+  if (q("mhWordOk")) { const go = () => { const w = q("mhWord").value.trim(); if (w) mailHide("texte:" + w.toLowerCase()); }; q("mhWordOk").onclick = go; q("mhWord").onkeydown = e => { if (e.key === "Enter") go(); }; }
   $("mailBody").querySelectorAll("[data-hidecancel]").forEach(b => b.onclick = () => { MAIL_UI.hide = null; mailRender(); });
 }
 // Gmail d'abord : sa fenêtre éclair doit partir tout de suite après le clic
