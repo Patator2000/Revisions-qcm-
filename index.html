@@ -391,7 +391,10 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 .subjects.compact .subj .meter{margin-top:12px}
 .mail-box{margin:0 0 22px}.mail-title{display:flex;align-items:center;gap:8px;font-weight:700;margin-bottom:8px}
 .mail-count{background:var(--mails);color:#fff;border-radius:20px;font-size:.75em;padding:1px 8px}
-.mail-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}.mail-head>span{margin-right:auto}
+.mail-head{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:8px}.mail-head>span{margin-right:auto}
+.mail-ico{border:0;background:none;color:var(--muted);width:32px;height:32px;border-radius:50%;display:grid;place-items:center;cursor:pointer;padding:0}
+.mail-ico:hover,.mail-ico.on{background:var(--surface2);color:var(--ink)}.mail-ico svg{width:17px;height:17px}
+.mail-ico.spin svg{animation:mailspin .9s linear infinite}@keyframes mailspin{to{transform:rotate(360deg)}}
 .mail-empty{padding:6px 0}.mail-empty p{margin:0 0 10px;color:var(--muted)}.mail-err{color:var(--ko)}
 .mail-list{list-style:none;margin:0;padding:0}
 .mail-it{border-top:1px solid var(--line);padding:10px 0}.mail-row{display:flex;gap:10px;align-items:flex-start}
@@ -428,7 +431,6 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
   <div class="card home-empty hidden" id="homeEmpty"><b>Ton tableau de bord est vide.</b><button class="btn primary" id="homeEmptyBtn">Ajouter un module</button></div>
   <div id="modPanelBox"></div>
   <div class="subjects compact" id="subjects"></div>
-  <div class="card mail-box hidden" id="mailBox"><div class="mail-title"><span>Boîte de notifications</span><span class="mail-count hidden" id="mailCount"></span></div><div id="mailBody"></div></div>
   <h2 class="home-h2" id="dashH2">Révisions</h2>
   <div class="dash" id="dash"></div>
   <details class="sync" hidden><summary>Synchroniser avec l'autre version</summary>
@@ -437,6 +439,11 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
     <textarea id="syncArea" class="hidden" rows="3" style="width:100%;margin-top:8px;font-size:.8em" placeholder="Colle ici le code copié dans l'autre version"></textarea>
     <div class="row hidden" id="syncRow" style="margin-top:6px"><button class="btn small" id="syncImport">Importer et fusionner</button></div>
   </details>
+</section>
+
+<!-- Mails : notifications -->
+<section id="v-mails" class="hidden">
+  <div class="card mail-box" id="mailBox"><div class="mail-title"><span>Notifs</span><span class="mail-count hidden" id="mailCount"></span></div><div id="mailBody"></div></div>
 </section>
 
 <!-- Matière : progression + choix des thèmes -->
@@ -2122,10 +2129,11 @@ async function flush(Sx){
 // ================= Navigation =================
 function go(v){ view = v; renderView(); window.scrollTo(0,0); saveRoute(); }
 function renderView(){
-  ["home","subject","quiz","result"].forEach(v => $("v-"+v).classList.toggle("hidden", v !== view));
+  ["home","mails","subject","quiz","result"].forEach(v => $("v-"+v).classList.toggle("hidden", v !== view));
   const c = $("crumb");
   const parts = [`<button data-go="home">Tableau de bord</button>`];
-  if (view !== "home" && S) parts.push(`<span class="sep">/</span>`, view === "subject" ? `<span class="here">${S.name}</span>` : `<button data-go="subject">${S.name}</button>`);
+  if (view === "mails") parts.push(`<span class="sep">/</span><span class="here">Mails</span>`);
+  else if (view !== "home" && S) parts.push(`<span class="sep">/</span>`, view === "subject" ? `<span class="here">${S.name}</span>` : `<button data-go="subject">${S.name}</button>`);
   if (view === "quiz") parts.push(`<span class="sep">/</span><span class="here">${sim ? sim.label : fmtName(fmt)}</span>`);
   if (view === "result") parts.push(`<span class="sep">/</span><span class="here">Bilan</span>`);
   c.innerHTML = parts.join("");
@@ -2134,6 +2142,7 @@ function renderView(){
     if (S) flush(S); go(b.dataset.go);
   });
   if (view === "home") renderHome();
+  if (view === "mails" && typeof mailOnHome === "function") mailOnHome();
   if (view === "subject") renderSubject();
 }
 
@@ -2159,8 +2168,8 @@ function renderHome(){
     + `<button class="subj mod-add" id="modAdd"><div class="ico">+</div><h3>${MODS && MODS.size ? "Gérer mes modules" : "Ajouter un module"}</h3></button>`;
   $("modAdd").onclick = () => { modPanelOpen = !modPanelOpen; renderHome(); if (modPanelOpen) $("modPanelBox").scrollIntoView({behavior: "smooth", block: "center"}); };
   $("homeEmptyBtn").onclick = () => { modPanelOpen = true; renderHome(); };
-  const mc = $("subjects").querySelector("[data-mod-open]"); if (mc) mc.onclick = () => $("mailBox").scrollIntoView({behavior: "smooth", block: "start"});
-  if (typeof mailOnHome === "function") mailOnHome(); else $("mailBox").classList.add("hidden");
+  const mc = $("subjects").querySelector("[data-mod-open]"); if (mc) mc.onclick = () => go("mails");
+  if (typeof mailOnHome === "function") mailOnHome();
   $("subjects").querySelectorAll(".subj[data-s]").forEach(b => b.onclick = () => {
     const x = SUBJECTS[b.dataset.s]; if (!fmtList(x).length) return;
     S = x; fmt = S.fmt; go("subject");
@@ -3105,7 +3114,7 @@ let routeRestoring = false;
 function saveRoute(){ if (routeRestoring) return; try { localStorage.setItem("qcm-route", JSON.stringify({v: view, s: S ? S.id : null, at: Date.now()})); } catch(e) {} }
 function restoreRoute(){
   let r = null; try { r = JSON.parse(localStorage.getItem("qcm-route") || "null"); } catch(e) {}
-  if (!r || !r.s || !SUBJECTS[r.s] || r.v === "home") return;
+  if (!r || !r.s || !SUBJECTS[r.s] || r.v === "home" || r.v === "mails") return;
   if (Date.now() - (r.at || 0) > 12 * 3600e3) return; // trop ancien : on repart de l'accueil
   const x = SUBJECTS[r.s]; if (!fmtList(x).length) return;
   routeRestoring = true;
@@ -4193,8 +4202,8 @@ function mailBoxHtml(){
         ${MAIL_UI.hide === m.id ? mailHideHtml(m) : ""}</li>`).join("")}</ul>`
     : `<p class="small muted">Aucun mail à afficher ces ${r.days} derniers jours.</p>`;
   return `<div class="mail-head"><span class="small muted">${boxes.map(x => esc(x.who || x.name)).join(" · ")}${at ? " · lu à " + new Date(at).toLocaleTimeString("fr-FR", {hour: "2-digit", minute: "2-digit"}) : ""}</span>
-      <button class="btn ghost small" id="mailRefresh">${loading ? "..." : "Actualiser"}</button>
-      <button class="btn ghost small" id="mailRulesBtn">Mes règles</button></div>
+      <button class="mail-ico${loading ? " spin" : ""}" id="mailRefresh" title="Actualiser" aria-label="Actualiser"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
+      <button class="mail-ico${MAIL_UI.open ? " on" : ""}" id="mailRulesBtn" title="Mes règles" aria-label="Mes règles"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button></div>
     ${errs}
     ${MAIL_UI.open ? mailRulesHtml(r) : ""}
     ${list}`;
@@ -4233,7 +4242,7 @@ function mailRender(){
   box.classList.toggle("hidden", !on); if (!on) return;
   $("mailBody").innerHTML = mailBoxHtml();
   const card = document.querySelector("#subjects [data-mod-open]");
-  if (card && typeof mailsCard === "function") { card.outerHTML = mailsCard(); const c2 = document.querySelector("#subjects [data-mod-open]"); if (c2) c2.onclick = () => box.scrollIntoView({behavior: "smooth", block: "start"}); }
+  if (card && typeof mailsCard === "function") { card.outerHTML = mailsCard(); const c2 = document.querySelector("#subjects [data-mod-open]"); if (c2) c2.onclick = () => go("mails"); }
   const n = mailImportant().length, badge = $("mailCount");
   if (badge) { badge.textContent = n; badge.classList.toggle("hidden", !n); }
   const q = id => $("mailBody").querySelector("#" + id);
@@ -4273,9 +4282,9 @@ async function mailOnHome(){
   try { await mailApp(); } catch(e) { OUTLOOK.err = mailErrText(e); }
   if (OUTLOOK.account && Date.now() - OUTLOOK.at > 5 * 60e3) mailFetch(false); else mailRender();
 }
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && typeof view !== "undefined" && view === "home") mailOnHome(); });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && typeof view !== "undefined" && (view === "home" || view === "mails")) mailOnHome(); });
 // ce fichier est exécuté après le premier affichage : on remplit la boîte maintenant
-if (typeof view !== "undefined" && view === "home") mailOnHome();
+if (typeof view !== "undefined" && (view === "home" || view === "mails")) mailOnHome();
 
 </script>
 <script>if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));</script>

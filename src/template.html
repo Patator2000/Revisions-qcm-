@@ -386,7 +386,10 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 .subjects.compact .subj .meter{margin-top:12px}
 .mail-box{margin:0 0 22px}.mail-title{display:flex;align-items:center;gap:8px;font-weight:700;margin-bottom:8px}
 .mail-count{background:var(--mails);color:#fff;border-radius:20px;font-size:.75em;padding:1px 8px}
-.mail-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}.mail-head>span{margin-right:auto}
+.mail-head{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:8px}.mail-head>span{margin-right:auto}
+.mail-ico{border:0;background:none;color:var(--muted);width:32px;height:32px;border-radius:50%;display:grid;place-items:center;cursor:pointer;padding:0}
+.mail-ico:hover,.mail-ico.on{background:var(--surface2);color:var(--ink)}.mail-ico svg{width:17px;height:17px}
+.mail-ico.spin svg{animation:mailspin .9s linear infinite}@keyframes mailspin{to{transform:rotate(360deg)}}
 .mail-empty{padding:6px 0}.mail-empty p{margin:0 0 10px;color:var(--muted)}.mail-err{color:var(--ko)}
 .mail-list{list-style:none;margin:0;padding:0}
 .mail-it{border-top:1px solid var(--line);padding:10px 0}.mail-row{display:flex;gap:10px;align-items:flex-start}
@@ -423,7 +426,6 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
   <div class="card home-empty hidden" id="homeEmpty"><b>Ton tableau de bord est vide.</b><button class="btn primary" id="homeEmptyBtn">Ajouter un module</button></div>
   <div id="modPanelBox"></div>
   <div class="subjects compact" id="subjects"></div>
-  <div class="card mail-box hidden" id="mailBox"><div class="mail-title"><span>Boîte de notifications</span><span class="mail-count hidden" id="mailCount"></span></div><div id="mailBody"></div></div>
   <h2 class="home-h2" id="dashH2">Révisions</h2>
   <div class="dash" id="dash"></div>
   <details class="sync"><summary>Synchroniser avec l'autre version</summary>
@@ -432,6 +434,11 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
     <textarea id="syncArea" class="hidden" rows="3" style="width:100%;margin-top:8px;font-size:.8em" placeholder="Colle ici le code copié dans l'autre version"></textarea>
     <div class="row hidden" id="syncRow" style="margin-top:6px"><button class="btn small" id="syncImport">Importer et fusionner</button></div>
   </details>
+</section>
+
+<!-- Mails : notifications -->
+<section id="v-mails" class="hidden">
+  <div class="card mail-box" id="mailBox"><div class="mail-title"><span>Notifs</span><span class="mail-count hidden" id="mailCount"></span></div><div id="mailBody"></div></div>
 </section>
 
 <!-- Matière : progression + choix des thèmes -->

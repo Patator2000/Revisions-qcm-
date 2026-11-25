@@ -301,8 +301,8 @@ function mailBoxHtml(){
         ${MAIL_UI.hide === m.id ? mailHideHtml(m) : ""}</li>`).join("")}</ul>`
     : `<p class="small muted">Aucun mail à afficher ces ${r.days} derniers jours.</p>`;
   return `<div class="mail-head"><span class="small muted">${boxes.map(x => esc(x.who || x.name)).join(" · ")}${at ? " · lu à " + new Date(at).toLocaleTimeString("fr-FR", {hour: "2-digit", minute: "2-digit"}) : ""}</span>
-      <button class="btn ghost small" id="mailRefresh">${loading ? "..." : "Actualiser"}</button>
-      <button class="btn ghost small" id="mailRulesBtn">Mes règles</button></div>
+      <button class="mail-ico${loading ? " spin" : ""}" id="mailRefresh" title="Actualiser" aria-label="Actualiser"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
+      <button class="mail-ico${MAIL_UI.open ? " on" : ""}" id="mailRulesBtn" title="Mes règles" aria-label="Mes règles"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button></div>
     ${errs}
     ${MAIL_UI.open ? mailRulesHtml(r) : ""}
     ${list}`;
@@ -341,7 +341,7 @@ function mailRender(){
   box.classList.toggle("hidden", !on); if (!on) return;
   $("mailBody").innerHTML = mailBoxHtml();
   const card = document.querySelector("#subjects [data-mod-open]");
-  if (card && typeof mailsCard === "function") { card.outerHTML = mailsCard(); const c2 = document.querySelector("#subjects [data-mod-open]"); if (c2) c2.onclick = () => box.scrollIntoView({behavior: "smooth", block: "start"}); }
+  if (card && typeof mailsCard === "function") { card.outerHTML = mailsCard(); const c2 = document.querySelector("#subjects [data-mod-open]"); if (c2) c2.onclick = () => go("mails"); }
   const n = mailImportant().length, badge = $("mailCount");
   if (badge) { badge.textContent = n; badge.classList.toggle("hidden", !n); }
   const q = id => $("mailBody").querySelector("#" + id);
@@ -381,6 +381,6 @@ async function mailOnHome(){
   try { await mailApp(); } catch(e) { OUTLOOK.err = mailErrText(e); }
   if (OUTLOOK.account && Date.now() - OUTLOOK.at > 5 * 60e3) mailFetch(false); else mailRender();
 }
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && typeof view !== "undefined" && view === "home") mailOnHome(); });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && typeof view !== "undefined" && (view === "home" || view === "mails")) mailOnHome(); });
 // ce fichier est exécuté après le premier affichage : on remplit la boîte maintenant
-if (typeof view !== "undefined" && view === "home") mailOnHome();
+if (typeof view !== "undefined" && (view === "home" || view === "mails")) mailOnHome();

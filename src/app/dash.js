@@ -229,7 +229,7 @@ let routeRestoring = false;
 function saveRoute(){ if (routeRestoring) return; try { localStorage.setItem("qcm-route", JSON.stringify({v: view, s: S ? S.id : null, at: Date.now()})); } catch(e) {} }
 function restoreRoute(){
   let r = null; try { r = JSON.parse(localStorage.getItem("qcm-route") || "null"); } catch(e) {}
-  if (!r || !r.s || !SUBJECTS[r.s] || r.v === "home") return;
+  if (!r || !r.s || !SUBJECTS[r.s] || r.v === "home" || r.v === "mails") return;
   if (Date.now() - (r.at || 0) > 12 * 3600e3) return; // trop ancien : on repart de l'accueil
   const x = SUBJECTS[r.s]; if (!fmtList(x).length) return;
   routeRestoring = true;

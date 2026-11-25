@@ -185,10 +185,11 @@ async function flush(Sx){
 // ================= Navigation =================
 function go(v){ view = v; renderView(); window.scrollTo(0,0); saveRoute(); }
 function renderView(){
-  ["home","subject","quiz","result"].forEach(v => $("v-"+v).classList.toggle("hidden", v !== view));
+  ["home","mails","subject","quiz","result"].forEach(v => $("v-"+v).classList.toggle("hidden", v !== view));
   const c = $("crumb");
   const parts = [`<button data-go="home">Tableau de bord</button>`];
-  if (view !== "home" && S) parts.push(`<span class="sep">/</span>`, view === "subject" ? `<span class="here">${S.name}</span>` : `<button data-go="subject">${S.name}</button>`);
+  if (view === "mails") parts.push(`<span class="sep">/</span><span class="here">Mails</span>`);
+  else if (view !== "home" && S) parts.push(`<span class="sep">/</span>`, view === "subject" ? `<span class="here">${S.name}</span>` : `<button data-go="subject">${S.name}</button>`);
   if (view === "quiz") parts.push(`<span class="sep">/</span><span class="here">${sim ? sim.label : fmtName(fmt)}</span>`);
   if (view === "result") parts.push(`<span class="sep">/</span><span class="here">Bilan</span>`);
   c.innerHTML = parts.join("");
@@ -197,6 +198,7 @@ function renderView(){
     if (S) flush(S); go(b.dataset.go);
   });
   if (view === "home") renderHome();
+  if (view === "mails" && typeof mailOnHome === "function") mailOnHome();
   if (view === "subject") renderSubject();
 }
 
@@ -222,8 +224,8 @@ function renderHome(){
     + `<button class="subj mod-add" id="modAdd"><div class="ico">+</div><h3>${MODS && MODS.size ? "Gérer mes modules" : "Ajouter un module"}</h3></button>`;
   $("modAdd").onclick = () => { modPanelOpen = !modPanelOpen; renderHome(); if (modPanelOpen) $("modPanelBox").scrollIntoView({behavior: "smooth", block: "center"}); };
   $("homeEmptyBtn").onclick = () => { modPanelOpen = true; renderHome(); };
-  const mc = $("subjects").querySelector("[data-mod-open]"); if (mc) mc.onclick = () => $("mailBox").scrollIntoView({behavior: "smooth", block: "start"});
-  if (typeof mailOnHome === "function") mailOnHome(); else $("mailBox").classList.add("hidden");
+  const mc = $("subjects").querySelector("[data-mod-open]"); if (mc) mc.onclick = () => go("mails");
+  if (typeof mailOnHome === "function") mailOnHome();
   $("subjects").querySelectorAll(".subj[data-s]").forEach(b => b.onclick = () => {
     const x = SUBJECTS[b.dataset.s]; if (!fmtList(x).length) return;
     S = x; fmt = S.fmt; go("subject");
