@@ -15,6 +15,8 @@ SUPA_URL = "https://eempregmkymltwgzrofl.supabase.co"
 SUPA_KEY = "sb_publishable_4A1YYev7-Qmgbl_aRV7CIQ_Gxq267_N"
 # Appli Kinésis inscrite chez Microsoft (identifiant public, pas un secret) : module Mails / Outlook
 OUTLOOK_CLIENT_ID = ""
+# Appli Kinésis inscrite chez Google (identifiant public, pas un secret) : module Mails / Gmail
+GOOGLE_CLIENT_ID = ""
 
 DATA = ["anatomie.js", "physiologie.js", "physiologie_examen.js", "physiologie_examen_2.js", "physiologie_complements.js"]
 DATA_LIBRE = ["natation.js"]
@@ -53,7 +55,7 @@ site = site.replace(
     'const MIC_MSG = "Micro bloqué : claude.ai n\'autorise pas le micro dans ses pages publiées. Utilise la version « micro » à ouvrir dans Chrome, ou réponds au clavier (V, F, N, A à E, P, Entrée).";',
     'const MIC_MSG = "Micro refusé par le navigateur : touche l\'icône de cadenas (ou de réglages) à gauche de l\'adresse, autorise le micro, puis recharge la page. En attendant, réponds au clavier (V, F, N, A à E, P, Entrée).";')
 assert "Micro refusé" in site
-cfg = f'window.SUPA_URL = "{SUPA_URL}";\nwindow.SUPA_KEY = "{SUPA_KEY}";\nwindow.OUTLOOK_CLIENT_ID = "{OUTLOOK_CLIENT_ID}";\n'
+cfg = f'window.SUPA_URL = "{SUPA_URL}";\nwindow.SUPA_KEY = "{SUPA_KEY}";\nwindow.OUTLOOK_CLIENT_ID = "{OUTLOOK_CLIENT_ID}";\nwindow.GOOGLE_CLIENT_ID = "{GOOGLE_CLIENT_ID}";\n'
 j = site.index("<script>") + len("<script>")
 site = site[:j] + "\n" + cfg + site[j:]
 site = site.replace("<script>", '<script src="vendor/supabase.js"></script>\n<script>', 1)

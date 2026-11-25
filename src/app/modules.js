@@ -2,7 +2,7 @@
 // Chaque profil choisit ses modules : les matières de révision et les mails.
 // Un profil neuf n'en a aucun. Le choix est gardé sur l'appareil et, avec un profil, dans Supabase (profiles.modules).
 const MODULE_EXTRA = {
-  mails: {id: "mails", name: "Mails", desc: "Les mails importants de tes boîtes (Outlook pour commencer), triés par tes règles, dans une boîte de notifications.",
+  mails: {id: "mails", name: "Mails", desc: "Les mails importants de tes boîtes (Gmail, Outlook), triés par tes règles, dans une boîte de notifications.",
     icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>'}
 };
 function moduleList(){
@@ -40,12 +40,13 @@ function bindModulesPanel(root){
   const x = root.querySelector("#modClose"); if (x) x.onclick = () => { modPanelOpen = false; renderView(); };
 }
 let modPanelOpen = false;
-// Bloc « Mails » sur le tableau de bord (branché à Outlook à l'étape suivante)
+// Bloc « Mails » sur le tableau de bord
 function mailsCard(){
-  const ok = typeof OUTLOOK !== "undefined" && OUTLOOK && OUTLOOK.account, n = ok && typeof mailImportant === "function" ? mailImportant().length : 0;
+  const bx = typeof mailBoxes === "function" && typeof GMAIL !== "undefined" && GMAIL ? mailBoxes() : [], ok = bx.length > 0;
+  const n = ok ? mailImportant().length : 0, names = bx.map(x => x.name).join(" + ");
   return `<button class="subj" data-mod-open="mails" style="--c:var(--mails);--cs:var(--mails-soft)">
     <div class="ico">${MODULE_EXTRA.mails.icon}</div>
-    <h3>Mails</h3><p>${ok ? "Outlook connecté : les mails qui comptent sont dans ta boîte de notifications." : "Connecte ta boîte Outlook : les mails qui comptent s'afficheront dans ta boîte de notifications."}</p>
-    <div class="foot"><span>${ok ? "Outlook" : "aucune boîte"}</span><span>${ok ? n + " à voir" : "à connecter"}</span></div>
+    <h3>Mails</h3><p>${ok ? names + " connecté : les mails qui comptent sont dans ta boîte de notifications." : "Connecte ta boîte mail : les mails qui comptent s'afficheront dans ta boîte de notifications."}</p>
+    <div class="foot"><span>${ok ? names : "aucune boîte"}</span><span>${ok ? n + " à voir" : "à connecter"}</span></div>
   </button>`;
 }
