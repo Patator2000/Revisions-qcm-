@@ -287,7 +287,7 @@ function planData(){
       const d = daysTo(t.date); if (d < 0) continue;
       const all = Object.keys(x.THEMES), th = new Set(t.themes === "all" ? all : t.themes.filter(z => all.includes(z)));
       let total = 0, m = 0, need = 0;
-      for (const f of (t.fmt ? [t.fmt] : fmtList(x))) x.F[f].forEach((q, i) => {
+      for (const f of fmtList(x)) x.F[f].forEach((q, i) => { // tous les formats : vrai/faux, QCM et questions ouvertes préparent tous à l'examen
         if (!th.has(q[1]) || qLocked(q)) return;
         total++; const l = levelK(x, x.K[f][i]);
         if (l !== null && l >= 4) m++; else need += (4 - (l || 0)) * 1.25;
