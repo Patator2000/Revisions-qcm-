@@ -220,9 +220,7 @@ function renderHome(){
       <div class="foot"><span>${sm.total} questions</span><span>${storeReady ? `${pct} % maîtrisé` : "..."}</span></div>
 ` : ""}
     </button>`;
-  }).join("") + (modOn("mails") ? mailsCard() : "")
-    + `<button class="subj mod-add" id="modAdd"><div class="ico">+</div><h3>${MODS && MODS.size ? "Gérer mes modules" : "Ajouter un module"}</h3></button>`;
-  $("modAdd").onclick = () => { modPanelOpen = !modPanelOpen; renderHome(); if (modPanelOpen) $("modPanelBox").scrollIntoView({behavior: "smooth", block: "center"}); };
+  }).join("") + (modOn("mails") ? mailsCard() : "");
   $("homeEmptyBtn").onclick = () => { modPanelOpen = true; renderHome(); };
   const mc = $("subjects").querySelector("[data-mod-open]"); if (mc) mc.onclick = () => go("mails");
   if (typeof mailOnHome === "function") mailOnHome();
