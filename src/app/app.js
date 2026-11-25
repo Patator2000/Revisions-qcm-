@@ -205,6 +205,7 @@ function renderView(){
 // ================= Accueil =================
 function renderHome(){
   try { renderDash(); } catch(e) { console.warn("dash", e); }
+  if (typeof renderPlan === "function") renderPlan();
   const mine = Object.values(SUBJECTS).filter(x => fmtList(x).length && modOn(x.id));
   $("homeEmpty").classList.toggle("hidden", mine.length > 0 || modOn("mails"));
   $("dash").classList.toggle("hidden", !mine.length); $("dashH2").classList.toggle("hidden", !mine.length);

@@ -273,6 +273,12 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 #v-home h1{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:18px}
 .dash-date{display:inline-block;font-size:.5em;font-weight:500;color:var(--muted)}.dash-date::first-letter{text-transform:uppercase}
 .settings .set .lbl>span{display:none}
+.plan{padding:16px 18px}.plan-t{font-weight:700;margin-bottom:4px}
+.plan-row{display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}.plan-row:first-of-type{border-top:0}
+.plan-h{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}.plan-d{font-size:.82em;color:var(--muted)}
+.plan-bar{grid-column:1;height:8px;border-radius:8px;background:var(--cs, var(--surface2));overflow:hidden}.plan-bar i{display:block;height:100%;background:var(--c, var(--accent));border-radius:8px}
+.plan-f{grid-column:1;display:flex;justify-content:space-between;gap:10px;font-size:.82em;color:var(--muted);flex-wrap:wrap}
+.plan-row .btn{grid-column:2;grid-row:1 / span 3}
 .dash-empty{position:relative}.dash-empty::after{content:"";position:absolute;inset:0;display:grid;place-items:center;font-size:.85rem;color:var(--muted);text-align:center;padding:0 20px}
 .home-h2{font-size:1.05rem;margin:26px 0 12px;color:var(--muted);font-weight:600;letter-spacing:.02em}
 .dash{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
@@ -432,6 +438,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
   <div class="card home-empty hidden" id="homeEmpty"><b>Ton tableau de bord est vide.</b><button class="btn primary" id="homeEmptyBtn">Ajouter un module</button></div>
   <div id="modPanelBox"></div>
   <div class="subjects compact" id="subjects"></div>
+  <div id="plan"></div>
   <h2 class="home-h2" id="dashH2">Révisions</h2>
   <div class="dash" id="dash"></div>
   <details class="sync" hidden><summary>Synchroniser avec l'autre version</summary>
@@ -2150,6 +2157,7 @@ function renderView(){
 // ================= Accueil =================
 function renderHome(){
   try { renderDash(); } catch(e) { console.warn("dash", e); }
+  if (typeof renderPlan === "function") renderPlan();
   const mine = Object.values(SUBJECTS).filter(x => fmtList(x).length && modOn(x.id));
   $("homeEmpty").classList.toggle("hidden", mine.length > 0 || modOn("mails"));
   $("dash").classList.toggle("hidden", !mine.length); $("dashH2").classList.toggle("hidden", !mine.length);
@@ -3158,6 +3166,60 @@ function dashTips(root){
   root.addEventListener("mouseleave", hide);
   root.addEventListener("touchstart", e => { const el = find(e.target); if (!el) return hide(); at(e, el); clearTimeout(hideT); hideT = setTimeout(hide, 2500); }, {passive: true});
   root.addEventListener("touchmove", e => { const el = find(e.target); if (el) at(e, el); }, {passive: true});
+}
+
+// ================= Plan de révision =================
+// Pour chaque examen daté à venir : ce qu'il reste à maîtriser, réparti sur les jours qui restent (la veille est gardée pour une simulation).
+// Une question est maîtrisée au niveau 4 : il faut environ 4 bonnes réponses, plus une marge pour les erreurs.
+function planData(){
+  const today = dayKey(), out = [];
+  for (const x of Object.values(SUBJECTS)) {
+    if (!fmtList(x).length || !modOn(x.id) || !x.TARGETS) continue;
+    for (const t of x.TARGETS) {
+      if (!t.date) continue;
+      const d = daysTo(t.date); if (d < 0) continue;
+      const all = Object.keys(x.THEMES), th = new Set(t.themes === "all" ? all : t.themes.filter(z => all.includes(z)));
+      let total = 0, m = 0, need = 0;
+      for (const f of (t.fmt ? [t.fmt] : fmtList(x))) x.F[f].forEach((q, i) => {
+        if (!th.has(q[1]) || qLocked(q)) return;
+        total++; const l = levelK(x, x.K[f][i]);
+        if (l !== null && l >= 4) m++; else need += (4 - (l || 0)) * 1.25;
+      });
+      if (!total) continue;
+      const h = (x.mem._h || {})[today] || {}, doneToday = h.a || 0;
+      const days = Math.max(1, d - 1); // la veille : simulation
+      const goal = need ? Math.ceil((need + doneToday) / days) : 0;
+      out.push({x, t, d, total, m, left: total - m, goal, doneToday, themes: [...th]});
+    }
+  }
+  return out.sort((a, b) => a.d - b.d);
+}
+function planHtml(P){
+  if (!P.length) return "";
+  const day = d => new Date(d + "T08:00:00").toLocaleDateString("fr-FR", {weekday: "short", day: "numeric", month: "short"});
+  const rows = P.map((p, n) => {
+    const pct = Math.round(p.m / p.total * 100), todayPct = p.goal ? Math.min(100, Math.round(p.doneToday / p.goal * 100)) : 100;
+    const msg = !p.left ? "Tout est maîtrisé : garde le rythme avec une simulation."
+      : p.d <= 1 ? (p.d === 0 ? "C'est aujourd'hui." : "Demain : fais une simulation et revois tes erreurs.")
+      : `${p.doneToday} / ${p.goal} réponses aujourd'hui`;
+    return `<div class="plan-row" style="--c:var(--${p.x.id});--cs:var(--${p.x.id}-soft)">
+      <div class="plan-h"><b>${esc(p.t.label)} ${esc(p.x.name.toLowerCase())}</b><span class="plan-d">${day(p.t.date)} · ${p.d === 0 ? "aujourd'hui" : "J-" + p.d}</span></div>
+      <div class="plan-bar" title="Réponses du jour"><i style="width:${todayPct}%"></i></div>
+      <div class="plan-f"><span>${msg}</span><span>${p.left} à maîtriser · ${pct} %</span></div>
+      <button class="btn small${todayPct >= 100 ? " ghost" : " primary"}" data-plan="${n}">${todayPct >= 100 && p.left ? "Continuer" : "Réviser"}</button>
+    </div>`;
+  }).join("");
+  return `<div class="card plan"><div class="plan-t">Objectif du jour</div>${rows}</div>`;
+}
+function renderPlan(){
+  const box = $("plan"); if (!box) return;
+  let P = []; try { P = planData(); } catch(e) { console.warn("plan", e); }
+  box.innerHTML = planHtml(P);
+  box.querySelectorAll("[data-plan]").forEach(b => b.onclick = () => {
+    const p = P[+b.dataset.plan]; S = p.x; S.target = p.t.id; S.sel = new Set(p.themes);
+    if (p.t.fmt) fmt = S.fmt = p.t.fmt; else fmt = S.fmt;
+    go("subject");
+  });
 }
 
 // ================= Modules du profil =================

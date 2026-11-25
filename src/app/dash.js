@@ -274,3 +274,57 @@ function dashTips(root){
   root.addEventListener("touchstart", e => { const el = find(e.target); if (!el) return hide(); at(e, el); clearTimeout(hideT); hideT = setTimeout(hide, 2500); }, {passive: true});
   root.addEventListener("touchmove", e => { const el = find(e.target); if (el) at(e, el); }, {passive: true});
 }
+
+// ================= Plan de révision =================
+// Pour chaque examen daté à venir : ce qu'il reste à maîtriser, réparti sur les jours qui restent (la veille est gardée pour une simulation).
+// Une question est maîtrisée au niveau 4 : il faut environ 4 bonnes réponses, plus une marge pour les erreurs.
+function planData(){
+  const today = dayKey(), out = [];
+  for (const x of Object.values(SUBJECTS)) {
+    if (!fmtList(x).length || !modOn(x.id) || !x.TARGETS) continue;
+    for (const t of x.TARGETS) {
+      if (!t.date) continue;
+      const d = daysTo(t.date); if (d < 0) continue;
+      const all = Object.keys(x.THEMES), th = new Set(t.themes === "all" ? all : t.themes.filter(z => all.includes(z)));
+      let total = 0, m = 0, need = 0;
+      for (const f of (t.fmt ? [t.fmt] : fmtList(x))) x.F[f].forEach((q, i) => {
+        if (!th.has(q[1]) || qLocked(q)) return;
+        total++; const l = levelK(x, x.K[f][i]);
+        if (l !== null && l >= 4) m++; else need += (4 - (l || 0)) * 1.25;
+      });
+      if (!total) continue;
+      const h = (x.mem._h || {})[today] || {}, doneToday = h.a || 0;
+      const days = Math.max(1, d - 1); // la veille : simulation
+      const goal = need ? Math.ceil((need + doneToday) / days) : 0;
+      out.push({x, t, d, total, m, left: total - m, goal, doneToday, themes: [...th]});
+    }
+  }
+  return out.sort((a, b) => a.d - b.d);
+}
+function planHtml(P){
+  if (!P.length) return "";
+  const day = d => new Date(d + "T08:00:00").toLocaleDateString("fr-FR", {weekday: "short", day: "numeric", month: "short"});
+  const rows = P.map((p, n) => {
+    const pct = Math.round(p.m / p.total * 100), todayPct = p.goal ? Math.min(100, Math.round(p.doneToday / p.goal * 100)) : 100;
+    const msg = !p.left ? "Tout est maîtrisé : garde le rythme avec une simulation."
+      : p.d <= 1 ? (p.d === 0 ? "C'est aujourd'hui." : "Demain : fais une simulation et revois tes erreurs.")
+      : `${p.doneToday} / ${p.goal} réponses aujourd'hui`;
+    return `<div class="plan-row" style="--c:var(--${p.x.id});--cs:var(--${p.x.id}-soft)">
+      <div class="plan-h"><b>${esc(p.t.label)} ${esc(p.x.name.toLowerCase())}</b><span class="plan-d">${day(p.t.date)} · ${p.d === 0 ? "aujourd'hui" : "J-" + p.d}</span></div>
+      <div class="plan-bar" title="Réponses du jour"><i style="width:${todayPct}%"></i></div>
+      <div class="plan-f"><span>${msg}</span><span>${p.left} à maîtriser · ${pct} %</span></div>
+      <button class="btn small${todayPct >= 100 ? " ghost" : " primary"}" data-plan="${n}">${todayPct >= 100 && p.left ? "Continuer" : "Réviser"}</button>
+    </div>`;
+  }).join("");
+  return `<div class="card plan"><div class="plan-t">Objectif du jour</div>${rows}</div>`;
+}
+function renderPlan(){
+  const box = $("plan"); if (!box) return;
+  let P = []; try { P = planData(); } catch(e) { console.warn("plan", e); }
+  box.innerHTML = planHtml(P);
+  box.querySelectorAll("[data-plan]").forEach(b => b.onclick = () => {
+    const p = P[+b.dataset.plan]; S = p.x; S.target = p.t.id; S.sel = new Set(p.themes);
+    if (p.t.fmt) fmt = S.fmt = p.t.fmt; else fmt = S.fmt;
+    go("subject");
+  });
+}
