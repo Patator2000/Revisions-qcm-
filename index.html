@@ -398,6 +398,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 .mail-it.imp{border-left:3px solid var(--mails);padding-left:9px}
 .mail-btns{display:flex;flex-direction:column;gap:6px;flex:none}
 .mail-hidebox{background:var(--surface2);border-radius:10px;padding:10px 12px;margin-top:8px}.mail-hidebox p{margin:0 0 6px}
+.mail-hideword{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:6px}.mail-hideword input{font:inherit;font-size:.9em;padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);width:150px}
 .mail-hideopts{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}.mail-hideopts .btn{text-align:left;border:1px solid var(--line);background:var(--surface)}
 .mail-a{flex:1;min-width:0;color:inherit;text-decoration:none;display:flex;flex-direction:column;gap:2px}
 .mail-top{display:flex;gap:8px}.mail-top b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mail-t{margin-left:auto;font-size:.8em;color:var(--muted);flex:none}
@@ -3923,6 +3924,11 @@ function mailRulesSave(r){
 function mailSeen(){ try { return new Set(JSON.parse(localStorage.getItem("kinesis-mail-vus-" + mailUserKey())) || []); } catch(e) { return new Set(); } }
 function mailSeenAdd(id){ const s = mailSeen(); s.add(id); try { localStorage.setItem("kinesis-mail-vus-" + mailUserKey(), JSON.stringify([...s].slice(-500))); } catch(e) {} }
 
+function mailWordIn(word, txt){ return new RegExp("(^|[^\\p{L}])" + word.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "u").test(txt); }
+function mailKeyword(m, r){
+  const txt = ((m.subject || "") + " " + (m.bodyPreview || "")).toLowerCase();
+  return (r.keywords || []).find(x => x && mailWordIn(x, txt)) || null;
+}
 // Pourquoi un mail est important (null s'il ne l'est pas)
 function mailWhy(m, r){
   const from = ((m.from && m.from.emailAddress && m.from.emailAddress.address) || "").toLowerCase();
@@ -3930,7 +3936,7 @@ function mailWhy(m, r){
   const txt = ((m.subject || "") + " " + (m.bodyPreview || "")).toLowerCase();
   const s = (r.senders || []).find(x => x && (from.endsWith(x.toLowerCase()) || from === x.toLowerCase() || name.includes(x.toLowerCase())));
   if (s) return "expéditeur : " + s;
-  const k = (r.keywords || []).find(x => x && new RegExp("(^|[^\\p{L}])" + x.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "u").test(txt)); // début de mot : « note » trouve aussi « notes »
+  const k = mailKeyword(m, r); // début de mot : « note » trouve aussi « notes »
   if (k) return "mot-clé : " + k;
   if (r.importance && m.importance === "high") return "marqué important";
   return null;
@@ -3949,15 +3955,18 @@ function mailType(m){
   const dom = addr.split("@")[1] || "", common = MAIL_COMMON.includes(dom);
   const auto = /^(no-?reply|ne-?pas-?repondre|newsletter|news|info|infos|notification|notifications|marketing|contact|hello|bonjour|mailer|bounce)/.test(addr);
   let kind;
-  if (m.list || auto) kind = m.list ? "envoi automatique à une liste (newsletter, liste de diffusion)" : "envoi automatique (adresse qui n'attend pas de réponse)";
+  if (m.listId) kind = "envoi groupé à la liste « " + m.listId.split(".")[0] + " » (" + m.listId.split(".").slice(1).join(".") + "), que reçoivent tous les inscrits et pas seulement toi";
+  else if (m.list || auto) kind = m.list ? "envoi automatique à une liste (newsletter, liste de diffusion)" : "envoi automatique (adresse qui n'attend pas de réponse)";
   else kind = common ? "mail d'une personne (adresse perso)" : "mail d'une personne ou d'un service de " + dom;
-  return {addr, dom, common, cat: m.cat || "", kind};
+  return {addr, dom, common, cat: m.cat || "", kind, listId: (m.listId || "").toLowerCase()};
 }
 function mailHiddenBy(m, r){
   const t = mailType(m);
   return (r.hidden || []).find(h => {
     h = String(h).toLowerCase().trim(); if (!h) return false;
     if (h.startsWith("catégorie:")) return t.cat && h.slice(10) === t.cat;
+    if (h.startsWith("liste:")) return t.listId && h.slice(6) === t.listId && !mailKeyword(m, r); // un mot-clé important passe quand même
+    if (h.startsWith("objet:")) return mailWordIn(h.slice(6).trim(), (m.subject || "").toLowerCase());
     if (h.startsWith("@")) return t.dom === h.slice(1) || t.dom.endsWith("." + h.slice(1));
     return t.addr === h;
   }) || null;
@@ -4127,7 +4136,8 @@ async function gmFetch(interactive){
             receivedDateTime: new Date(+g.internalDate).toISOString(), bodyPreview: (g.snippet || "").replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">"),
             isRead: !(g.labelIds || []).includes("UNREAD"),
             cat: (((g.labelIds || []).find(l => /^CATEGORY_(PROMOTIONS|SOCIAL|UPDATES|FORUMS)$/.test(l)) || "").replace("CATEGORY_", "").toLowerCase()),
-            list: !!(gmHeader(h, "list-unsubscribe") || gmHeader(h, "list-id")), importance: imp === "high" || /^\s*1/.test(pri) ? "high" : "normal",
+            list: !!(gmHeader(h, "list-unsubscribe") || gmHeader(h, "list-id")),
+            listId: ((/<([^>]+)>/.exec(gmHeader(h, "list-id")) || [])[1] || "").toLowerCase(), importance: imp === "high" || /^\s*1/.test(pri) ? "high" : "normal",
             webLink: "https://mail.google.com/mail/?authuser=" + encodeURIComponent(GMAIL.email) + "#all/" + g.threadId});
         });
       }
@@ -4174,16 +4184,19 @@ function mailBoxHtml(){
     ${list}`;
 }
 function mailHideHtml(m){
-  const t = mailType(m), opts = [];
+  const t = mailType(m), opts = [], kw = (mailRulesLoad().keywords || []).slice(0, 4).join(", ");
+  if (t.listId) opts.push(["liste:" + t.listId, "Les envois groupés à la liste <b>« " + esc(t.listId.split(".")[0]) + " »</b>, sauf ceux qui contiennent un de tes mots-clés importants (" + esc(kw) + "...)"]);
   if (t.addr) opts.push([t.addr, "Tous les mails de <b>" + esc(t.addr) + "</b>"]);
   if (t.dom && !t.common && t.dom !== t.addr) opts.push(["@" + t.dom, "Tous les mails de <b>" + esc(t.dom) + "</b> (toutes les adresses de ce domaine)"]);
   if (t.cat && MAIL_CATS[t.cat]) opts.push(["catégorie:" + t.cat, "Toute la catégorie Gmail <b>" + esc(MAIL_CATS[t.cat]) + "</b>"]);
-  const warn = /(^|\.)univ-lyon1\.fr$/.test(t.dom) ? `<p class="small mail-err">Attention, ce mail vient de la fac : masquer le domaine cacherait aussi la scolarité.</p>` : "";
+  const warn = /(^|\.)univ-lyon1\.fr$/.test(t.dom) ? `<p class="small mail-err">Ce mail vient de la fac : ne masque pas tout le domaine, tu perdrais aussi la scolarité.${t.listId ? " Masquer la liste suffit." : ""}</p>` : "";
   return `<div class="mail-hidebox">
     <p class="small"><b>Type de ce mail :</b> ${esc(t.kind)}${t.cat && MAIL_CATS[t.cat] ? ", rangé par Gmail dans « " + esc(MAIL_CATS[t.cat]) + " »" : ""}.</p>${warn}
     <p class="small muted">Ne plus jamais afficher :</p>
     <div class="mail-hideopts">${opts.map(([v, l]) => `<button class="btn ghost small" data-hidev="${esc(v)}">${l}</button>`).join("")}
       <button class="btn ghost small" data-hidecancel>Annuler</button></div>
+    <div class="mail-hideword"><span class="small">ou les mails dont l'objet contient le mot</span>
+      <input id="mhWord" placeholder="conférence" autocomplete="off"><button class="btn ghost small" id="mhWordOk">Masquer</button></div>
     <p class="small muted">Tu pourras toujours revenir en arrière dans « Mes règles ».</p>
   </div>`;
 }
@@ -4193,7 +4206,7 @@ function mailRulesHtml(r){
       <textarea id="mrSenders" rows="3">${esc((r.senders || []).join("\n"))}</textarea></label>
     <label class="small"><b>Mots-clés</b> <span class="muted">(dans l'objet ou le début du mail ; un par ligne)</span>
       <textarea id="mrKeys" rows="4">${esc((r.keywords || []).join("\n"))}</textarea></label>
-    <label class="small"><b>Mails masqués</b> <span class="muted">(une adresse, @domaine ou catégorie:promotions par ligne ; efface une ligne pour les revoir)</span>
+    <label class="small"><b>Mails masqués</b> <span class="muted">(une par ligne : une adresse, @domaine, liste:nom, objet:mot ou catégorie:promotions ; efface une ligne pour revoir ces mails)</span>
       <textarea id="mrHidden" rows="3">${esc((r.hidden || []).join("\n"))}</textarea></label>
     <div class="set"><div class="lbl"><b>Mails marqués « importance haute »</b><span>Ceux que l'expéditeur a signalés comme importants.</span></div><button class="switch${r.importance ? " on" : ""}" id="mrImp"></button></div>
     <label class="small"><b>Période</b> <select id="mrDays">${[1, 3, 7, 14, 30].map(d => `<option value="${d}"${d === r.days ? " selected" : ""}>${d} jour${d > 1 ? "s" : ""}</option>`).join("")}</select></label>
@@ -4225,6 +4238,7 @@ function mailRender(){
   $("mailBody").querySelectorAll("[data-seen]").forEach(b => b.onclick = () => { mailSeenAdd(b.dataset.seen); mailRender(); });
   $("mailBody").querySelectorAll("[data-hide]").forEach(b => b.onclick = () => { MAIL_UI.hide = MAIL_UI.hide === b.dataset.hide ? null : b.dataset.hide; mailRender(); });
   $("mailBody").querySelectorAll("[data-hidev]").forEach(b => b.onclick = () => mailHide(b.dataset.hidev));
+  if (q("mhWordOk")) { const go = () => { const w = q("mhWord").value.trim(); if (w) mailHide("objet:" + w.toLowerCase()); }; q("mhWordOk").onclick = go; q("mhWord").onkeydown = e => { if (e.key === "Enter") go(); }; }
   $("mailBody").querySelectorAll("[data-hidecancel]").forEach(b => b.onclick = () => { MAIL_UI.hide = null; mailRender(); });
 }
 // Gmail d'abord : sa fenêtre éclair doit partir tout de suite après le clic
