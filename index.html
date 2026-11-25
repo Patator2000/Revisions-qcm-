@@ -1964,9 +1964,9 @@ const SUBJECTS = {
     exam: "3 CCI obligatoires (Partie A), 40 questions en 25 min chacun : CCI 1 au TD3 (CM et TD 1 à 3), CCI 2 au TD6 (1 à 6), CCI 3 au TD9 (1 à 9). CCI 2e chance facultatif au TD10 : 100 questions en 45 min sur tout le programme ; il remplace ta moins bonne note de CCI seulement s'il est meilleur.",
     TARGETS: [
       {id:"cci1", label:"CCI 1", date:"2026-10-05", desc:"CM et TD 1 à 3", themes:["Q1","Q2","Q3","T1","T2","T3","C1","C2","C3"], sim:{n:40, sec:1500}},
-      {id:"cci2", label:"CCI 2", date:"2026-11-02", desc:"CM et TD 1 à 6", themes:["Q1","Q2","Q3","Q4","Q5","Q6","T1","T2","T3","T4","T5","T6","C1","C2","C3","C4","C5","C6"], sim:{n:40, sec:1500}},
-      {id:"cci3", label:"CCI 3", date:"2026-11-23", desc:"CM et TD 1 à 9", themes:"all", sim:{n:40, sec:1500}},
-      {id:"second", label:"CCI 2e chance", date:"2026-12-07", desc:"tout le programme", themes:"all", sim:{n:100, sec:2700}}
+      {id:"cci2", label:"CCI 2", date:"2026-12-04", desc:"CM et TD 1 à 6", themes:["Q1","Q2","Q3","Q4","Q5","Q6","T1","T2","T3","T4","T5","T6","C1","C2","C3","C4","C5","C6"], sim:{n:40, sec:1500}},
+      {id:"cci3", label:"CCI 3", date:"", desc:"CM et TD 1 à 9", themes:"all", sim:{n:40, sec:1500}},
+      {id:"second", label:"CCI 2e chance", date:"", desc:"tout le programme", themes:"all", sim:{n:100, sec:2700}}
     ]
   },
   physio: {
@@ -1975,8 +1975,8 @@ const SUBJECTS = {
     FOCUS: [], doc: "qcm-physio-A", ls: "qcm-physio-A-progress-v1",
     RATE: {vf: 27, qcm: 60},
     TARGETS: [
-      {id:"ct", label:"CT (QCM)", desc:"QCM de 60 questions en 1 h sur tout le programme", fmt:"qcm", themes:"all", sim:{n:60, sec:3600}},
-      {id:"cp", label:"CP (écrit)", desc:"questions ouvertes sur tout ce qui a été vu jusqu'au CP", fmt:"open", themes:"all"}
+      {id:"ct", label:"CT (QCM)", desc:"QCM sur tout le programme", fmt:"qcm", themes:"all", sim:{n:60, sec:3600}},
+      {id:"cp", label:"CP (écrit)", date:"2026-12-04", desc:"questions ouvertes", fmt:"open", themes:"all"}
     ],
     exam: "CT : QCM de 60 questions en 1 h (60 % de la note). CP : écrit d'1 h aux TD7, questions ouvertes (40 %)."
   },
@@ -2257,7 +2257,8 @@ function renderTargets(){
   const t = S.TARGETS.find(x => x.id === S.target);
   if (!t) { $("targetInfo").textContent = ""; return; }
   let when = "";
-  if (t.date) { const d = daysTo(t.date); when = d > 1 ? ` · dans ${d} jours` : d === 1 ? " · demain" : d === 0 ? " · cette semaine" : d > -7 ? " · cette semaine" : " · déjà passé"; }
+  if (t.date) { const d = daysTo(t.date), j = new Date(t.date + "T08:00:00").toLocaleDateString("fr-FR", {weekday: "long", day: "numeric", month: "long"});
+    when = " · " + (d < 0 ? "passé" : j + (d > 1 ? `, dans ${d} jours` : d === 1 ? ", demain" : ", aujourd'hui")); }
   $("targetInfo").textContent = `${t.desc}${when}`;
 }
 function simConfig(){
