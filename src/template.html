@@ -267,7 +267,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 /* ---- tableau de bord ---- */
 #v-home h1{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:18px}
 .dash-date{display:inline-block;font-size:.5em;font-weight:500;color:var(--muted)}.dash-date::first-letter{text-transform:uppercase}
-.dash-empty{position:relative}.dash-empty::after{content:attr(data-empty);position:absolute;inset:0;display:grid;place-items:center;font-size:.85rem;color:var(--muted);text-align:center;padding:0 20px}
+.dash-empty{position:relative}.dash-empty::after{content:"";position:absolute;inset:0;display:grid;place-items:center;font-size:.85rem;color:var(--muted);text-align:center;padding:0 20px}
 .home-h2{font-size:1.05rem;margin:26px 0 12px;color:var(--muted);font-weight:600;letter-spacing:.02em}
 .dash{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
 .dash-card{background:color-mix(in srgb,var(--surface) 92%,transparent);border:1px solid var(--line);border-radius:18px;padding:18px 20px;box-shadow:var(--shadow);min-width:0;backdrop-filter:blur(6px)}
@@ -420,7 +420,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 <!-- Accueil : choix de la matière -->
 <section id="v-home">
   <h1>Tableau de bord</h1>
-  <div class="card home-empty hidden" id="homeEmpty"><b>Ton tableau de bord est vide.</b><p class="small muted">Ajoute les modules dont tu as besoin : tes matières de révision, tes mails…</p><button class="btn primary" id="homeEmptyBtn">Ajouter un module</button></div>
+  <div class="card home-empty hidden" id="homeEmpty"><b>Ton tableau de bord est vide.</b><button class="btn primary" id="homeEmptyBtn">Ajouter un module</button></div>
   <div id="modPanelBox"></div>
   <div class="subjects compact" id="subjects"></div>
   <div class="card mail-box hidden" id="mailBox"><div class="mail-title"><span>Boîte de notifications</span><span class="mail-count hidden" id="mailCount"></span></div><div id="mailBody"></div></div>
@@ -437,7 +437,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 <!-- Matière : progression + choix des thèmes -->
 <section id="v-subject" class="hidden">
   <h1 id="s-title"></h1>
-  <p class="lead" id="s-lead"></p>
+  <p class="lead hidden" id="s-lead"></p>
   <div class="exam-info hidden" id="examInfo"></div>
   <details class="card cours hidden" id="coursCard"><summary><span class="cours-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.5C4.5 4 8 4 12 6c4-2 7.5-2 10-.5V19c-2.5-1.5-6-1.5-10 .5-4-2-7.5-2-10-.5Z"/><path d="M12 6v13.5"/></svg></span><b id="coursTitle"></b><span class="small muted">à lire avant les QCM</span></summary><div id="coursBody"></div></details>
   <div class="card simcard hidden" id="sessCard">
@@ -452,7 +452,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
   <div class="card" id="fmtCard">
     <h2>Format d'entraînement</h2>
     <div class="seg" id="segFmt"></div>
-    <p class="small muted" id="fmtHelp" style="margin:10px 0 0"></p>
+    <p class="small muted hidden" id="fmtHelp"></p>
   </div>
   <div class="card simcard hidden" id="simCard">
     <div><b id="simTitle">Simulation</b><div class="small muted" id="simTxt"></div></div>

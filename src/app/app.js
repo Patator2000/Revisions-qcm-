@@ -213,13 +213,13 @@ function renderHome(){
     const fl = fmtList(x).map(f => fmtName(f, x)).join(" · ");
     return `<button class="subj ${on ? "" : "off"}" data-s="${x.id}" style="--c:var(--${col});--cs:var(--${col}-soft)">
       <div class="ico">${ICONS[x.id]}</div>
-      <h3>${x.name}</h3><p>${x.desc}</p>
+      <h3>${x.name}</h3>
       ${on ? `<div class="meter"><i style="width:${pct}%"></i></div>
       <div class="foot"><span>${sm.total} questions</span><span>${storeReady ? `${pct} % maîtrisé` : "..."}</span></div>
 ` : ""}
     </button>`;
   }).join("") + (modOn("mails") ? mailsCard() : "")
-    + `<button class="subj mod-add" id="modAdd"><div class="ico">+</div><h3>${MODS && MODS.size ? "Gérer mes modules" : "Ajouter un module"}</h3><p>Révisions (anatomie, physiologie, natation), mails…</p></button>`;
+    + `<button class="subj mod-add" id="modAdd"><div class="ico">+</div><h3>${MODS && MODS.size ? "Gérer mes modules" : "Ajouter un module"}</h3></button>`;
   $("modAdd").onclick = () => { modPanelOpen = !modPanelOpen; renderHome(); if (modPanelOpen) $("modPanelBox").scrollIntoView({behavior: "smooth", block: "center"}); };
   $("homeEmptyBtn").onclick = () => { modPanelOpen = true; renderHome(); };
   const mc = $("subjects").querySelector("[data-mod-open]"); if (mc) mc.onclick = () => $("mailBox").scrollIntoView({behavior: "smooth", block: "start"});
@@ -233,7 +233,7 @@ function renderHome(){
 // ================= Matière =================
 function renderSubject(){
   $("s-title").textContent = S.name;
-  $("s-lead").textContent = S.desc;
+  $("s-lead").textContent = "";
   $("examInfo").textContent = S.exam || ""; $("examInfo").classList.toggle("hidden", !S.exam);
   renderCours();
   // formats
@@ -241,7 +241,7 @@ function renderSubject(){
   $("fmtCard").classList.toggle("hidden", fl.length < 2);
   $("segFmt").innerHTML = fl.map(f => `<button data-v="${f}" class="${f===fmt?"on":""}">${fmtName(f)}</button>`).join("");
   $("segFmt").querySelectorAll("button").forEach(b => b.onclick = () => { fmt = S.fmt = b.dataset.v; renderSubject(); });
-  $("fmtHelp").textContent = (S.FMT_HELP && S.FMT_HELP[fmt]) || FMT_HELP[fmt];
+  $("fmtHelp").textContent = "";
   renderTargets();
   const cfg = simConfig();
   $("simCard").classList.toggle("hidden", !cfg);

@@ -29,9 +29,9 @@ async function modToggle(id){
 function modulesPanel(){
   const all = moduleList();
   return `<div class="mod-panel" id="modPanel">
-    <div class="mod-head"><b>Mes modules</b><span class="small muted">Choisis ce qui apparaît sur ton tableau de bord.</span><button class="mod-x" id="modClose" aria-label="Fermer">×</button></div>
+    <div class="mod-head"><b>Mes modules</b><button class="mod-x" id="modClose" aria-label="Fermer">×</button></div>
     ${all.map(m => `<div class="mod-row"><span class="mod-ico" style="--c:var(--${m.id}, var(--accent));--cs:var(--${m.id}-soft, var(--surface2))">${m.icon}</span>
-      <span class="mod-txt"><b>${m.name}</b><span>${m.desc}</span></span>
+      <span class="mod-txt"><b>${m.name}</b></span>
       <button class="switch${modOn(m.id) ? " on" : ""}" data-mod="${m.id}" aria-label="${m.name}"></button></div>`).join("")}
   </div>`;
 }
@@ -46,7 +46,7 @@ function mailsCard(){
   const n = ok ? mailImportant().length : 0, names = bx.map(x => x.name).join(" + ");
   return `<button class="subj" data-mod-open="mails" style="--c:var(--mails);--cs:var(--mails-soft)">
     <div class="ico">${MODULE_EXTRA.mails.icon}</div>
-    <h3>Mails</h3><p>${ok ? names + " connecté : les mails qui comptent sont dans ta boîte de notifications." : "Connecte ta boîte mail : les mails qui comptent s'afficheront dans ta boîte de notifications."}</p>
+    <h3>Mails</h3>
     <div class="foot"><span>${ok ? names : "aucune boîte"}</span><span>${ok ? n + " à voir" : "à connecter"}</span></div>
   </button>`;
 }

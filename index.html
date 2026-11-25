@@ -272,7 +272,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 /* ---- tableau de bord ---- */
 #v-home h1{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:18px}
 .dash-date{display:inline-block;font-size:.5em;font-weight:500;color:var(--muted)}.dash-date::first-letter{text-transform:uppercase}
-.dash-empty{position:relative}.dash-empty::after{content:attr(data-empty);position:absolute;inset:0;display:grid;place-items:center;font-size:.85rem;color:var(--muted);text-align:center;padding:0 20px}
+.dash-empty{position:relative}.dash-empty::after{content:"";position:absolute;inset:0;display:grid;place-items:center;font-size:.85rem;color:var(--muted);text-align:center;padding:0 20px}
 .home-h2{font-size:1.05rem;margin:26px 0 12px;color:var(--muted);font-weight:600;letter-spacing:.02em}
 .dash{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
 .dash-card{background:color-mix(in srgb,var(--surface) 92%,transparent);border:1px solid var(--line);border-radius:18px;padding:18px 20px;box-shadow:var(--shadow);min-width:0;backdrop-filter:blur(6px)}
@@ -425,7 +425,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 <!-- Accueil : choix de la matière -->
 <section id="v-home">
   <h1>Tableau de bord</h1>
-  <div class="card home-empty hidden" id="homeEmpty"><b>Ton tableau de bord est vide.</b><p class="small muted">Ajoute les modules dont tu as besoin : tes matières de révision, tes mails…</p><button class="btn primary" id="homeEmptyBtn">Ajouter un module</button></div>
+  <div class="card home-empty hidden" id="homeEmpty"><b>Ton tableau de bord est vide.</b><button class="btn primary" id="homeEmptyBtn">Ajouter un module</button></div>
   <div id="modPanelBox"></div>
   <div class="subjects compact" id="subjects"></div>
   <div class="card mail-box hidden" id="mailBox"><div class="mail-title"><span>Boîte de notifications</span><span class="mail-count hidden" id="mailCount"></span></div><div id="mailBody"></div></div>
@@ -442,7 +442,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 <!-- Matière : progression + choix des thèmes -->
 <section id="v-subject" class="hidden">
   <h1 id="s-title"></h1>
-  <p class="lead" id="s-lead"></p>
+  <p class="lead hidden" id="s-lead"></p>
   <div class="exam-info hidden" id="examInfo"></div>
   <details class="card cours hidden" id="coursCard"><summary><span class="cours-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.5C4.5 4 8 4 12 6c4-2 7.5-2 10-.5V19c-2.5-1.5-6-1.5-10 .5-4-2-7.5-2-10-.5Z"/><path d="M12 6v13.5"/></svg></span><b id="coursTitle"></b><span class="small muted">à lire avant les QCM</span></summary><div id="coursBody"></div></details>
   <div class="card simcard hidden" id="sessCard">
@@ -457,7 +457,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
   <div class="card" id="fmtCard">
     <h2>Format d'entraînement</h2>
     <div class="seg" id="segFmt"></div>
-    <p class="small muted" id="fmtHelp" style="margin:10px 0 0"></p>
+    <p class="small muted hidden" id="fmtHelp"></p>
   </div>
   <div class="card simcard hidden" id="simCard">
     <div><b id="simTitle">Simulation</b><div class="small muted" id="simTxt"></div></div>
@@ -2150,13 +2150,13 @@ function renderHome(){
     const fl = fmtList(x).map(f => fmtName(f, x)).join(" · ");
     return `<button class="subj ${on ? "" : "off"}" data-s="${x.id}" style="--c:var(--${col});--cs:var(--${col}-soft)">
       <div class="ico">${ICONS[x.id]}</div>
-      <h3>${x.name}</h3><p>${x.desc}</p>
+      <h3>${x.name}</h3>
       ${on ? `<div class="meter"><i style="width:${pct}%"></i></div>
       <div class="foot"><span>${sm.total} questions</span><span>${storeReady ? `${pct} % maîtrisé` : "..."}</span></div>
 ` : ""}
     </button>`;
   }).join("") + (modOn("mails") ? mailsCard() : "")
-    + `<button class="subj mod-add" id="modAdd"><div class="ico">+</div><h3>${MODS && MODS.size ? "Gérer mes modules" : "Ajouter un module"}</h3><p>Révisions (anatomie, physiologie, natation), mails…</p></button>`;
+    + `<button class="subj mod-add" id="modAdd"><div class="ico">+</div><h3>${MODS && MODS.size ? "Gérer mes modules" : "Ajouter un module"}</h3></button>`;
   $("modAdd").onclick = () => { modPanelOpen = !modPanelOpen; renderHome(); if (modPanelOpen) $("modPanelBox").scrollIntoView({behavior: "smooth", block: "center"}); };
   $("homeEmptyBtn").onclick = () => { modPanelOpen = true; renderHome(); };
   const mc = $("subjects").querySelector("[data-mod-open]"); if (mc) mc.onclick = () => $("mailBox").scrollIntoView({behavior: "smooth", block: "start"});
@@ -2170,7 +2170,7 @@ function renderHome(){
 // ================= Matière =================
 function renderSubject(){
   $("s-title").textContent = S.name;
-  $("s-lead").textContent = S.desc;
+  $("s-lead").textContent = "";
   $("examInfo").textContent = S.exam || ""; $("examInfo").classList.toggle("hidden", !S.exam);
   renderCours();
   // formats
@@ -2178,7 +2178,7 @@ function renderSubject(){
   $("fmtCard").classList.toggle("hidden", fl.length < 2);
   $("segFmt").innerHTML = fl.map(f => `<button data-v="${f}" class="${f===fmt?"on":""}">${fmtName(f)}</button>`).join("");
   $("segFmt").querySelectorAll("button").forEach(b => b.onclick = () => { fmt = S.fmt = b.dataset.v; renderSubject(); });
-  $("fmtHelp").textContent = (S.FMT_HELP && S.FMT_HELP[fmt]) || FMT_HELP[fmt];
+  $("fmtHelp").textContent = "";
   renderTargets();
   const cfg = simConfig();
   $("simCard").classList.toggle("hidden", !cfg);
@@ -3028,7 +3028,7 @@ function dashDonut(D){
   const pct = D.total ? D.m / D.total * 100 : 0, steps = [5, 10, 25, 50, 75, 90, 100], next = steps.find(s => s > pct + 1e-9) || 100;
   const need = Math.max(0, Math.ceil(next / 100 * D.total) - D.m), perDay = wkGain / 7, eta = perDay > 0 ? Math.ceil(need / perDay) : null;
   const pace = `<div class="dash-pace"><div class="dp-big">${wkGain > 0 ? "+" + wkGain : "0"}</div><div class="dp-txt"><b>questions maîtrisées cette semaine</b><span>${
-    !need ? "Palier de " + next + " % atteint, bravo !" : eta ? `À ce rythme, ${next} % dans environ <b>${eta} jour${eta > 1 ? "s" : ""}</b>` : "Lance une série pour démarrer ta progression"}</span></div></div>`;
+    !need ? "Palier de " + next + " % atteint, bravo !" : eta ? `À ce rythme, ${next} % dans environ <b>${eta} jour${eta > 1 ? "s" : ""}</b>` : ""}</span></div></div>`;
   return pace + `<div class="dash-rep"><div class="dash-donut"><svg viewBox="0 0 110 110">${arcs}</svg><div class="dash-donut-c"><b>${D.total ? Math.round(D.m / D.total * 100) : 0}<small> %</small></b><span>maîtrisé</span></div></div><div class="dash-legs">${leg}</div></div>${subs}`;
 }
 function dashSpark(arr, col, tips){
@@ -3060,7 +3060,7 @@ function renderDash(){
   const weak = D.weak.length ? D.weak.map(z => {
     const col = z.x.id, nm = String(z.x.THEMES[z.t] || z.t).replace(/</g, "&lt;");
     return `<button class="dash-weak" data-tip="<b>${nm.replace(/"/g, "&quot;")}</b><br>${z.g} bonne${z.g > 1 ? "s" : ""} réponse${z.g > 1 ? "s" : ""} sur ${z.tr} essais (${Math.round(z.r * 100)} %)<br><span>clique pour réviser ce thème</span>" data-s="${z.x.id}" data-t="${z.t}" style="--c:var(--${col})"><span class="dw-name"><i></i>${nm}</span><span class="dw-bar"><b style="width:${Math.round(z.r * 100)}%"></b></span><span class="dw-pct">${Math.round(z.r * 100)} %</span></button>`;
-  }).join("") : `<p class="small muted" style="margin:6px 0 0">Réponds à quelques séries : les thèmes où tu te trompes le plus apparaîtront ici (au moins 3 réponses par thème).</p>`;
+  }).join("") : `<p class="small muted" style="margin:6px 0 0">Rien pour l'instant.</p>`;
   el.innerHTML = `
   <div class="dash-card span8 dash-hero">
     <div class="dash-k">Maîtrise globale</div>
@@ -3077,7 +3077,7 @@ function renderDash(){
   <div class="dash-card span6 dash-kpi">
     <div class="dash-k">Taux de réussite</div>
     <div class="dash-mid">${rate === null ? "-" : fmtP(rate) + "<small> %</small>"}</div>
-    <div class="dash-sub">${rateT === null ? "pas encore de réponse aujourd'hui" : "aujourd'hui " + Math.round(rateT) + " %"} ${rate !== null && rateT !== null ? dashDelta(rateT - rate, " pts") : ""}</div>
+    <div class="dash-sub">${rateT === null ? "" : "aujourd'hui " + Math.round(rateT) + " %"} ${rate !== null && rateT !== null ? dashDelta(rateT - rate, " pts") : ""}</div>
     ${days14.length > 1 ? dashSpark(spR, "var(--accent)", days14.map(d => { const e = D.act[d]; return `<b>${dashFmtDay(d)}</b><br>${e && e.a ? Math.round(e.c / e.a * 100) + " % de réussite<br><span>" + e.c + " justes sur " + e.a + "</span>" : "aucune réponse"}`; })) + `<div class="dash-axis"><span>${dashFmtDay(days14[0])}</span><span>aujourd'hui</span></div>` : ""}
   </div>
   <div class="dash-card span6 dash-kpi">
@@ -3182,9 +3182,9 @@ async function modToggle(id){
 function modulesPanel(){
   const all = moduleList();
   return `<div class="mod-panel" id="modPanel">
-    <div class="mod-head"><b>Mes modules</b><span class="small muted">Choisis ce qui apparaît sur ton tableau de bord.</span><button class="mod-x" id="modClose" aria-label="Fermer">×</button></div>
+    <div class="mod-head"><b>Mes modules</b><button class="mod-x" id="modClose" aria-label="Fermer">×</button></div>
     ${all.map(m => `<div class="mod-row"><span class="mod-ico" style="--c:var(--${m.id}, var(--accent));--cs:var(--${m.id}-soft, var(--surface2))">${m.icon}</span>
-      <span class="mod-txt"><b>${m.name}</b><span>${m.desc}</span></span>
+      <span class="mod-txt"><b>${m.name}</b></span>
       <button class="switch${modOn(m.id) ? " on" : ""}" data-mod="${m.id}" aria-label="${m.name}"></button></div>`).join("")}
   </div>`;
 }
@@ -3199,7 +3199,7 @@ function mailsCard(){
   const n = ok ? mailImportant().length : 0, names = bx.map(x => x.name).join(" + ");
   return `<button class="subj" data-mod-open="mails" style="--c:var(--mails);--cs:var(--mails-soft)">
     <div class="ico">${MODULE_EXTRA.mails.icon}</div>
-    <h3>Mails</h3><p>${ok ? names + " connecté : les mails qui comptent sont dans ta boîte de notifications." : "Connecte ta boîte mail : les mails qui comptent s'afficheront dans ta boîte de notifications."}</p>
+    <h3>Mails</h3>
     <div class="foot"><span>${ok ? names : "aucune boîte"}</span><span>${ok ? n + " à voir" : "à connecter"}</span></div>
   </button>`;
 }
@@ -3962,9 +3962,9 @@ function mailType(m){
   const dom = addr.split("@")[1] || "", common = MAIL_COMMON.includes(dom);
   const auto = /^(no-?reply|ne-?pas-?repondre|newsletter|news|info|infos|notification|notifications|marketing|contact|hello|bonjour|mailer|bounce)/.test(addr);
   let kind;
-  if (m.listId) kind = "envoi groupé à la liste « " + m.listId.split(".")[0] + " » (" + m.listId.split(".").slice(1).join(".") + "), que reçoivent tous les inscrits et pas seulement toi";
-  else if (m.list || auto) kind = m.list ? "envoi automatique à une liste (newsletter, liste de diffusion)" : "envoi automatique (adresse qui n'attend pas de réponse)";
-  else kind = common ? "mail d'une personne (adresse perso)" : "mail d'une personne ou d'un service de " + dom;
+  if (m.listId) kind = "envoi groupé à la liste « " + m.listId.split(".")[0] + " »";
+  else if (m.list || auto) kind = m.list ? "newsletter" : "envoi automatique";
+  else kind = common ? "mail perso" : "mail de " + dom;
   return {addr, dom, common, cat: m.cat || "", kind, listId: (m.listId || "").toLowerCase()};
 }
 function mailHiddenBy(m, r){
@@ -4178,18 +4178,16 @@ function mailConnectBtns(){
 function mailBoxHtml(){
   const r = mailRulesLoad(), boxes = mailBoxes();
   const errs = [GMAIL.err, OUTLOOK.err].filter(Boolean).map(e => `<p class="small mail-err">${esc(e)}</p>`).join("");
-  if (!window.GOOGLE_CLIENT_ID && !window.OUTLOOK_CLIENT_ID) return `<div class="mail-empty">Kinésis n'est pas encore inscrit chez Google ni chez Microsoft. Dès que c'est fait, tu pourras connecter ta boîte ici.</div>`;
-  if (!boxes.length) return `<div class="mail-empty"><p>Connecte ta boîte : Kinésis lira ta boîte de réception et ne gardera que les mails qui correspondent à tes règles.</p>
-    <div class="row">${mailConnectBtns()}</div>${errs}</div>`;
+  if (!window.GOOGLE_CLIENT_ID && !window.OUTLOOK_CLIENT_ID) return `<div class="mail-empty">Aucune boîte disponible.</div>`;
+  if (!boxes.length) return `<div class="mail-empty"><div class="row">${mailConnectBtns()}</div>${errs}</div>`;
   const imp = mailList(), loading = GMAIL.loading || OUTLOOK.loading, read = boxes.some(x => x.st.msgs !== null);
   const at = Math.max(GMAIL.at, OUTLOOK.at), multi = boxes.length > 1;
-  const list = !read ? `<p class="small muted">${loading ? "Lecture de ta boîte..." : "Pas encore lu : clique sur « Actualiser »."}</p>`
-    : imp.length ? `<ul class="mail-list">${imp.map(({m, why}) => `<li class="mail-it${m.isRead ? "" : " unread"}${why ? " imp" : ""}">
+  const list = !read ? `<p class="small muted">${loading ? "Lecture de ta boîte..." : "Clique sur « Actualiser »."}</p>`
+    : imp.length ? `<ul class="mail-list">${imp.map(({m, why}) => `<li class="mail-it${m.isRead ? "" : " unread"}${why ? " imp" : ""}"${why ? ` title="Important : ${esc(why)}"` : ""}>
         <div class="mail-row"><a href="${esc(m.webLink || "#")}" target="_blank" rel="noopener" class="mail-a">
           <span class="mail-top"><b>${esc((m.from && m.from.emailAddress && (m.from.emailAddress.name || m.from.emailAddress.address)) || "?")}</b><span class="mail-t">${multi ? esc(m.box) + " · " : ""}${mailWhen(m.receivedDateTime)}</span></span>
           <span class="mail-s">${esc(m.subject || "(sans objet)")}</span>
           <span class="mail-p">${esc((m.bodyPreview || "").slice(0, 140))}</span>
-          ${why ? `<span class="mail-why">Important · ${esc(why)}</span>` : ""}
         </a><span class="mail-btns"><button class="mail-ok" data-seen="${esc(m.id)}" title="Marquer comme vu (il disparaît d'ici, pas de ta boîte)">Vu</button>
         <button class="mail-ok mail-hide" data-hide="${esc(m.id)}" title="Ne plus jamais afficher ce type de mail">Masquer</button></span></div>
         ${MAIL_UI.hide === m.id ? mailHideHtml(m) : ""}</li>`).join("")}</ul>`
@@ -4205,28 +4203,26 @@ function mailHideHtml(m){
   const t = mailType(m), opts = [], kw = (mailRulesLoad().keywords || []).slice(0, 4).join(", ");
   if (t.listId) opts.push(["liste:" + t.listId, "Les envois groupés à la liste <b>« " + esc(t.listId.split(".")[0]) + " »</b>"]);
   if (t.addr) opts.push([t.addr, "Tous les mails de <b>" + esc(t.addr) + "</b>"]);
-  if (t.dom && !t.common && t.dom !== t.addr) opts.push(["@" + t.dom, "Tous les mails de <b>" + esc(t.dom) + "</b> (toutes les adresses de ce domaine)"]);
-  if (t.cat && MAIL_CATS[t.cat]) opts.push(["catégorie:" + t.cat, "Toute la catégorie Gmail <b>" + esc(MAIL_CATS[t.cat]) + "</b>"]);
-  const warn = /(^|\.)univ-lyon1\.fr$/.test(t.dom) ? `<p class="small mail-err">Ce mail vient de la fac : ne masque pas tout le domaine, tu perdrais aussi la scolarité.${t.listId ? " Masquer la liste suffit." : ""}</p>` : "";
+  if (t.dom && !t.common && t.dom !== t.addr) opts.push(["@" + t.dom, "Tous les mails de <b>" + esc(t.dom) + "</b>"]);
+  if (t.cat && MAIL_CATS[t.cat]) opts.push(["catégorie:" + t.cat, "La catégorie <b>" + esc(MAIL_CATS[t.cat]) + "</b>"]);
+  const warn = /(^|\.)univ-lyon1\.fr$/.test(t.dom) ? `<p class="small mail-err">Évite de masquer tout univ-lyon1.fr : tu perdrais la scolarité.</p>` : "";
   return `<div class="mail-hidebox">
-    <p class="small"><b>Type de ce mail :</b> ${esc(t.kind)}${t.cat && MAIL_CATS[t.cat] ? ", rangé par Gmail dans « " + esc(MAIL_CATS[t.cat]) + " »" : ""}.</p>${warn}
-    <p class="small muted">Ne plus jamais afficher :</p>
+    <p class="small"><b>Type :</b> ${esc(t.kind)}${t.cat && MAIL_CATS[t.cat] ? ", catégorie « " + esc(MAIL_CATS[t.cat]) + " »" : ""}.</p>${warn}
     <div class="mail-hideopts">${opts.map(([v, l]) => `<button class="btn ghost small" data-hidev="${esc(v)}">${l}</button>`).join("")}
       <button class="btn ghost small" data-hidecancel>Annuler</button></div>
-    <div class="mail-hideword"><span class="small">ou les mails qui contiennent (objet, texte ou signature)</span>
+    <div class="mail-hideword"><span class="small">Les mails qui contiennent</span>
       <input id="mhWord" placeholder="mission handicap" autocomplete="off"><button class="btn ghost small" id="mhWordOk">Masquer</button></div>
-    <p class="small muted">Une liste, un domaine ou une catégorie masqués laissent passer les mails qui contiennent un de tes mots-clés importants (${esc(kw)}, blocage, fermeture...). Une adresse ou un texte précis les masquent toujours. Tu pourras revenir en arrière dans « Mes règles ».</p>
   </div>`;
 }
 function mailRulesHtml(r){
   return `<div class="mail-rules">
-    <label class="small"><b>Expéditeurs importants</b> <span class="muted">(adresse, domaine comme univ-lyon1.fr, ou nom ; un par ligne)</span>
+    <label class="small"><b>Expéditeurs importants</b>
       <textarea id="mrSenders" rows="3">${esc((r.senders || []).join("\n"))}</textarea></label>
-    <label class="small"><b>Mots-clés</b> <span class="muted">(dans l'objet ou le début du mail ; un par ligne)</span>
+    <label class="small"><b>Mots-clés</b>
       <textarea id="mrKeys" rows="4">${esc((r.keywords || []).join("\n"))}</textarea></label>
-    <label class="small"><b>Mails masqués</b> <span class="muted">(une par ligne : une adresse, @domaine, liste:nom, texte:mots, objet:mot ou catégorie:promotions ; efface une ligne pour revoir ces mails)</span>
-      <textarea id="mrHidden" rows="3">${esc((r.hidden || []).join("\n"))}</textarea></label>
-    <div class="set"><div class="lbl"><b>Mails marqués « importance haute »</b><span>Ceux que l'expéditeur a signalés comme importants.</span></div><button class="switch${r.importance ? " on" : ""}" id="mrImp"></button></div>
+    <label class="small"><b>Mails masqués</b>
+      <textarea id="mrHidden" rows="3" placeholder="une règle par ligne">${esc((r.hidden || []).join("\n"))}</textarea></label>
+    <div class="set"><div class="lbl"><b>Mails marqués « importance haute »</b></div><button class="switch${r.importance ? " on" : ""}" id="mrImp"></button></div>
     <label class="small"><b>Période</b> <select id="mrDays">${[1, 3, 7, 14, 30].map(d => `<option value="${d}"${d === r.days ? " selected" : ""}>${d} jour${d > 1 ? "s" : ""}</option>`).join("")}</select></label>
     <div class="row"><button class="btn small" id="mrSave">Enregistrer les règles</button>${GMAIL.email ? `<button class="btn ghost small" id="gmOut">Déconnecter Gmail</button>` : ""}${OUTLOOK.account ? `<button class="btn ghost small" id="mailOut">Déconnecter Outlook</button>` : ""}${mailConnectBtns().replace(/btn( primary)?"/g, 'btn ghost small"')}</div>
   </div>`;

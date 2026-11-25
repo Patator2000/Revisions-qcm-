@@ -70,9 +70,9 @@ function mailType(m){
   const dom = addr.split("@")[1] || "", common = MAIL_COMMON.includes(dom);
   const auto = /^(no-?reply|ne-?pas-?repondre|newsletter|news|info|infos|notification|notifications|marketing|contact|hello|bonjour|mailer|bounce)/.test(addr);
   let kind;
-  if (m.listId) kind = "envoi groupé à la liste « " + m.listId.split(".")[0] + " » (" + m.listId.split(".").slice(1).join(".") + "), que reçoivent tous les inscrits et pas seulement toi";
-  else if (m.list || auto) kind = m.list ? "envoi automatique à une liste (newsletter, liste de diffusion)" : "envoi automatique (adresse qui n'attend pas de réponse)";
-  else kind = common ? "mail d'une personne (adresse perso)" : "mail d'une personne ou d'un service de " + dom;
+  if (m.listId) kind = "envoi groupé à la liste « " + m.listId.split(".")[0] + " »";
+  else if (m.list || auto) kind = m.list ? "newsletter" : "envoi automatique";
+  else kind = common ? "mail perso" : "mail de " + dom;
   return {addr, dom, common, cat: m.cat || "", kind, listId: (m.listId || "").toLowerCase()};
 }
 function mailHiddenBy(m, r){
@@ -286,18 +286,16 @@ function mailConnectBtns(){
 function mailBoxHtml(){
   const r = mailRulesLoad(), boxes = mailBoxes();
   const errs = [GMAIL.err, OUTLOOK.err].filter(Boolean).map(e => `<p class="small mail-err">${esc(e)}</p>`).join("");
-  if (!window.GOOGLE_CLIENT_ID && !window.OUTLOOK_CLIENT_ID) return `<div class="mail-empty">Kinésis n'est pas encore inscrit chez Google ni chez Microsoft. Dès que c'est fait, tu pourras connecter ta boîte ici.</div>`;
-  if (!boxes.length) return `<div class="mail-empty"><p>Connecte ta boîte : Kinésis lira ta boîte de réception et ne gardera que les mails qui correspondent à tes règles.</p>
-    <div class="row">${mailConnectBtns()}</div>${errs}</div>`;
+  if (!window.GOOGLE_CLIENT_ID && !window.OUTLOOK_CLIENT_ID) return `<div class="mail-empty">Aucune boîte disponible.</div>`;
+  if (!boxes.length) return `<div class="mail-empty"><div class="row">${mailConnectBtns()}</div>${errs}</div>`;
   const imp = mailList(), loading = GMAIL.loading || OUTLOOK.loading, read = boxes.some(x => x.st.msgs !== null);
   const at = Math.max(GMAIL.at, OUTLOOK.at), multi = boxes.length > 1;
-  const list = !read ? `<p class="small muted">${loading ? "Lecture de ta boîte..." : "Pas encore lu : clique sur « Actualiser »."}</p>`
-    : imp.length ? `<ul class="mail-list">${imp.map(({m, why}) => `<li class="mail-it${m.isRead ? "" : " unread"}${why ? " imp" : ""}">
+  const list = !read ? `<p class="small muted">${loading ? "Lecture de ta boîte..." : "Clique sur « Actualiser »."}</p>`
+    : imp.length ? `<ul class="mail-list">${imp.map(({m, why}) => `<li class="mail-it${m.isRead ? "" : " unread"}${why ? " imp" : ""}"${why ? ` title="Important : ${esc(why)}"` : ""}>
         <div class="mail-row"><a href="${esc(m.webLink || "#")}" target="_blank" rel="noopener" class="mail-a">
           <span class="mail-top"><b>${esc((m.from && m.from.emailAddress && (m.from.emailAddress.name || m.from.emailAddress.address)) || "?")}</b><span class="mail-t">${multi ? esc(m.box) + " · " : ""}${mailWhen(m.receivedDateTime)}</span></span>
           <span class="mail-s">${esc(m.subject || "(sans objet)")}</span>
           <span class="mail-p">${esc((m.bodyPreview || "").slice(0, 140))}</span>
-          ${why ? `<span class="mail-why">Important · ${esc(why)}</span>` : ""}
         </a><span class="mail-btns"><button class="mail-ok" data-seen="${esc(m.id)}" title="Marquer comme vu (il disparaît d'ici, pas de ta boîte)">Vu</button>
         <button class="mail-ok mail-hide" data-hide="${esc(m.id)}" title="Ne plus jamais afficher ce type de mail">Masquer</button></span></div>
         ${MAIL_UI.hide === m.id ? mailHideHtml(m) : ""}</li>`).join("")}</ul>`
@@ -313,28 +311,26 @@ function mailHideHtml(m){
   const t = mailType(m), opts = [], kw = (mailRulesLoad().keywords || []).slice(0, 4).join(", ");
   if (t.listId) opts.push(["liste:" + t.listId, "Les envois groupés à la liste <b>« " + esc(t.listId.split(".")[0]) + " »</b>"]);
   if (t.addr) opts.push([t.addr, "Tous les mails de <b>" + esc(t.addr) + "</b>"]);
-  if (t.dom && !t.common && t.dom !== t.addr) opts.push(["@" + t.dom, "Tous les mails de <b>" + esc(t.dom) + "</b> (toutes les adresses de ce domaine)"]);
-  if (t.cat && MAIL_CATS[t.cat]) opts.push(["catégorie:" + t.cat, "Toute la catégorie Gmail <b>" + esc(MAIL_CATS[t.cat]) + "</b>"]);
-  const warn = /(^|\.)univ-lyon1\.fr$/.test(t.dom) ? `<p class="small mail-err">Ce mail vient de la fac : ne masque pas tout le domaine, tu perdrais aussi la scolarité.${t.listId ? " Masquer la liste suffit." : ""}</p>` : "";
+  if (t.dom && !t.common && t.dom !== t.addr) opts.push(["@" + t.dom, "Tous les mails de <b>" + esc(t.dom) + "</b>"]);
+  if (t.cat && MAIL_CATS[t.cat]) opts.push(["catégorie:" + t.cat, "La catégorie <b>" + esc(MAIL_CATS[t.cat]) + "</b>"]);
+  const warn = /(^|\.)univ-lyon1\.fr$/.test(t.dom) ? `<p class="small mail-err">Évite de masquer tout univ-lyon1.fr : tu perdrais la scolarité.</p>` : "";
   return `<div class="mail-hidebox">
-    <p class="small"><b>Type de ce mail :</b> ${esc(t.kind)}${t.cat && MAIL_CATS[t.cat] ? ", rangé par Gmail dans « " + esc(MAIL_CATS[t.cat]) + " »" : ""}.</p>${warn}
-    <p class="small muted">Ne plus jamais afficher :</p>
+    <p class="small"><b>Type :</b> ${esc(t.kind)}${t.cat && MAIL_CATS[t.cat] ? ", catégorie « " + esc(MAIL_CATS[t.cat]) + " »" : ""}.</p>${warn}
     <div class="mail-hideopts">${opts.map(([v, l]) => `<button class="btn ghost small" data-hidev="${esc(v)}">${l}</button>`).join("")}
       <button class="btn ghost small" data-hidecancel>Annuler</button></div>
-    <div class="mail-hideword"><span class="small">ou les mails qui contiennent (objet, texte ou signature)</span>
+    <div class="mail-hideword"><span class="small">Les mails qui contiennent</span>
       <input id="mhWord" placeholder="mission handicap" autocomplete="off"><button class="btn ghost small" id="mhWordOk">Masquer</button></div>
-    <p class="small muted">Une liste, un domaine ou une catégorie masqués laissent passer les mails qui contiennent un de tes mots-clés importants (${esc(kw)}, blocage, fermeture...). Une adresse ou un texte précis les masquent toujours. Tu pourras revenir en arrière dans « Mes règles ».</p>
   </div>`;
 }
 function mailRulesHtml(r){
   return `<div class="mail-rules">
-    <label class="small"><b>Expéditeurs importants</b> <span class="muted">(adresse, domaine comme univ-lyon1.fr, ou nom ; un par ligne)</span>
+    <label class="small"><b>Expéditeurs importants</b>
       <textarea id="mrSenders" rows="3">${esc((r.senders || []).join("\n"))}</textarea></label>
-    <label class="small"><b>Mots-clés</b> <span class="muted">(dans l'objet ou le début du mail ; un par ligne)</span>
+    <label class="small"><b>Mots-clés</b>
       <textarea id="mrKeys" rows="4">${esc((r.keywords || []).join("\n"))}</textarea></label>
-    <label class="small"><b>Mails masqués</b> <span class="muted">(une par ligne : une adresse, @domaine, liste:nom, texte:mots, objet:mot ou catégorie:promotions ; efface une ligne pour revoir ces mails)</span>
-      <textarea id="mrHidden" rows="3">${esc((r.hidden || []).join("\n"))}</textarea></label>
-    <div class="set"><div class="lbl"><b>Mails marqués « importance haute »</b><span>Ceux que l'expéditeur a signalés comme importants.</span></div><button class="switch${r.importance ? " on" : ""}" id="mrImp"></button></div>
+    <label class="small"><b>Mails masqués</b>
+      <textarea id="mrHidden" rows="3" placeholder="une règle par ligne">${esc((r.hidden || []).join("\n"))}</textarea></label>
+    <div class="set"><div class="lbl"><b>Mails marqués « importance haute »</b></div><button class="switch${r.importance ? " on" : ""}" id="mrImp"></button></div>
     <label class="small"><b>Période</b> <select id="mrDays">${[1, 3, 7, 14, 30].map(d => `<option value="${d}"${d === r.days ? " selected" : ""}>${d} jour${d > 1 ? "s" : ""}</option>`).join("")}</select></label>
     <div class="row"><button class="btn small" id="mrSave">Enregistrer les règles</button>${GMAIL.email ? `<button class="btn ghost small" id="gmOut">Déconnecter Gmail</button>` : ""}${OUTLOOK.account ? `<button class="btn ghost small" id="mailOut">Déconnecter Outlook</button>` : ""}${mailConnectBtns().replace(/btn( primary)?"/g, 'btn ghost small"')}</div>
   </div>`;

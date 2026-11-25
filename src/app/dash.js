@@ -152,7 +152,7 @@ function dashDonut(D){
   const pct = D.total ? D.m / D.total * 100 : 0, steps = [5, 10, 25, 50, 75, 90, 100], next = steps.find(s => s > pct + 1e-9) || 100;
   const need = Math.max(0, Math.ceil(next / 100 * D.total) - D.m), perDay = wkGain / 7, eta = perDay > 0 ? Math.ceil(need / perDay) : null;
   const pace = `<div class="dash-pace"><div class="dp-big">${wkGain > 0 ? "+" + wkGain : "0"}</div><div class="dp-txt"><b>questions maîtrisées cette semaine</b><span>${
-    !need ? "Palier de " + next + " % atteint, bravo !" : eta ? `À ce rythme, ${next} % dans environ <b>${eta} jour${eta > 1 ? "s" : ""}</b>` : "Lance une série pour démarrer ta progression"}</span></div></div>`;
+    !need ? "Palier de " + next + " % atteint, bravo !" : eta ? `À ce rythme, ${next} % dans environ <b>${eta} jour${eta > 1 ? "s" : ""}</b>` : ""}</span></div></div>`;
   return pace + `<div class="dash-rep"><div class="dash-donut"><svg viewBox="0 0 110 110">${arcs}</svg><div class="dash-donut-c"><b>${D.total ? Math.round(D.m / D.total * 100) : 0}<small> %</small></b><span>maîtrisé</span></div></div><div class="dash-legs">${leg}</div></div>${subs}`;
 }
 function dashSpark(arr, col, tips){
@@ -184,7 +184,7 @@ function renderDash(){
   const weak = D.weak.length ? D.weak.map(z => {
     const col = z.x.id, nm = String(z.x.THEMES[z.t] || z.t).replace(/</g, "&lt;");
     return `<button class="dash-weak" data-tip="<b>${nm.replace(/"/g, "&quot;")}</b><br>${z.g} bonne${z.g > 1 ? "s" : ""} réponse${z.g > 1 ? "s" : ""} sur ${z.tr} essais (${Math.round(z.r * 100)} %)<br><span>clique pour réviser ce thème</span>" data-s="${z.x.id}" data-t="${z.t}" style="--c:var(--${col})"><span class="dw-name"><i></i>${nm}</span><span class="dw-bar"><b style="width:${Math.round(z.r * 100)}%"></b></span><span class="dw-pct">${Math.round(z.r * 100)} %</span></button>`;
-  }).join("") : `<p class="small muted" style="margin:6px 0 0">Réponds à quelques séries : les thèmes où tu te trompes le plus apparaîtront ici (au moins 3 réponses par thème).</p>`;
+  }).join("") : `<p class="small muted" style="margin:6px 0 0">Rien pour l'instant.</p>`;
   el.innerHTML = `
   <div class="dash-card span8 dash-hero">
     <div class="dash-k">Maîtrise globale</div>
@@ -201,7 +201,7 @@ function renderDash(){
   <div class="dash-card span6 dash-kpi">
     <div class="dash-k">Taux de réussite</div>
     <div class="dash-mid">${rate === null ? "-" : fmtP(rate) + "<small> %</small>"}</div>
-    <div class="dash-sub">${rateT === null ? "pas encore de réponse aujourd'hui" : "aujourd'hui " + Math.round(rateT) + " %"} ${rate !== null && rateT !== null ? dashDelta(rateT - rate, " pts") : ""}</div>
+    <div class="dash-sub">${rateT === null ? "" : "aujourd'hui " + Math.round(rateT) + " %"} ${rate !== null && rateT !== null ? dashDelta(rateT - rate, " pts") : ""}</div>
     ${days14.length > 1 ? dashSpark(spR, "var(--accent)", days14.map(d => { const e = D.act[d]; return `<b>${dashFmtDay(d)}</b><br>${e && e.a ? Math.round(e.c / e.a * 100) + " % de réussite<br><span>" + e.c + " justes sur " + e.a + "</span>" : "aucune réponse"}`; })) + `<div class="dash-axis"><span>${dashFmtDay(days14[0])}</span><span>aujourd'hui</span></div>` : ""}
   </div>
   <div class="dash-card span6 dash-kpi">
