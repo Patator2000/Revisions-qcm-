@@ -222,6 +222,8 @@ function renderHome(){
     + `<button class="subj mod-add" id="modAdd"><div class="ico">+</div><h3>${MODS && MODS.size ? "Gérer mes modules" : "Ajouter un module"}</h3><p>Révisions (anatomie, physiologie, natation), mails…</p></button>`;
   $("modAdd").onclick = () => { modPanelOpen = !modPanelOpen; renderHome(); if (modPanelOpen) $("modPanelBox").scrollIntoView({behavior: "smooth", block: "center"}); };
   $("homeEmptyBtn").onclick = () => { modPanelOpen = true; renderHome(); };
+  const mc = $("subjects").querySelector("[data-mod-open]"); if (mc) mc.onclick = () => $("mailBox").scrollIntoView({behavior: "smooth", block: "start"});
+  if (typeof mailOnHome === "function") mailOnHome(); else $("mailBox").classList.add("hidden");
   $("subjects").querySelectorAll(".subj[data-s]").forEach(b => b.onclick = () => {
     const x = SUBJECTS[b.dataset.s]; if (!fmtList(x).length) return;
     S = x; fmt = S.fmt; go("subject");

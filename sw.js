@@ -1,8 +1,8 @@
 // Kinésis : appli installable et utilisable hors connexion.
 // Page et fichiers du site : réseau d'abord (toujours la dernière version), copie gardée pour le hors connexion.
 // Supabase et les autres sites ne passent pas par ici.
-const CACHE = "kinesis-v1";
-const CORE = ["./", "index.html", "manifest.webmanifest", "vendor/supabase.js", "vendor/vosk.js", "icons/icon-192.png", "icons/icon-512.png"];
+const CACHE = "kinesis-v2";
+const CORE = ["./", "index.html", "manifest.webmanifest", "vendor/supabase.js", "vendor/vosk.js", "vendor/msal-browser.min.js", "icons/icon-192.png", "icons/icon-512.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));

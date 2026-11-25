@@ -13,6 +13,8 @@ SRC = ROOT / "src"
 # Projet Supabase (clé publique « publishable » : prévue pour être visible dans le navigateur)
 SUPA_URL = "https://eempregmkymltwgzrofl.supabase.co"
 SUPA_KEY = "sb_publishable_4A1YYev7-Qmgbl_aRV7CIQ_Gxq267_N"
+# Appli Kinésis inscrite chez Microsoft (identifiant public, pas un secret) : module Mails / Outlook
+OUTLOOK_CLIENT_ID = ""
 
 DATA = ["anatomie.js", "physiologie.js", "physiologie_examen.js", "physiologie_examen_2.js", "physiologie_complements.js"]
 DATA_LIBRE = ["natation.js"]
@@ -51,12 +53,12 @@ site = site.replace(
     'const MIC_MSG = "Micro bloqué : claude.ai n\'autorise pas le micro dans ses pages publiées. Utilise la version « micro » à ouvrir dans Chrome, ou réponds au clavier (V, F, N, A à E, P, Entrée).";',
     'const MIC_MSG = "Micro refusé par le navigateur : touche l\'icône de cadenas (ou de réglages) à gauche de l\'adresse, autorise le micro, puis recharge la page. En attendant, réponds au clavier (V, F, N, A à E, P, Entrée).";')
 assert "Micro refusé" in site
-cfg = f'window.SUPA_URL = "{SUPA_URL}";\nwindow.SUPA_KEY = "{SUPA_KEY}";\n'
+cfg = f'window.SUPA_URL = "{SUPA_URL}";\nwindow.SUPA_KEY = "{SUPA_KEY}";\nwindow.OUTLOOK_CLIENT_ID = "{OUTLOOK_CLIENT_ID}";\n'
 j = site.index("<script>") + len("<script>")
 site = site[:j] + "\n" + cfg + site[j:]
 site = site.replace("<script>", '<script src="vendor/supabase.js"></script>\n<script>', 1)
 i = site.rindex("</script>")
-site = site[:i] + '\nwindow.VOICE_ENGINE = "vosk";\n' + read("app/voix.js") + "\n" + read("app/profils.js") + "\n" + site[i:]
+site = site[:i] + '\nwindow.VOICE_ENGINE = "vosk";\n' + read("app/voix.js") + "\n" + read("app/profils.js") + "\n" + read("app/mails.js") + "\n" + site[i:]
 # enregistrement du service worker, après l'injection des scripts du site (il doit rester le dernier <script>)
 site = site.replace("</body>", '<script>if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));</script>\n</body>', 1)
 site = site.replace("(Chrome recommandé)", "(marche dans tous les navigateurs, Brave compris)")

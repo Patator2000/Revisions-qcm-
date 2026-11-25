@@ -89,7 +89,8 @@ async function supaStart(live, anonLocals){
     window.PROFILE_CLAUDE = (SB_USER.user_metadata && SB_USER.user_metadata.claude_chat) || "";
     // modules du profil : d'abord ce qui est sur l'appareil, puis la version du compte
     MODS = null; modLoadLocal();
-    SB.from("profiles").select("modules").eq("user_id", SB_USER.id).maybeSingle().then(r => {
+    SB.from("profiles").select("modules, mail_rules").eq("user_id", SB_USER.id).maybeSingle().then(r => {
+      if (!r.error && r.data && r.data.mail_rules && typeof mailRulesSave === "function") { MAIL_RULES = r.data.mail_rules; try { localStorage.setItem("kinesis-mail-rules-" + SB_USER.id, JSON.stringify(MAIL_RULES)); } catch(e) {} }
       if (!r.error && r.data && Array.isArray(r.data.modules)) { modSet(r.data.modules); try { renderView(); } catch(e) {} }
     }, () => {});
     // compte admin (gestion du site) : vérifié côté serveur
