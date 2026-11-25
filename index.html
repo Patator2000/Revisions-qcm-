@@ -3903,9 +3903,11 @@ var GMAIL = {scope: "https://www.googleapis.com/auth/gmail.readonly", token: "",
 var MAIL_UI = {open: false};
 var MAIL_RULES_DEFAULT = {
   senders: ["univ-lyon1.fr"],
-  keywords: ["examen", "partiel", "CCI", "convocation", "urgent", "note", "rattrapage", "rendez-vous", "facture", "match", "entraînement"],
+  keywords: ["examen", "partiel", "CCI", "convocation", "urgent", "note", "rattrapage", "rendez-vous", "facture", "match", "entraînement",
+    "blocage", "bloqué", "grève", "fermeture", "fermé", "annulé", "annulation", "report", "perturbation", "alerte", "évacuation", "emploi du temps"],
   importance: true, // les mails marqués « importance haute » par l'expéditeur
   days: 7,
+  v: 2,
   hidden: [] // types de mails à ne plus afficher : « adresse », « @domaine » ou « catégorie:promotions »
 };
 var MAIL_RULES = null;
@@ -3913,6 +3915,11 @@ function mailUserKey(){ return (typeof SB_USER !== "undefined" && SB_USER ? SB_U
 function mailRulesLoad(){
   if (MAIL_RULES) return MAIL_RULES;
   try { MAIL_RULES = JSON.parse(localStorage.getItem("kinesis-mail-rules-" + mailUserKey())) || null; } catch(e) {}
+  if (MAIL_RULES && (MAIL_RULES.v || 1) < 2) {
+    const k = MAIL_RULES.keywords || [], low = k.map(x => x.toLowerCase());
+    MAIL_RULES.keywords = k.concat(MAIL_RULES_DEFAULT.keywords.filter(x => !low.includes(x.toLowerCase())));
+    MAIL_RULES.v = 2; mailRulesSave(MAIL_RULES);
+  }
   return MAIL_RULES || (MAIL_RULES = JSON.parse(JSON.stringify(MAIL_RULES_DEFAULT)));
 }
 function mailRulesSave(r){
@@ -3961,13 +3968,14 @@ function mailType(m){
   return {addr, dom, common, cat: m.cat || "", kind, listId: (m.listId || "").toLowerCase()};
 }
 function mailHiddenBy(m, r){
-  const t = mailType(m);
+  const t = mailType(m), kw = mailKeyword(m, r);
   return (r.hidden || []).find(h => {
     h = String(h).toLowerCase().trim(); if (!h) return false;
-    if (h.startsWith("catégorie:")) return t.cat && h.slice(10) === t.cat;
-    if (h.startsWith("liste:")) return t.listId && h.slice(6) === t.listId && !mailKeyword(m, r); // un mot-clé important passe quand même
-    if (h.startsWith("objet:")) return mailWordIn(h.slice(6).trim(), (m.subject || "").toLowerCase());
-    if (h.startsWith("@")) return t.dom === h.slice(1) || t.dom.endsWith("." + h.slice(1));
+    // un mail avec un mot-clé important passe toujours, sauf si tu as masqué son adresse précise
+    if (h.startsWith("catégorie:")) return !kw && t.cat && h.slice(10) === t.cat;
+    if (h.startsWith("liste:")) return !kw && t.listId && h.slice(6) === t.listId;
+    if (h.startsWith("objet:")) return !kw && mailWordIn(h.slice(6).trim(), (m.subject || "").toLowerCase());
+    if (h.startsWith("@")) return !kw && (t.dom === h.slice(1) || t.dom.endsWith("." + h.slice(1)));
     return t.addr === h;
   }) || null;
 }
@@ -4185,7 +4193,7 @@ function mailBoxHtml(){
 }
 function mailHideHtml(m){
   const t = mailType(m), opts = [], kw = (mailRulesLoad().keywords || []).slice(0, 4).join(", ");
-  if (t.listId) opts.push(["liste:" + t.listId, "Les envois groupés à la liste <b>« " + esc(t.listId.split(".")[0]) + " »</b>, sauf ceux qui contiennent un de tes mots-clés importants (" + esc(kw) + "...)"]);
+  if (t.listId) opts.push(["liste:" + t.listId, "Les envois groupés à la liste <b>« " + esc(t.listId.split(".")[0]) + " »</b>"]);
   if (t.addr) opts.push([t.addr, "Tous les mails de <b>" + esc(t.addr) + "</b>"]);
   if (t.dom && !t.common && t.dom !== t.addr) opts.push(["@" + t.dom, "Tous les mails de <b>" + esc(t.dom) + "</b> (toutes les adresses de ce domaine)"]);
   if (t.cat && MAIL_CATS[t.cat]) opts.push(["catégorie:" + t.cat, "Toute la catégorie Gmail <b>" + esc(MAIL_CATS[t.cat]) + "</b>"]);
@@ -4197,7 +4205,7 @@ function mailHideHtml(m){
       <button class="btn ghost small" data-hidecancel>Annuler</button></div>
     <div class="mail-hideword"><span class="small">ou les mails dont l'objet contient le mot</span>
       <input id="mhWord" placeholder="conférence" autocomplete="off"><button class="btn ghost small" id="mhWordOk">Masquer</button></div>
-    <p class="small muted">Tu pourras toujours revenir en arrière dans « Mes règles ».</p>
+    <p class="small muted">Les mails qui contiennent un de tes mots-clés importants (${esc(kw)}, blocage, fermeture...) restent toujours affichés. Tu pourras revenir en arrière dans « Mes règles ».</p>
   </div>`;
 }
 function mailRulesHtml(r){
