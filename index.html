@@ -3287,26 +3287,29 @@ function dashData(){
   const act = {}, weak = [];
   for (const x of live) {
     const sm = summary(x); m+=sm.m; p+=sm.p; w+=sm.w; u+=sm.u; total+=sm.total;
+    // forces et faiblesses : chaque question compte une fois, avec ta dernière réponse dessus
+    // (niveau >= 2 = dernière réponse juste et pas au hasard ; une erreur, un « je ne sais pas » ou un coup de chance le font retomber)
+    const th = {};
     for (const f of fmtList(x)) {
-      const th = {};
       x.F[f].forEach((q, i) => {
+        if (qLocked(q)) return;
+        const t = q[1], o = th[t] || (th[t] = {c:0, n:0, N:0}); o.N++;
         const st = x.mem[x.K[f][i]]; if (!st) return;
         const tr = (st.g||0) + (st.k||0) + (st.p||0) + (st.n||0);
         g += st.g||0; tries += tr; answersAll += st.s||0;
-        const t = q[1]; const o = th[t] || (th[t] = {g:0, tr:0});
-        o.g += st.g||0; o.tr += tr;
+        if (tr) { o.n++; if ((st.l || 0) >= 2) o.c++; }
       });
-      for (const t in th) if (th[t].tr >= 3) {
-        const prevW = weak.find(z => z.x === x && z.t === t);
-        if (prevW) { prevW.g += th[t].g; prevW.tr += th[t].tr; } else weak.push({x, t, g: th[t].g, tr: th[t].tr});
-      }
     }
+    for (const t in th) if (th[t].n >= 3) weak.push({x, t, ...th[t], ...wilson(th[t].c, th[t].n)});
     const h = x.mem._h || {};
     for (const d in h) if (/^\d{4}-/.test(d)) { const e = act[d] || (act[d] = {a:0, c:0}); e.a += h[d].a||0; e.c += h[d].c||0; }
   }
   // points faibles : anatomie seulement (choix de Thomas)
   for (let i = weak.length - 1; i >= 0; i--) if (weak[i].x.id !== "anat") weak.splice(i, 1);
-  weak.forEach(z => z.r = z.g / z.tr); weak.sort((a, b) => a.r - b.r);
+  weak.forEach(z => z.r = z.c / z.n);
+  // faibles : les plus sûrement mauvais (haut de la fourchette le plus bas) ; forts : les plus sûrement bons (bas de la fourchette le plus haut)
+  const weakL = weak.slice().sort((a, b) => a.hi - b.hi || a.r - b.r).slice(0, 4);
+  const strongL = weak.filter(z => !weakL.includes(z)).sort((a, b) => b.lo - a.lo || b.r - a.r).slice(0, 4);
   // courbe de maîtrise (30 jours), valeurs reportées d'un jour sur l'autre
   const days = dashDays(30);
   const recs = live.map(x => { const h = x.mem._h || {}; return Object.keys(h).filter(k => /^\d{4}-/.test(k) && h[k].m !== undefined).sort().map(k => [k, h[k].m]); });
@@ -3330,7 +3333,7 @@ function dashData(){
   const all = Object.keys(act).sort(); let last = null;
   for (const d of all) { if (!act[d].a) continue; const cur = new Date(d + "T12:00"); if (last && (cur - last) / 864e5 < 1.5) run++; else run = 1; best = Math.max(best, run); last = cur; }
   const last7 = dashDays(8).slice(0, 7).map(d => (act[d] && act[d].a) || 0);
-  return {live, subj, m, p, w, u, total, g, tries, answersAll, act, weak: weak.slice(0, 4), strong: weak.slice(4).reverse().slice(0, 4), days, pts, streak, best: Math.max(best, streak),
+  return {live, subj, m, p, w, u, total, g, tries, answersAll, act, weak: weakL, strong: strongL, days, pts, streak, best: Math.max(best, streak),
     today: act[today] || {a:0, c:0}, avg7: last7.reduce((s, v) => s + v, 0) / 7};
 }
 function smoothPath(P){
@@ -3444,7 +3447,7 @@ function renderDash(){
   const fmtP = v => (Math.round(v * 10) / 10).toFixed(v < 10 && v % 1 ? 1 : 0).replace(".", ",");
   const wRow = z => {
     const col = z.x.id, nm = String(z.x.THEMES[z.t] || z.t).replace(/</g, "&lt;");
-    return `<button class="dash-weak" data-tip="<b>${nm.replace(/"/g, "&quot;")}</b><br>${z.g} bonne${z.g > 1 ? "s" : ""} réponse${z.g > 1 ? "s" : ""} sur ${z.tr} essais (${Math.round(z.r * 100)} %)<br><span>clique pour réviser ce thème</span>" data-s="${z.x.id}" data-t="${z.t}" style="--c:var(--${col})"><span class="dw-name"><i></i>${nm}</span><span class="dw-bar"><b style="width:${Math.round(z.r * 100)}%"></b></span><span class="dw-pct">${Math.round(z.r * 100)} %</span></button>`;
+    return `<button class="dash-weak" data-tip="<b>${nm.replace(/"/g, "&quot;")}</b><br>${z.c} question${z.c > 1 ? "s" : ""} réussie${z.c > 1 ? "s" : ""} sur ${z.n} vue${z.n > 1 ? "s" : ""} (${z.N} dans le thème)<br>niveau probable : entre ${Math.round(z.lo * 100)} et ${Math.round(z.hi * 100)} %<br><span>clique pour réviser ce thème</span>" data-s="${z.x.id}" data-t="${z.t}" style="--c:var(--${col})"><span class="dw-name"><i></i>${nm}</span><span class="dw-bar"><b style="width:${Math.round(z.r * 100)}%"></b></span><span class="dw-pct">${Math.round(z.r * 100)} %</span></button>`;
   };
   const none = `<p class="small muted" style="margin:6px 0 0">Rien pour l'instant.</p>`;
   const weak = D.weak.length ? D.weak.map(wRow).join("") : none, strong = D.strong.length ? D.strong.map(wRow).join("").replace(/class="dash-weak"/g, 'class="dash-weak dash-strong"') : none;
@@ -3622,6 +3625,14 @@ function renderPlan(){
     if (typeof updCount === "function") updCount();
     if (!S.sess && !$("start").disabled) $("start").click(); // une série en pause : on ne l'écrase pas, la page propose de la reprendre
   });
+}
+
+// Intervalle de Wilson à 95 % : fourchette probable d'un taux de réussite, d'autant plus étroite qu'il y a de questions
+function wilson(c, n){
+  if (!n) return {lo: 0, hi: 1};
+  const z = 1.96, p = c / n, z2 = z * z, den = 1 + z2 / n;
+  const mid = (p + z2 / (2 * n)) / den, half = z * Math.sqrt(p * (1 - p) / n + z2 / (4 * n * n)) / den;
+  return {lo: Math.max(0, mid - half), hi: Math.min(1, mid + half)};
 }
 
 // ================= Modules du profil =================
