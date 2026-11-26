@@ -119,6 +119,8 @@ function handleVoice(raw){
   if (view !== "quiz" || paused) return false;
   const t = norm(raw), c = voiceCmds();
   const ok = (msg) => { setVoiceNote(`✓ « ${raw.trim()} »${msg ? " : " + msg : ""}`); return true; };
+  // « corriger » / « compte juste » : la voix a mal compris la réponse précédente
+  if (c.vf && /\b(corrige|corriger|compte juste|c etait juste|j avais juste)\b/.test(t)) { if (vfFix()) return ok("CORRIGÉ"); }
   // « je ne sais pas », « sais pas », « je passe » (avant la navigation : « je passe » n'est pas « suivante »)
   if ((c.vf || c.letters) && !isLocked() && /\b(sai|sais|sait|ses|c est|cest|s est) pas\b|\bje passe\b/.test(t)) {
     if (c.vf) { answerVF(2); return ok("NE SAIS PAS"); }

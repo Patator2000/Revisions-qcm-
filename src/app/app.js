@@ -530,11 +530,20 @@ function renderVF(q){
   }
   if (locked) {
     const good = LABEL[q[3]];
-    $("fb").innerHTML = a === 2 ? `<div class="fb nsp"><b>Ne sait pas (0). Réponse correcte : ${good}</b>${esc(q[4])}</div>`
+    const fix = examMode() ? "" : `<button class="linkbtn fb-fix" type="button" id="vfFixBtn">Mal compris ou mauvais clic ? Compter comme juste</button>`;
+    $("fb").innerHTML = a === 2 ? `<div class="fb nsp"><b>Ne sait pas (0). Réponse correcte : ${good}</b>${esc(q[4])}${fix}</div>`
       : a === q[3] ? `<div class="fb ok"><b>Bonne réponse (+1) : ${good}${luck[cur] ? ", au pif : elle reviendra" : ""}</b>${esc(q[4])}</div>`
-      : `<div class="fb ko"><b>Réponse incorrecte (-1). Réponse correcte : ${good}</b>${esc(q[4])}</div>`;
+      : `<div class="fb ko"><b>Réponse incorrecte (-1). Réponse correcte : ${good}</b>${esc(q[4])}${fix}</div>`;
+    if ($("vfFixBtn")) $("vfFixBtn").onclick = vfFix;
     renderAsk($("askBox"), deck[cur]);
   }
+}
+// La voix a mal compris ou mauvais clic : on remplace la réponse par la bonne (progression et note recalculées)
+function vfFix(){
+  if (fmt !== "vf" || !isLocked() || examMode()) return false;
+  const q = S.F.vf[deck[cur]]; if (answers[cur] === q[3]) return false;
+  answers[cur] = q[3]; luck[cur] = false;
+  commit(cur); render(); return true;
 }
 // ---- QCM 5 propositions
 function renderMCQ(q){

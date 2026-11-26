@@ -16,6 +16,7 @@ function voskGrammar(){
   }
   if (c.valider) w.push("valider", "valide");
   if (c.vf || c.letters) w.push("je ne sais pas", "ne sais pas", "je sais pas", "sais pas", "je passe");
+  if (c.vf) w.push("corriger", "corrige", "compte juste");
   // enchaînements courts dits sans vraie pause (« vrai... suivante », « suivante... faux »)
   const q = [];
   if (c.vf) q.push("vrai", "faux");

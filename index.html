@@ -313,6 +313,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 .dash-legend{text-transform:none;letter-spacing:0;font-weight:500;display:flex;align-items:center;gap:5px}.dash-legend i{width:9px;height:9px;border-radius:3px;display:inline-block;margin-left:6px}.dash-legend i.ok{background:var(--ok)}.dash-legend i.ko{background:color-mix(in srgb,var(--ko) 35%,transparent)}
 .dash-weak{display:grid;grid-template-columns:1fr 70px 38px;gap:10px;align-items:center;width:100%;border:0;background:none;font:inherit;color:var(--ink);text-align:left;padding:8px 6px;border-radius:8px;cursor:pointer;font-size:.82rem}
 .dash-weak:hover{background:var(--surface2)}
+.fb-fix{display:block;margin-top:8px;font-size:.85em}
 .dash-strong .dw-bar b{background:var(--ok)}
 .dash-k2{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
 .dw-name{display:flex;align-items:center;gap:7px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.dw-name i{width:8px;height:8px;border-radius:50%;background:var(--c);flex:none}
@@ -2830,11 +2831,20 @@ function renderVF(q){
   }
   if (locked) {
     const good = LABEL[q[3]];
-    $("fb").innerHTML = a === 2 ? `<div class="fb nsp"><b>Ne sait pas (0). Réponse correcte : ${good}</b>${esc(q[4])}</div>`
+    const fix = examMode() ? "" : `<button class="linkbtn fb-fix" type="button" id="vfFixBtn">Mal compris ou mauvais clic ? Compter comme juste</button>`;
+    $("fb").innerHTML = a === 2 ? `<div class="fb nsp"><b>Ne sait pas (0). Réponse correcte : ${good}</b>${esc(q[4])}${fix}</div>`
       : a === q[3] ? `<div class="fb ok"><b>Bonne réponse (+1) : ${good}${luck[cur] ? ", au pif : elle reviendra" : ""}</b>${esc(q[4])}</div>`
-      : `<div class="fb ko"><b>Réponse incorrecte (-1). Réponse correcte : ${good}</b>${esc(q[4])}</div>`;
+      : `<div class="fb ko"><b>Réponse incorrecte (-1). Réponse correcte : ${good}</b>${esc(q[4])}${fix}</div>`;
+    if ($("vfFixBtn")) $("vfFixBtn").onclick = vfFix;
     renderAsk($("askBox"), deck[cur]);
   }
+}
+// La voix a mal compris ou mauvais clic : on remplace la réponse par la bonne (progression et note recalculées)
+function vfFix(){
+  if (fmt !== "vf" || !isLocked() || examMode()) return false;
+  const q = S.F.vf[deck[cur]]; if (answers[cur] === q[3]) return false;
+  answers[cur] = q[3]; luck[cur] = false;
+  commit(cur); render(); return true;
 }
 // ---- QCM 5 propositions
 function renderMCQ(q){
@@ -3195,6 +3205,8 @@ function handleVoice(raw){
   if (view !== "quiz" || paused) return false;
   const t = norm(raw), c = voiceCmds();
   const ok = (msg) => { setVoiceNote(`✓ « ${raw.trim()} »${msg ? " : " + msg : ""}`); return true; };
+  // « corriger » / « compte juste » : la voix a mal compris la réponse précédente
+  if (c.vf && /\b(corrige|corriger|compte juste|c etait juste|j avais juste)\b/.test(t)) { if (vfFix()) return ok("CORRIGÉ"); }
   // « je ne sais pas », « sais pas », « je passe » (avant la navigation : « je passe » n'est pas « suivante »)
   if ((c.vf || c.letters) && !isLocked() && /\b(sai|sais|sait|ses|c est|cest|s est) pas\b|\bje passe\b/.test(t)) {
     if (c.vf) { answerVF(2); return ok("NE SAIS PAS"); }
@@ -3891,6 +3903,7 @@ function voskGrammar(){
   }
   if (c.valider) w.push("valider", "valide");
   if (c.vf || c.letters) w.push("je ne sais pas", "ne sais pas", "je sais pas", "sais pas", "je passe");
+  if (c.vf) w.push("corriger", "corrige", "compte juste");
   // enchaînements courts dits sans vraie pause (« vrai... suivante », « suivante... faux »)
   const q = [];
   if (c.vf) q.push("vrai", "faux");
