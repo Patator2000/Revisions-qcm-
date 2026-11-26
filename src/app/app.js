@@ -30,10 +30,10 @@ const SUBJECTS = {
     FOCUS: [], doc: "qcm-physio-A", ls: "qcm-physio-A-progress-v1",
     RATE: {vf: 27, qcm: 60},
     TARGETS: [
-      {id:"ct", label:"CT (QCM)", desc:"QCM sur tout le programme", fmt:"qcm", themes:"all", sim:{n:60, sec:3600}},
-      {id:"cp", label:"CP (écrit)", date:"2026-12-04", desc:"CM 1 à 6 et TD 1 à 6, questions ouvertes", fmt:"open", themes:["T1","T2","T3","T4","T5","T6","C1","C2","C3","C4","C5"]}
+      {id:"ct", label:"CT (QCM)", date:"2027-01-18", week:true, desc:"QCM sur tous les CM et TD", fmt:"qcm", themes:"all", sim:{n:60, sec:3600}},
+      {id:"cp", label:"CP (écrit)", date:"2026-12-15", week:true, desc:"CM 1 à 6 et TD 1 à 6, questions ouvertes", fmt:"open", themes:["T1","T2","T3","T4","T5","T6","C1","C2","C3","C4","C5"]}
     ],
-    exam: "CT : QCM de 60 questions en 1 h (60 % de la note). CP : écrit d'1 h aux TD7, questions ouvertes (40 %)."
+    exam: "CP : semaine du 15 décembre, questions ouvertes sur les CM et TD 1 à 6 (40 % de la note si elle est supérieure à celle du CT). CT : 3e semaine de janvier, QCM d'1 h sur tous les CM et TD."
   },
   natation: {
     name: "Natation", desc: "Le règlement (FFN, juges, départs, nages) et l'histoire de la natation, des origines à Paris 2024",
@@ -327,7 +327,7 @@ function renderTargets(){
   const t = S.TARGETS.find(x => x.id === S.target);
   if (!t) { $("targetInfo").textContent = ""; return; }
   let when = "";
-  if (t.date) { const d = daysTo(t.date), j = new Date(t.date + "T08:00:00").toLocaleDateString("fr-FR", {weekday: "long", day: "numeric", month: "long"});
+  if (t.date) { const d = daysTo(t.date), j = (t.week ? "semaine du " : "") + new Date(t.date + "T08:00:00").toLocaleDateString("fr-FR", {weekday: t.week ? undefined : "long", day: "numeric", month: "long"});
     when = " · " + (d < 0 ? "passé" : j + (d > 1 ? `, dans ${d} jours` : d === 1 ? ", demain" : ", aujourd'hui")); }
   $("targetInfo").textContent = `${t.desc}${when}`;
 }
