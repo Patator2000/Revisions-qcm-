@@ -71,7 +71,7 @@ function dashData(){
   const all = Object.keys(act).sort(); let last = null;
   for (const d of all) { if (!act[d].a) continue; const cur = new Date(d + "T12:00"); if (last && (cur - last) / 864e5 < 1.5) run++; else run = 1; best = Math.max(best, run); last = cur; }
   const last7 = dashDays(8).slice(0, 7).map(d => (act[d] && act[d].a) || 0);
-  return {live, subj, m, p, w, u, total, g, tries, answersAll, act, weak: weak.slice(0, 5), days, pts, streak, best: Math.max(best, streak),
+  return {live, subj, m, p, w, u, total, g, tries, answersAll, act, weak: weak.slice(0, 4), strong: weak.slice(4).reverse().slice(0, 4), days, pts, streak, best: Math.max(best, streak),
     today: act[today] || {a:0, c:0}, avg7: last7.reduce((s, v) => s + v, 0) / 7};
 }
 function smoothPath(P){
@@ -183,10 +183,12 @@ function renderDash(){
   const rate = D.tries ? D.g / D.tries * 100 : null, rateT = D.today.a ? D.today.c / D.today.a * 100 : null;
   const days14 = dashSince(D, 14), spA = days14.map(d => (D.act[d] && D.act[d].a) || 0), spR = days14.map(d => D.act[d] && D.act[d].a ? D.act[d].c / D.act[d].a * 100 : 0);
   const fmtP = v => (Math.round(v * 10) / 10).toFixed(v < 10 && v % 1 ? 1 : 0).replace(".", ",");
-  const weak = D.weak.length ? D.weak.map(z => {
+  const wRow = z => {
     const col = z.x.id, nm = String(z.x.THEMES[z.t] || z.t).replace(/</g, "&lt;");
     return `<button class="dash-weak" data-tip="<b>${nm.replace(/"/g, "&quot;")}</b><br>${z.g} bonne${z.g > 1 ? "s" : ""} réponse${z.g > 1 ? "s" : ""} sur ${z.tr} essais (${Math.round(z.r * 100)} %)<br><span>clique pour réviser ce thème</span>" data-s="${z.x.id}" data-t="${z.t}" style="--c:var(--${col})"><span class="dw-name"><i></i>${nm}</span><span class="dw-bar"><b style="width:${Math.round(z.r * 100)}%"></b></span><span class="dw-pct">${Math.round(z.r * 100)} %</span></button>`;
-  }).join("") : `<p class="small muted" style="margin:6px 0 0">Rien pour l'instant.</p>`;
+  };
+  const none = `<p class="small muted" style="margin:6px 0 0">Rien pour l'instant.</p>`;
+  const weak = D.weak.length ? D.weak.map(wRow).join("") : none, strong = D.strong.length ? D.strong.map(wRow).join("").replace(/class="dash-weak"/g, 'class="dash-weak dash-strong"') : none;
   el.innerHTML = `
   <div class="dash-card span8 dash-hero">
     <div class="dash-k">Maîtrise globale</div>
@@ -217,7 +219,9 @@ function renderDash(){
     <div class="${Object.values(D.act).some(v => v.a) ? "" : "dash-empty"}" data-empty="Tes réponses de chaque jour s'afficheront ici">${dashBars(D)}</div>
   </div>
   <div class="dash-card span4">
-    <div class="dash-k">Points faibles</div>
+    <div class="dash-k">Points forts</div>
+    ${strong}
+    <div class="dash-k dash-k2">Points faibles</div>
     ${weak}
   </div>`;
   dashPlotHover(el); dashTips(el);
