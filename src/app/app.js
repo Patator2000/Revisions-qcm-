@@ -19,7 +19,7 @@ const SUBJECTS = {
     exam: "2 CCI (Partie A), 40 questions en 25 min : CCI 1 (CM et TD 1 à 3), CCI 2 (CM et TD 1 à 6) la semaine du 30 novembre, rattrapage la semaine du 7 décembre. Pas de CCI 3. CCI 2e chance sur les CM et TD 1 à 6, semaine du 14 décembre ou du 4 janvier.",
     TARGETS: [
       {id:"cci1", label:"CCI 1", date:"2026-10-05", desc:"CM et TD 1 à 3", themes:["Q1","Q2","Q3","T1","T2","T3","C1","C2","C3"], sim:{n:40, sec:1500}},
-      {id:"cci2", label:"CCI 2", date:"2026-12-04", desc:"CM et TD 1 à 6", themes:["Q1","Q2","Q3","Q4","Q5","Q6","T1","T2","T3","T4","T5","T6","C1","C2","C3","C4","C5","C6"], sim:{n:40, sec:1500}},
+      {id:"cci2", label:"CCI 2", date:"2026-12-03", desc:"CM et TD 1 à 6", themes:["Q1","Q2","Q3","Q4","Q5","Q6","T1","T2","T3","T4","T5","T6","C1","C2","C3","C4","C5","C6"], sim:{n:40, sec:1500}},
       {id:"second", label:"CCI 2e chance", date:"2026-12-14", week:true, desc:"CM et TD 1 à 6", themes:["Q1","Q2","Q3","Q4","Q5","Q6","T1","T2","T3","T4","T5","T6","C1","C2","C3","C4","C5","C6"], sim:{n:100, sec:2700}}
     ]
   },
