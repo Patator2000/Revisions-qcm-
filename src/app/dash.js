@@ -328,8 +328,18 @@ function planData(){
   }
   return out.sort((a, b) => a.d - b.d);
 }
+// Dossiers à rendre (pas de questions de révision) : affichés avec leur compte à rebours sous les examens
+const RENDUS = [
+  {label: "Dossier CT1 histoire", date: "2026-12-14", h: "12 h", note: "un PDF sur Moodle, avant 12 h"},
+  {label: "Dossier CT1 C3P", date: "2026-12-18", h: "20 h", from: "2026-12-14", note: "un seul PDF, dépôt possible dès le lun. 14 déc."}
+];
+function rendusData(){
+  if (!Object.values(SUBJECTS).some(x => fmtList(x).length && modOn(x.id))) return [];
+  return RENDUS.map(r => ({r, d: daysTo(r.date)})).filter(o => o.d >= 0).sort((a, b) => a.d - b.d);
+}
 function planHtml(P){
-  if (!P.length) return "";
+  const RD = rendusData();
+  if (!P.length && !RD.length) return "";
   const day = d => new Date(d + "T08:00:00").toLocaleDateString("fr-FR", {weekday: "short", day: "numeric", month: "short"});
   const rows = P.map((p, n) => {
     const pct = Math.round(p.m / p.total * 100), todayPct = p.goal ? Math.min(100, Math.round(p.doneToday / p.goal * 100)) : 100;
@@ -344,8 +354,12 @@ function planHtml(P){
     </div>`;
   }).join("");
   const g = planGoal();
-  return `<div class="card plan"><div class="plan-top"><span class="plan-t">Objectif du jour</span>
-    <span class="plan-goal"><button class="${g === "vu" ? "on" : ""}" data-goal="vu">Tout voir</button><span class="plan-sep">maîtriser</span>${[50, 80, 100].map(v => `<button class="${v === g ? "on" : ""}" data-goal="${v}">${v} %</button>`).join("")}</span></div>${rows}</div>`;
+  const rendus = RD.map(o => `<div class="plan-row rendu">
+      <div class="plan-h"><b>${esc(o.r.label)}</b><span class="plan-d">${day(o.r.date)}, ${o.r.h} · ${o.d === 0 ? "aujourd'hui" : "J-" + o.d}</span></div>
+      <div class="plan-f"><span>${esc(o.r.note)}</span></div>
+    </div>`).join("");
+  return `<div class="card plan">${P.length ? `<div class="plan-top"><span class="plan-t">Objectif du jour</span>
+    <span class="plan-goal"><button class="${g === "vu" ? "on" : ""}" data-goal="vu">Tout voir</button><span class="plan-sep">maîtriser</span>${[50, 80, 100].map(v => `<button class="${v === g ? "on" : ""}" data-goal="${v}">${v} %</button>`).join("")}</span></div>${rows}` : ""}${rendus ? `<div class="plan-top plan-rendus"><span class="plan-t">Dossiers à rendre</span></div>${rendus}` : ""}</div>`;
 }
 function renderPlan(){
   const box = $("plan"); if (!box) return;
