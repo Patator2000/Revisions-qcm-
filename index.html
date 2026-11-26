@@ -3551,10 +3551,11 @@ function planData(){
       if (!t.date) continue;
       const d = daysTo(t.date); if (d < 0) continue;
       const all = Object.keys(x.THEMES), th = new Set(t.themes === "all" ? all : t.themes.filter(z => all.includes(z)));
-      let total = 0, m = 0, unseen = 0; const R = planRate(x), costs = [];
+      let total = 0, m = 0, unseen = 0; const R = planRate(x), costs = [], perF = {};
       for (const f of fmtList(x)) x.F[f].forEach((q, i) => { // tous les formats : vrai/faux, QCM et questions ouvertes préparent tous à l'examen
         if (!th.has(q[1]) || qLocked(q)) return;
         total++; const l = levelK(x, x.K[f][i]); if (l === null) unseen++;
+        if (SEEN ? l === null : !(l !== null && l >= 4)) perF[f] = (perF[f] || 0) + 1;
         if (l !== null && l >= 4) m++; else costs.push(planCost(4 - (l || 0), R.p));
       });
       if (!total) continue;
@@ -3564,7 +3565,8 @@ function planData(){
       const h = (x.mem._h || {})[today] || {}, doneToday = h.a || 0;
       const days = Math.max(1, d - 1); // la veille : simulation
       const goal = need ? Math.ceil((need + doneToday) / days) : 0;
-      out.push({x, t, d, total, m, left: toDo, aim, goal, doneToday, themes: [...th], R, seen: SEEN});
+      out.push({x, t, d, total, m, left: toDo, aim, goal, doneToday, themes: [...th], R, seen: SEEN,
+        bestFmt: Object.keys(perF).sort((a, b) => perF[b] - perF[a])[0] || t.fmt || fmtList(x)[0]});
     }
   }
   return out.sort((a, b) => a.d - b.d);
@@ -3593,10 +3595,19 @@ function renderPlan(){
   let P = []; try { P = planData(); } catch(e) { console.warn("plan", e); }
   box.innerHTML = planHtml(P);
   box.querySelectorAll("[data-goal]").forEach(b => b.onclick = () => { try { localStorage.setItem(planGoalKey(), b.dataset.goal); } catch(e) {} renderPlan(); });
+  // « Réviser » lance tout de suite une série : entraînement, le nombre de réponses qu'il reste pour l'objectif du jour,
+  // tirage au hasard, sans priorité, réponse à l'oral (sauf questions ouvertes)
   box.querySelectorAll("[data-plan]").forEach(b => b.onclick = () => {
     const p = P[+b.dataset.plan]; S = p.x; S.target = p.t.id; S.sel = new Set(p.themes);
-    if (p.t.fmt) fmt = S.fmt = p.t.fmt; else fmt = S.fmt;
+    fmt = S.fmt = p.bestFmt;
+    const rest = p.goal - p.doneToday;
+    Object.assign(opts, {mode: "train", count: rest > 0 ? rest : 20, weighted: false, shuffle: true, voice: true});
     go("subject");
+    $("segMode").querySelectorAll("button").forEach(x => x.classList.toggle("on", x.dataset.v === "train"));
+    $("segCount").querySelectorAll("button").forEach(x => x.classList.toggle("on", +x.dataset.v === opts.count));
+    $("swWeighted").classList.remove("on"); $("swShuffle").classList.add("on"); $("swVoice").classList.add("on");
+    if (typeof updCount === "function") updCount();
+    if (!S.sess && !$("start").disabled) $("start").click(); // une série en pause : on ne l'écrase pas, la page propose de la reprendre
   });
 }
 
