@@ -3302,6 +3302,8 @@ function dashData(){
     const h = x.mem._h || {};
     for (const d in h) if (/^\d{4}-/.test(d)) { const e = act[d] || (act[d] = {a:0, c:0}); e.a += h[d].a||0; e.c += h[d].c||0; }
   }
+  // points faibles : anatomie seulement (choix de Thomas)
+  for (let i = weak.length - 1; i >= 0; i--) if (weak[i].x.id !== "anat") weak.splice(i, 1);
   weak.forEach(z => z.r = z.g / z.tr); weak.sort((a, b) => a.r - b.r);
   // courbe de maîtrise (30 jours), valeurs reportées d'un jour sur l'autre
   const days = dashDays(30);
