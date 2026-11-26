@@ -73,7 +73,7 @@ function voiceCmds(){
 }
 function voiceHelpText(){
   const c = voiceCmds(), p = [];
-  if (c.vf) p.push("« vrai », « faux »");
+  if (c.vf) p.push("« vrai », « faux », « je ne sais pas »");
   if (c.letters) p.push("une ou plusieurs lettres (« A », « A et C »), puis « valider »");
   if (c.nav) p.push("« suivante », « précédente »");
   return "Dis " + p.join(", ") + ".";
@@ -119,6 +119,11 @@ function handleVoice(raw){
   if (view !== "quiz" || paused) return false;
   const t = norm(raw), c = voiceCmds();
   const ok = (msg) => { setVoiceNote(`✓ « ${raw.trim()} »${msg ? " : " + msg : ""}`); return true; };
+  // « je ne sais pas », « sais pas », « je passe » (avant la navigation : « je passe » n'est pas « suivante »)
+  if ((c.vf || c.letters) && !isLocked() && /\b(sai|sais|sait|ses|c est|cest|s est) pas\b|\bje passe\b/.test(t)) {
+    if (c.vf) { answerVF(2); return ok("NE SAIS PAS"); }
+    answerMCQnsp(); return ok("NE SAIS PAS");
+  }
   if (c.nav && /\bsuivant/.test(t)) { $("next").click(); return ok(); }
   if (c.nav && /\bprecedent/.test(t)) { $("prev").click(); return ok(); }
   if (c.vf) {
