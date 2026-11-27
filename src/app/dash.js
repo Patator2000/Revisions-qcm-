@@ -347,7 +347,7 @@ function planHtml(P){
       : p.d <= 1 ? (p.d === 0 ? "C'est aujourd'hui." : "Demain : fais une simulation et revois tes erreurs.")
       : `${p.doneToday} / ${p.goal} réponses aujourd'hui`;
     return `<div class="plan-row" style="--c:var(--${p.x.id});--cs:var(--${p.x.id}-soft)">
-      <div class="plan-h"><b>${esc(p.t.label)} ${esc(p.x.name.toLowerCase())}</b><span class="plan-d">${p.t.week ? "semaine du " + new Date(p.t.date + "T08:00:00").toLocaleDateString("fr-FR", {day: "numeric", month: "short"}) : day(p.t.date)} · ${p.d === 0 ? "aujourd'hui" : "J-" + p.d}</span></div>
+      <div class="plan-h"><b>${esc(p.t.label)} ${esc(p.x.name.toLowerCase())}</b><span class="plan-d">${p.t.week ? "semaine du " + new Date(p.t.date + "T08:00:00").toLocaleDateString("fr-FR", {day: "numeric", month: "short"}) : day(p.t.date)}${p.t.where ? ", " + esc(p.t.where) : ""} · ${p.d === 0 ? "aujourd'hui" : "J-" + p.d}</span></div>
       <div class="plan-bar" title="Réponses du jour"><i style="width:${todayPct}%"></i></div>
       <div class="plan-f"><span>${msg}</span><span>${p.seen ? `encore ${p.left} jamais vues sur ${p.total}` : `encore ${p.left} à maîtriser · ${pct} %`}${p.R.real ? ` · ${Math.round(p.R.raw * 100)} % de réussite` : ""}</span></div>
       <button class="btn small${todayPct >= 100 ? " ghost" : " primary"}" data-plan="${n}">${todayPct >= 100 && p.left ? "Continuer" : "Réviser"}</button>
