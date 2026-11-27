@@ -2318,6 +2318,7 @@ const SUBJECTS = {
     FOCUS: ["Q5","Q6","T5","T6","C5","C6"], doc: "qcm-anat-A", ls: "qcm-anat-A-progress-v1",
     RATE: {vf: 37.5, qcm: 60},
     exam: "2 CCI (Partie A), 40 questions en 25 min : CCI 1 (CM et TD 1 à 3), CCI 2 (CM et TD 1 à 6) la semaine du 30 novembre, rattrapage la semaine du 7 décembre. Pas de CCI 3. CCI 2e chance sur les CM et TD 1 à 6, semaine du 14 décembre ou du 4 janvier.",
+    SCOPE: ["Q1","Q2","Q3","Q4","Q5","Q6","T1","T2","T3","T4","T5","T6","C1","C2","C3","C4","C5","C6"],
     TARGETS: [
       {id:"cci1", label:"CCI 1", date:"2026-10-05", desc:"CM et TD 1 à 3", themes:["Q1","Q2","Q3","T1","T2","T3","C1","C2","C3"], sim:{n:40, sec:1500}},
       {id:"cci2", label:"CCI 2", date:"2026-12-03", desc:"CM et TD 1 à 6", themes:["Q1","Q2","Q3","Q4","Q5","Q6","T1","T2","T3","T4","T5","T6","C1","C2","C3","C4","C5","C6"], sim:{n:40, sec:1500}},
@@ -2411,7 +2412,10 @@ function commit(i){
 }
 function summary(Sx, f){
   let m=0,p=0,w=0,u=0,total=0;
-  for (const ff of (f ? [f] : fmtList(Sx))) for (const k of Sx.K[ff]) { total++; const l = levelK(Sx,k); if (l===null) u++; else if (l>=4) m++; else if (l>=2) p++; else w++; }
+  // Sx.SCOPE : thèmes qui comptent dans la complétion à 100 % (anatomie : CCI 1 et 2 seulement, il n'y a pas de CCI 3)
+  for (const ff of (f ? [f] : fmtList(Sx))) Sx.K[ff].forEach((k, i) => {
+    if (Sx.SCOPE && !Sx.SCOPE.includes(Sx.F[ff][i][1])) return;
+    total++; const l = levelK(Sx,k); if (l===null) u++; else if (l>=4) m++; else if (l>=2) p++; else w++; });
   return {m,p,w,u,total};
 }
 // Barème QCM : par défaut celui du CT de physio (question sur 1 point, -0,33 par proposition fausse) ;
