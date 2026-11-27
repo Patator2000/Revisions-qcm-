@@ -63,8 +63,8 @@ as $$
   limit 50;
 $$;
 comment on function public.leaderboard(text) is 'Classement : prénom, questions maîtrisées et réponses des 7 derniers jours. periode = semaine ou general.';
-revoke all on function public.leaderboard(text) from public, anon;
-grant execute on function public.leaderboard(text) to authenticated;
+-- Classement abandonné (nov. 2026) : plus personne ne peut appeler la fonction, elle exposait les prénoms et la progression des autres comptes.
+revoke all on function public.leaderboard(text) from public, anon, authenticated;
 
 -- ---------------------------------------------------------------------
 -- 3. Abonnement Kinésis+ (4,99 € / mois) : PRÉPARÉ, PAS ENCORE UTILISÉ

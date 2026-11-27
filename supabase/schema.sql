@@ -93,3 +93,11 @@ create policy "reports_insert" on public.reports for insert to authenticated wit
 create policy "reports_select" on public.reports for select to authenticated using ((select auth.uid()) = user_id);
 
 notify pgrst, 'reload schema';
+
+-- Garde-fous contre le remplissage abusif (un compte ne peut pas envoyer des données énormes)
+do $$ begin
+  alter table public.progress add constraint progress_mem_size check (pg_column_size(mem) < 2000000);
+exception when duplicate_object then null; end $$;
+do $$ begin
+  alter table public.reports add constraint reports_data_size check (pg_column_size(data) < 8000);
+exception when duplicate_object then null; end $$;

@@ -7,3 +7,7 @@ select u.id, array['anat','physio','natation','mails'] from auth.users u where s
 on conflict (user_id) do update set modules = excluded.modules;
 notify pgrst, 'reload schema';
 alter table public.profiles add column if not exists mail_rules jsonb;
+
+do $$ begin
+  alter table public.profiles add constraint profiles_rules_size check (mail_rules is null or pg_column_size(mail_rules) < 20000);
+exception when duplicate_object then null; end $$;
