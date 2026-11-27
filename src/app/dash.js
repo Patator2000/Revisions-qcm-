@@ -158,7 +158,7 @@ function dashDonut(D){
   const need = Math.max(0, Math.ceil(next / 100 * D.total) - D.m), perDay = wkGain / 7, eta = perDay > 0 ? Math.ceil(need / perDay) : null;
   const pace = `<div class="dash-pace"><div class="dp-big">${wkGain > 0 ? "+" + wkGain : "0"}</div><div class="dp-txt"><b>questions maîtrisées cette semaine</b><span>${
     !need ? "Palier de " + next + " % atteint, bravo !" : eta ? `À ce rythme, ${next} % dans environ <b>${eta} jour${eta > 1 ? "s" : ""}</b>` : ""}</span></div></div>`;
-  return pace + `<div class="dash-rep"><div class="dash-donut"><svg viewBox="0 0 110 110">${arcs}</svg><div class="dash-donut-c"><b>${D.total ? Math.round(D.m / D.total * 100) : 0}<small> %</small></b><span>maîtrisé</span></div></div><div class="dash-legs">${leg}</div></div>${subs}`;
+  return pace + `<div class="dash-rep"><div class="dash-donut"><svg viewBox="0 0 110 110">${arcs}</svg><div class="dash-donut-c" title="${D.total - D.u} questions vues au moins une fois sur ${D.total}"><b>${(() => { const v = D.total ? (D.total - D.u) / D.total * 100 : 0; return v > 0 && v < 10 ? (Math.round(v * 10) / 10).toString().replace(".", ",") : Math.round(v); })()}<small> %</small></b><span>vu</span></div></div><div class="dash-legs">${leg}</div></div>${subs}`;
 }
 function dashSpark(arr, col, tips){
   if (arr.length < 2) return "";
